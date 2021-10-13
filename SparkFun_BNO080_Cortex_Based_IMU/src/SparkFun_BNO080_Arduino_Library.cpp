@@ -41,15 +41,20 @@ boolean BNO080::begin(uint8_t deviceAddress, TwoWire &wirePort, uint8_t intPin)
 	//_i2cPort->begin();
 
 	//Begin by resetting the IMU
+	
 	softReset();
-
+	
 	//Check communication with device
 	shtpData[0] = SHTP_REPORT_PRODUCT_ID_REQUEST; //Request the product ID and reset info
 	shtpData[1] = 0;							  //Reserved
 
+	
 	//Transmit packet on channel 2, 2 bytes
-	sendPacket(CHANNEL_CONTROL, 2);
+	if(!sendPacket(CHANNEL_CONTROL, 2)){
+		return false;
+	}
 
+	
 	//Now we wait for response
 	if (receivePacket() == true)
 	{
@@ -988,7 +993,8 @@ void BNO080::softReset(void)
 	shtpData[0] = 1; //Reset
 
 	//Attempt to start communication with sensor
-	sendPacket(CHANNEL_EXECUTABLE, 1); //Transmit packet on channel 1, 1 byte
+	if(!sendPacket(CHANNEL_EXECUTABLE, 1)) //Transmit packet on channel 1, 1 byte
+		return;
 
 	//Read all incoming data and flush it
 	delay(50);
