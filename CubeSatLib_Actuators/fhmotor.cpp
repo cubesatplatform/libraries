@@ -1,29 +1,63 @@
 #include "fhmotor.h"
 
+volatile long _countx=0;
+volatile long _county=0;
+volatile long _countz=0;
 int CMotorController::channel=0;
 
-PWMCounter::PWMCounter(PinName pin) : _interrupt(pin)          // create the InterruptIn on the pin specified to Counter
+
+//void PWMCounter::increment()
+ void incrementx()
 {
-  #ifdef PORTENTA
-   // _interrupt.rise(callback(this, &PWMCounter::increment)); // attach increment function of this counter instance  //SPI BUG
-  #endif
+    _countx++;   
 }
 
-void PWMCounter::increment()
+void incrementy()
 {
-    _count++;
-   
+    _county++;   
 }
 
-int PWMCounter::read()   { return _count;    }
+void incrementz()
+{
+    _countz++;   
+}
 
 
-long PWMCounter::count(){return _count;}
+PWMCounter::PWMCounter(PinName pin)       // create the InterruptIn on the pin specified to Counter
+{
+  //#ifdef PORTENTA
+    _interrupt=pin;
+    
+    
+    pinMode(_interrupt, INPUT_PULLUP);
+
+    if(_interrupt==PI_6)
+      attachInterrupt(digitalPinToInterrupt(_interrupt), incrementz, FALLING);    
+    else if(_interrupt==PI_7)
+      attachInterrupt(digitalPinToInterrupt(_interrupt), incrementy, FALLING);    
+    else
+      attachInterrupt(digitalPinToInterrupt(_interrupt), incrementx, FALLING);    
+    //_interrupt.rise(callback(this, &PWMCounter::increment)); // attach increment function of this counter instance  //SPI BUG
+  //#endif
+}
 
 
-float PWMCounter::RPM(){
+int PWMCounter::read()   { return count();    }
+
+
+long PWMCounter::count(){
+  if(_interrupt==PI_6)
+    return _countz;
+  if(_interrupt==PI_7)
+    return _county;
+  return _countx;
+  
+  }
+
+
+float PWMCounter::RPS(){
     lastT=millis();   // may want micros
-    long lcount=_count-lastCount;  //diff counts
+    long lcount=count()-lastCount;  //diff counts
     long lsec=(lastT-prevT);
     float fcount=(float) lcount;
     fcount/=6.0;  //6 pings per revolution
@@ -31,16 +65,15 @@ float PWMCounter::RPM(){
     float fsec=(float)lsec;
     fsec/=1000.0;
 
-   
-
-
-   
-
     prevT=lastT;
-    lastCount=_count;
+    lastCount=count();
 
-    return 60.0*fcount/fsec;   
+    return fcount/fsec;   
 };
+
+float PWMCounter::RPM(){
+  return 60.0*RPS();   
+}
 
 
   
@@ -54,12 +87,13 @@ float PWMCounter::RPM(){
   CMotorController::~CMotorController(){
     #ifdef PORTENTA
     if (pCounter!=NULL) delete pCounter;
-    if (pMotor!=NULL) delete pMotor;
+
     #endif
   }
 
 
 void CMotorController::config(const char  *str,PinName sig, PinName fg,PinName dir){
+  analogWriteResolution(12);
   Name(str);
   PIN_SIGNAL=sig;
   PIN_DIR=dir;
@@ -76,11 +110,7 @@ void CMotorController::config(const char  *str,PinName sig, PinName fg,PinName d
 
   void CMotorController::Init(){
    
-    #ifdef PORTENTA      
-      pMotor=new mbed::PwmOut(PIN_SIGNAL);
-      pMotor->period_ms(1);   //PWM signal must have a fixed frequency between 500Hz and 18Khz.   1==1000Hz   2=500Hz
-      pMotor->write(0.0);      //Percent from 0 to 1
-    #endif
+
 
     #ifdef TTGO
       ledcSetup(_channel, freq, resolution);   // configure LED PWM functionalitites
@@ -98,6 +128,14 @@ void CMotorController::config(const char  *str,PinName sig, PinName fg,PinName d
     #endif
   }
 
+    float CMotorController::RPS(){
+    #ifdef PORTENTA
+    return pCounter->RPS();
+    #else
+    return 0;
+    #endif
+  }
+
   long CMotorController::Count(){
     #ifdef PORTENTA
     return pCounter->count();
@@ -107,19 +145,31 @@ void CMotorController::config(const char  *str,PinName sig, PinName fg,PinName d
   }
 
 void CMotorController::activateDrive(float val, bool dir, int motor){
-  writeconsoleln("CMotorController ---   ACTIVATE DRIVE !!!!!!!!!!");
+  float fval;
+  
   #ifdef PORTENTA    
-       
-      pMotor->write(val);
+    writeconsoleln("Portenta: CMotorController  ---   ACTIVATE DRIVE !!!!!!!!!!");
+    if(val<0)
+        _mdir=0;              
+    else
+      _mdir=1;
+
+    if(_mdir) digitalWrite(PIN_DIR,HIGH);
+    if(!_mdir) digitalWrite(PIN_DIR,LOW);
+    
+      fval=val*4000.0;
+
+       int nVal=abs(fval);
+
+      Serial.println(nVal);
+      analogWrite(PIN_SIGNAL,nVal);
     #else
       
-    float fval;
+      writeconsoleln("TTGO :CMotorController  ---   ACTIVATE DRIVE !!!!!!!!!!");
       
       writeconsole(".............................. Val :    ");
-      writeconsole(val);
-      
+      writeconsole(val);      
       fval=val*255.0;
-
       writeconsole(".............................. Value :    ");
       writeconsoleln(fval);
 
@@ -142,6 +192,10 @@ void CMotorController::activateDrive(float val, bool dir, int motor){
     #endif
   }
 
+
+void CMotorController::sendPWM(int nVal){
+  analogWrite(PIN_SIGNAL,nVal);
+}
 
 
 
