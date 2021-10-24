@@ -11,12 +11,14 @@
 
   TwoWire *pWire=&Wire;
 
-  Adafruit_DRV8830 myMotorDriver; //This creates the main object of one motor driver and connected slaves.
+  
 public:
+  Adafruit_DRV8830 myMotorDriver; //This creates the main object of one motor driver and connected slaves.
+  
   CMDrive();
   CMDrive(const char * str,char addr, int m=0);
   ~CMDrive();  
-  void config(const char * str,char addr=0x60, TwoWire &twowire=Wire,int m=0);
+  void config(const char * str,char addr=0x60, TwoWire *twowire=&Wire,int m=0);
   void Address(char c);
   bool init();
   void activateDrive(float val, bool dir=true, int motor=0);

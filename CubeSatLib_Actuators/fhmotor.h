@@ -13,7 +13,7 @@ typedef int PinName;
 #endif
 
 //CMotorController mc1(PA_8,PC_6,PC_5);
-
+//https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/issues/25
 /*
 Faulhaber SC1801
 
@@ -25,6 +25,8 @@ Unsol : Speed
 FG    : Hall effect sensor
 DIR   : Direction
 GND   : Ground
+
+TBeam Interrupt on Pin 25
 */
 
     
@@ -38,16 +40,16 @@ private:
 
     PinName _interrupt;
 
-    long lastCount;
-    long prevT=0;
-    long lastT=0;
+    unsigned long lastCount=0;
+    unsigned long prevT=0;
+    unsigned long lastT=0;
     
 public:
     PWMCounter(PinName pin);
-    //void increment();
-    int read();
 
-    long count();
+    unsigned long read();
+
+    unsigned long count();
     float RPM();
     float RPS();
 };
@@ -58,7 +60,7 @@ private:
 
 // setting PWM properties
   const int freq = 10000;
-  const int resolution = 8;
+  const int resolution = 12;
 
   PinName PIN_SIGNAL;
   PinName PIN_DIR;
@@ -68,7 +70,7 @@ private:
   static int channel;
   int _channel;
 
-  PWMCounter *pCounter;
+  PWMCounter *pCounter=NULL;
 
   
 public:
@@ -79,7 +81,7 @@ public:
   void Init();
   float RPM();
   float RPS();
-  long Count();
+  unsigned long Count();
   void sendPWM(int nVal);
   
   void activateDrive(float val, bool dir=true, int motor=0);

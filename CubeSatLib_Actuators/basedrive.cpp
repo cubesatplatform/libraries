@@ -5,7 +5,9 @@
 
   //  It uses .setDrive( motorNum <0,1>, direction<1:forward,0:backward>, level<0...255> ) to drive the motors.
 
-  CBaseDrive::CBaseDrive(){_forever=true;}
+  CBaseDrive::CBaseDrive(){_forever=true;
+    writeconsoleln("  QWEQWEQWEQWEQWE ");
+    }
  
   void CBaseDrive::Forward(float s,unsigned long dur){Speed(s,dur);}
   void CBaseDrive::Backward(float s,unsigned long dur){Speed(-1.0*s,dur);}
@@ -16,7 +18,7 @@
   void CBaseDrive::Speed(float s,unsigned long dur){
     if(_ostate!="PLAY")
       setState("PLAY");
-    writeconsoleln("SPEED CALLED xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") ;
+    writeconsoleln("XXXXXXXXX SPEED CALLED xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") ;
     if(_startTime==0) _startTime=getTime();
     _changedOn=getTime();
 
@@ -83,6 +85,8 @@ void CBaseDrive::callNewFunction(CMsg &msg){   //Calls a specific function direc
   if (act=="FORWARD") Forward(speed,duration);
   if (act=="BACK") Backward(speed,duration);
   if (act=="REVERSE")Reverse();
-  if (act=="Stop") Stop();
+  if (act=="STOP") Stop();
   if (act=="SPEED") Speed(speed,duration);
+  if (act=="START") Forward(speed,duration);
+
 }
