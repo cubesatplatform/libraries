@@ -12,6 +12,7 @@
 class CStateObj {
   
 	bool _forever = false;
+	long _statecount=0;
 	unsigned long _enter_time;
 	unsigned long _exit_time;
 	unsigned long _starttime = getTime();
@@ -45,6 +46,7 @@ public:
   	void addSystem(CMsg &msg);
 	virtual void stateMsg(CMsg &msg){_statemsg=msg;};
 	virtual void enter();
+	long stateCount(){return _statecount;};
 	virtual void exit();
 	CMsg stats();
   	std::string Name(){return _name;}

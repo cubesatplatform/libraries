@@ -64,6 +64,8 @@ public:
   virtual void off() { setState("REMOVE"); };
   virtual void restart() { setState("PLAY"); }
   virtual bool run() {return false;}
+
+  void Done()  {setState("COMPLETE");};
   bool outOfTime();
   bool Forever();
   void Forever(bool tmp){_forever=tmp;};
@@ -86,7 +88,7 @@ public:
   unsigned long modifiedTime(){return _modifiedTime;};
   
 
-  virtual void callNewFunction(CMsg &msg){};   //Override to calls any system specific function directly
+  virtual void callCustomFunctions(CMsg &msg){};   //Override to calls any system specific function directly
   
   void timeStamp();
   std::string currentState() { return _ostate; }

@@ -35,6 +35,7 @@ public:
 
   std::string getACT() { return  Parameters["ACT"]; }
   std::string getSYS() { return  Parameters["SYS"]; }
+  std::string getSTATE() { return  Parameters["STATE"]; }
   std::string getMODE() { return  Parameters["MODE"]; }
   std::string getID() { return  Parameters["ID"]; }
   std::string getCMDID() { return  Parameters["CMDID"]; } 
@@ -43,6 +44,7 @@ public:
 
   void setACT(std::string str) { Parameters["ACT"]=str; }
   void setSYS(std::string str) { Parameters["SYS"]=str; }
+  void setSTATE(std::string str) { Parameters["SYS"]="CORE";Parameters["ACT"]="STATE";Parameters["STATE"]=str; }
   void setMODE(std::string str) { Parameters["MODE"]=str; }
   void setID(std::string str) { Parameters["ID"]=str; }
   void setCMDID(std::string str) { Parameters["CMDID"]=str; } 
@@ -63,6 +65,7 @@ public:
   long getParameter(std::string str,long val);
   unsigned long getParameter(std::string str,unsigned long val);
   float getParameter(std::string str,float val);
+  double getParameter(std::string str,double val);
   char getParameter(std::string str,char val);
   
 
@@ -72,6 +75,7 @@ public:
   void setParameter(std::string str,long val ) { Parameters[str]=tostring( val); }
   void setParameter(std::string str,unsigned long val ) { Parameters[str]=tostring( val); }
   void setParameter(std::string str,float val ) { Parameters[str]=tostring( val); } 
+  void setParameter(std::string str,double val ) { Parameters[str]=tostring( val); } 
   void setParameter(std::string str,char val ) { Parameters[str]=tostring( val); } 
   void CID(std::string str) { Parameters["CID"]= str; }
 

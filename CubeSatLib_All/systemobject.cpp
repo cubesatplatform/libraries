@@ -97,7 +97,7 @@ if(act=="ADDDATALIST") {addDataList(msg);return;}
 if(act=="ADDTRANSMITLIST") {addTransmitList(msg);return;}
 
 
-callNewFunction(msg);
+callCustomFunctions(msg);
 }
 
 

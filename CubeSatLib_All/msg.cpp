@@ -45,6 +45,12 @@ float CMsg::getParameter(std::string str,float val){
   return atof(res.c_str());
 }
 
+double CMsg::getParameter(std::string str,double val){
+  std::string res=getParameter(str);
+  if (res.size()==0) return(val);
+  return atof(res.c_str());
+}
+
 void CMsg::appendParams(std::map<std::string, std::string> &Params){
   for (auto x:Params){
     Parameters[x.first]=x.second;

@@ -13,6 +13,7 @@ void CStateObj::loop() {
 }
 
 void CStateObj::enter(){
+	_statecount++;
 	_starttime = getTime();
 	for (auto  psys:subsystems) {
 	
@@ -35,7 +36,7 @@ void CStateObj::Cleanup(){
 		CSystemObject* psys;
 		psys = *it;	
 
-		if (psys->isComplete()&&!psys->Forever()) {
+		if (psys->isComplete()) {
 			
 			CSystemObject *pcoresys=getSystem(psys->Name().c_str());
 			if (pcoresys==NULL){							
@@ -43,7 +44,7 @@ void CStateObj::Cleanup(){
 					writeconsoleln("Deleted");
 
 					writeconsoleln("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  Deleting from State Systems  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-					delete psys;	
+					if(!psys->Forever()) delete psys;	
 					it = subsystems.erase(it);   //Check to make sure this works			 
 					break;						//Ends loop on a delete   Will continue on next cycle. Faster than doing all cleanup here
 					}

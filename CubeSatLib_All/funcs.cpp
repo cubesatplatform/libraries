@@ -52,3 +52,14 @@ std::string tostring(float val) {
   if((cx>0)&&(cx<100)) s=buffer;
   return s;
 }
+
+std::string tostring(double val) {
+  std::string s;
+  char buffer [30];
+  int cx;
+  
+  cx = snprintf ( buffer, 30, "%f", val );
+  if((cx>0)&&(cx<100)) s=buffer;
+  return s;
+}
+
