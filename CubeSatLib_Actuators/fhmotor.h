@@ -4,7 +4,9 @@
 #include <arduino.h>
 #include "consoleio.h"
 #include "PID1.h"
-#ifdef PORTENTA
+
+
+#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
  // #include <mbed.h>
  // #include <PwmOut.h>
 using namespace mbed;

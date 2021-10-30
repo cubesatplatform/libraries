@@ -3,7 +3,7 @@
 #include "basedrive.h"
 #include <arduino.h>
 #include "consoleio.h"
-#ifdef PORTENTA
+#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
  // #include <mbed.h>
   #include <PwmOut.h>
 using namespace mbed;
@@ -29,7 +29,7 @@ private:
   static int channel;  //Need this static (only one variable) as this defines what channl on the board is being used
   int _channel;
 
-  #ifdef PORTENTA
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   mbed::PwmOut *pMotor;
   #endif
 

@@ -29,7 +29,7 @@ PWMCounter::PWMCounter(){}
 void PWMCounter::init(PinName pin)       // create the InterruptIn on the pin specified to Counter
 {
       _interrupt=pin;
-  #ifdef PORTENTA
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
     
     pinMode(_interrupt, INPUT_PULLUP);
 
@@ -157,7 +157,7 @@ void CMotorController::config(const char  *str,PinName sig, PinName fg,PinName d
 void CMotorController::activateDrive(float val, bool dir, int motor){
   float fval;
   
-  #ifdef PORTENTA    
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7) 
     writeconsoleln("Portenta: CMotorController  ---   ACTIVATE DRIVE !!!!!!!!!!");
     if(val<0)
         _mdir=0;              
@@ -203,7 +203,7 @@ void CMotorController::activateDrive(float val, bool dir, int motor){
 
 
 void CMotorController::sendPWM(int nVal){
-   #ifdef PORTENTA   
+   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   analogWrite(PIN_SIGNAL,nVal);
   #else
     ledcWrite(_channel, nVal);  

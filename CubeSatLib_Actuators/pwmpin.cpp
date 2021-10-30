@@ -12,7 +12,7 @@ CPWMController::CPWMController(const char *str, PinName sig){
   }
 
   CPWMController::~CPWMController(){
-    #ifdef PORTENTA    
+    #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
     if (pMotor!=NULL) delete pMotor;
     #endif
   }
@@ -29,7 +29,7 @@ void CPWMController::config(const char *str, PinName sig){
 
   void CPWMController::Init(){
     
-    #ifdef PORTENTA
+    #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
       pMotor=new mbed::PwmOut(PIN_SIGNAL);
       pMotor->period_ms(1);   //PWM signal must have a fixed frequency between 500Hz and 18Khz.   1==1000Hz   2=500Hz
       pMotor->write(0.0);      //Percent from 0 to 1
@@ -49,7 +49,7 @@ void CPWMController::config(const char *str, PinName sig){
 void CPWMController::setup(){bOn=false;}
 void CPWMController::activateDrive(float val, bool dir, int motor){ 
   writeconsoleln("PWMController ---   ACTIVATE DRIVE !!!!!!!!!!");
-  #ifdef PORTENTA     
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
     pMotor->write(val);
   #else
       float fval=255.0*val;
