@@ -3,6 +3,7 @@
 #include "basedrive.h"
 #include <arduino.h>
 #include "consoleio.h"
+#include "PID1.h"
 #ifdef PORTENTA
  // #include <mbed.h>
  // #include <PwmOut.h>
@@ -43,9 +44,13 @@ private:
     unsigned long lastCount=0;
     unsigned long prevT=0;
     unsigned long lastT=0;
+
+    
     
 public:
-    PWMCounter(PinName pin);
+    PWMCounter();
+    
+    void init(PinName pin);
 
     unsigned long read();
 
@@ -70,7 +75,15 @@ private:
   static int channel;
   int _channel;
 
-  PWMCounter *pCounter=NULL;
+  double _Setpoint=0.0, _Input=0.0, _Output=0.0;
+
+  //Specify the links and initial tuning parameters
+  //double Kp=2, Ki=5, Kd=1;
+  double _Kp=2.0, _Ki=5.0, _Kd=1.0;
+
+  PWMCounter pwmCounter;
+
+  PID myPID;
 
   
 public:
@@ -83,6 +96,8 @@ public:
   float RPS();
   unsigned long Count();
   void sendPWM(int nVal);
+  void loop();
+  void setPoint(double sp){_Setpoint=sp;}
   
   void activateDrive(float val, bool dir=true, int motor=0);
  

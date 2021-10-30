@@ -33,7 +33,7 @@ public:
   int Motor(){return _motor;};
   void runOnce();
   void TestMotor(); 
-  void loop();
+  virtual void loop();
   unsigned long maxRunTime(){return _maxRunTime;};
   void maxRunTime(unsigned long tmp){_maxRunTime=tmp;}
   unsigned long modifiedTime(){return _modifiedTime;};

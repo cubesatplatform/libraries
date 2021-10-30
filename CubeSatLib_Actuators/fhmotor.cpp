@@ -24,7 +24,9 @@ void incrementz()
 }
 
 
-PWMCounter::PWMCounter(PinName pin)       // create the InterruptIn on the pin specified to Counter
+PWMCounter::PWMCounter(){}
+
+void PWMCounter::init(PinName pin)       // create the InterruptIn on the pin specified to Counter
 {
       _interrupt=pin;
   #ifdef PORTENTA
@@ -98,7 +100,6 @@ float PWMCounter::RPM(){
 
 
   CMotorController::~CMotorController(){
-    if (pCounter!=NULL) delete pCounter;
 
   }
 
@@ -112,8 +113,14 @@ void CMotorController::config(const char  *str,PinName sig, PinName fg,PinName d
   PIN_DIR=dir;
   PIN_FG=fg;  
 
-  pCounter=new PWMCounter(PIN_FG);
+  pwmCounter.init(PIN_FG);
   pinMode(PIN_DIR, OUTPUT);
+
+//Kp=2, Ki=5, Kd=1;
+  myPID.init(&_Input, &_Output, &_Setpoint, _Kp, _Ki, _Kd, DIRECT);
+   myPID.SetMode(AUTOMATIC);
+  myPID.SetSampleTime(50);
+ // SetOutputLimits(0,100);
 
 
   Init();
@@ -132,18 +139,18 @@ void CMotorController::config(const char  *str,PinName sig, PinName fg,PinName d
   
   float CMotorController::RPM(){
     
-    return pCounter->RPM();
+    return pwmCounter.RPM();
     
   }
 
   float CMotorController::RPS(){
-    return pCounter->RPS();
+    return pwmCounter.RPS();
     
   }
 
   unsigned long CMotorController::Count(){
     
-    return pCounter->count();
+    return pwmCounter.count();
     
   }
 
@@ -202,5 +209,12 @@ void CMotorController::sendPWM(int nVal){
     ledcWrite(_channel, nVal);  
   #endif
 }
+
+void CMotorController::loop(){
+    _Input =RPS();
+    myPID.Compute();
+   sendPWM(_Output);
+  }
+
 
 
