@@ -2,11 +2,11 @@
 #include <vector>
 #include <list>
 #include "msg.h"
+#include "systemobject.h"
 
 
 class CMessages {
-public:
-  
+public:  
   //std::chrono::time_point<std::chrono::system_clock> starttime;
   std::list<CMsg> ReceivedList;     //Received via Radio.  Put inbound received msgs here  ---Need to add acks for these as well
   std::list<CMsg> MessagesList;     //Moved from Radio to here.  These are pumped out
@@ -26,11 +26,13 @@ public:
   void newTransmitMessage(const char* s);
   void newTransmitMessage(CMsg &s);
   void newTransmitMessageLarge(CMsg &s) ;
+  void addReceivedList(CMsg &s,std::string nameSat="");
   void newMessage(CMsg &s);
   void moveReceived();
   void prune();
   void movetoTransmitList(CMsg &msg);                                //Need to make a subsystem that moved data to transmitlist data based on requests
   void displayList(int option);
+  
 };
 
 CMessages *getMessages();

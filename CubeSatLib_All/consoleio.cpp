@@ -13,16 +13,16 @@ void writeOut(){
     std::string str=qLog.front();
     qLog.pop_front();
     if(!str.size())
-      Serial.println();
+      if(Serial) Serial.println();
     else  
-      Serial.print(str.c_str());
+      if(Serial) Serial.print(str.c_str());
   }
 }
 
 
 void writeconsole(const std::string s) {  
   #ifdef  REALTIME
-    Serial.print(s.c_str());
+    if(Serial) Serial.print(s.c_str());
   #else
   qLog.push_back(s);  
   #endif
@@ -31,7 +31,7 @@ void writeconsole(const std::string s) {
 
 void writeconsoleln(const std::string s){   
   #ifdef  REALTIME
-  Serial.println(s.c_str());
+  if(Serial) Serial.println(s.c_str());
   #else
    std::string blank;
    qLog.push_back(s);
@@ -112,3 +112,42 @@ void writeconsoleln(float s){
    writeconsoleln(str);
   }
 
+
+//Encoding formulas
+//y=2x+<seed>
+//x=(y-<seed>)/2
+
+int charEncode(int x, int seed){
+  int mseed=seed%10;
+  int y=2*x+mseed;
+  return y;
+}
+
+int charDecode(int y, int seed){
+  int mseed=seed%10;
+  int x=(y-mseed)/2;
+  return x;
+}
+
+
+std::string stringEncode(std::string str,int seed){
+  std::string newstr;
+  int c;
+
+  for(auto x: str){
+    c=charEncode(x,seed);
+    newstr+=c;    
+  }
+  return newstr;
+}
+
+std::string stringDecode(std::string str,int seed){
+  std::string newstr;
+  int c;
+
+  for(auto x: str){
+    c=charDecode(x,seed);
+    newstr+=c;    
+  }
+  return newstr;
+}

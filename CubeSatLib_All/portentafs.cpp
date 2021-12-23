@@ -8,7 +8,7 @@
 
 LittleFS_MBED myFS;
 
-void CFS::setFilename(const char  *fn){
+void CFS::filename(const char  *fn){
   fileName = MBED_LITTLEFS_FILE_PREFIX;
   fileName +="/";
   fileName +=fn;
@@ -21,10 +21,7 @@ void CFS::setFilename(const char  *fn){
 
 void CFS::setup()
 {
-  Serial.begin(115200);
-  while (!Serial);
-
-  delay(1000);
+  
 
   //myFS = new LittleFS_MBED();
 

@@ -58,46 +58,13 @@ void CMsg::appendParams(std::map<std::string, std::string> &Params){
 }
 
 
-/*
 
-std::string CMsg::tostring(long val) {
-  std::string s;
-  char buffer [30];
-  int cx;
-  
-  cx = snprintf ( buffer, 30, "%li", val );
-  if((cx>0)&&(cx<100)) s=buffer;
-  return s;
+bool CMsg::needACK(){
+  bool flag=false;
+  if(getACK()=="0")
+    flag=true;
+    return flag;
 }
-
-std::string CMsg::tostring(unsigned long val) {
-  std::string s;
-  char buffer [30];
-  int cx;
-  
-  cx = snprintf ( buffer, 30, "%lu", val );
-  if((cx>0)&&(cx<100)) s=buffer;
-  return s;
-}
-
-std::string CMsg::tostring(float val) {
-  std::string s;
-  char buffer [30];
-  int cx;
-  
-  cx = snprintf ( buffer, 30, "%f", val );
-  if((cx>0)&&(cx<100)) s=buffer;
-  return s;
-}
-
-std::string CMsg::tostring(char val) {
-  std::string s;
-  s=val;
-
-  return s;
-}
-
-*/
 
 std::string CMsg::TransmitData() { 
  // std::string ss=str + "&" + "ID=" + getID() + "&CID=" + getCMDID() + StringOffset()+"&TS="+tostring(getTime())+"&TC="+tostring(tc); 
@@ -149,9 +116,43 @@ void CMsg::deserialize() {
 
       if (c == tok2) {
         stop = i;
-        Parameters[str1.substr(0, i)] = str1.substr(i + 1, 100);
+        Parameters[str1.substr(0, i)] = str1.substr(i + 1, 100000);
         break;
       }
     }
   }
+}
+
+
+bool CMsg::checkPWD(){
+  std::string key;
+
+  key=getSYS();  
+  key+=getACT();
+
+  if(key.size()==0)
+    return false;
+  
+  std::string pwd,dwp;
+  dwp=getParameter("DWP","");
+  int seed=getParameter("CDDWP",1);
+
+  pwd=stringDecode(dwp,seed);
+  if(key==pwd)
+    return true;
+  return false;
+}
+
+bool CMsg::setPWD(){
+  std::string key;
+  key=getSYS();
+  
+  key+=getACT();
+  if(key.size()==0)
+    return false;
+
+  setParameter("CDDWP",_ID);
+  std::string pwd=stringEncode(key,_ID);
+  setParameter("DWP",pwd);
+  return true;
 }

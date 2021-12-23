@@ -29,9 +29,9 @@ class CFS{
   int BUF_SIZE=32;
   
 public:
-  CFS(){setup();setFilename("counts.txt");}
+  CFS(){setup();filename("burncount.txt");}
   ~CFS(){}
-  void setFilename(const char  *fn);
+  void filename(const char  *fn);
   void setup();
   bool deleteFile();
   int readFile();

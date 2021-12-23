@@ -9,105 +9,133 @@
 //ACT:START,STOP,PAUSE,UPDATE,FUNCTION
 
 
-class CSystemObject {
-  
-  
+class CSystemObject {  
   bool success;  //true,false
 
   std::string _name;
   std::string _cid;
   static int sid;
+  static std::string _sat;
   int _sid;
   unsigned long _createdTime;
   unsigned long _modifiedTime=0;
+  unsigned long _currentTime;
   unsigned long _prevTime;
   
-
-protected:
-  std::map<std::string, std::string> Callback;
-  std::string _ostate;   //"NONE","INIT","READY","PLAY","PAUSE","STOP","ERROR", "IDLE"
-  unsigned long _currentTime;
-  CMsg _cmsg;
-  bool _forever = false;
-  unsigned long _lastStateTime=0;
-  
-  unsigned long _maxTime=0;
-  unsigned long _minTime=0;
-  unsigned long _INTERVAL;  //loop time interval in MicroSeconds,  0 means no delay
-  unsigned long _lastUse=0;
   unsigned long _startTime=0;
   unsigned long _stopTime=0;
   
+  unsigned long _maxTime=0;
+  unsigned long _minTime=0;
+  unsigned long _interval=0;  //loop time interval in MicroSeconds,  0 means no delay
   
-  unsigned long _transmitINTERVAL;
-  unsigned long _transmitPREVTIME;
-
   unsigned long _loopCount=0;
   unsigned long _procCount=0;
-  std::string _Mode;   //This determines what you are doing   Set to IDLE when done and nothing left to do  When u set new mode need to get it out of IDLE
 
+  std::string _ostate;   //"" || "START","PLAY","PAUSE","STOP","ERROR" 
+  std::string _olaststate;
+  bool _forever = false;
+   
+  unsigned long _lastStateTime=0;  
+  unsigned long _lastUse=0;
+  int _retryCount=0;
+
+  std::string _mode;   //This determines what you are doing   Set to IDLE when done and nothing left to do  When u set new mode need to get it out of IDLE
+
+protected:
+  std::map<std::string, std::string> Callback;  
+  CMsg _cmsg;
+  bool _addTransmit(CMsg &m);
 
 public:
+  unsigned long _lastDebug=0;
   CSystemObject();
   virtual ~CSystemObject() {}
 
-  virtual void none() { setState("ON"); };
-  virtual void on() { setState("READY");setup(); };   //It sets the state to the next state if nothing to do.  Your setup can override
-  virtual void idle() { setState("IDLE"); }
-  virtual void ready() { setState("PLAY"); }
-  virtual void play() { loop(); }
-  virtual void pause() { setState("PAUSE"); }
-  virtual void setup() { setState("READY"); };
-  virtual void loop()  {setState("COMPLETE");};
-  virtual void stop()  {setState("COMPLETE");};
-  virtual void complete()  {setState("OFF");}
-  virtual void off() { setState("REMOVE"); };
-  virtual void restart() { setState("PLAY"); }
-  virtual bool run() {return false;}
-
-  void Done()  {setState("COMPLETE");};
+  virtual void setup() {setState("PLAY");};
+  virtual void loop()  {setState("PAUSE");};
+  virtual void runOnce(CMsg &msg)  {};
+  virtual void config(CMsg &msg)  {};
+          
+  virtual void start() {setup(); if(State()=="") setState("PLAY"); };   //It sets the state to the next state if nothing to do.  Your setup can override
+  virtual void play() {if(State()=="PAUSE") setState(lastState()); loop(); }
+  virtual void pause() {setState("PAUSE");}  
+  virtual void stop()  {setState("STOP");};  
+  virtual void off()  {};  
+  
+  void restart(){setState("");}
+  
+  std::string thisSat(){return _sat;}
   bool outOfTime();
   bool Forever();
   void Forever(bool tmp){_forever=tmp;};
   void setup(CMsg &msg) { setup(); };
   void loop(CMsg &msg)  {loop();};
+  virtual void init();
+  
   void tic(){_lastUse=getTime();if(_ostate=="PAUSE")setState("PLAY");}
   unsigned long lastUsed(){return _lastUse;}
 
+  void setForever(bool tmp=true){  _forever=tmp;}
+  bool getForever(){ return _forever;}
+
+  void setInterval(unsigned long tmp){_interval=tmp;}
+  unsigned long getInterval(){return _interval;}
+
 
   void State(CMsg &msg); 
+  std::string State() { return _ostate; }
+  std::string lastState() { return _olaststate; }
   virtual void Update(CMsg &msg);
   virtual void Output(CMsg &msg){Output();}
-  virtual void Output(){}
+  virtual void Output(){
+    CMsg m=fillData();
+    addTransmitList(m);
+  }
   void newMsg(CMsg &msg);
   void newMode(CMsg &msg);
   virtual void initMode(){};
 
+  void setMode(std::string tmp){_mode=tmp;}
+  std::string Mode(){return _mode;}
+
   unsigned long startTime(){return _startTime;};
+  void startTime(unsigned long tmp){_startTime=tmp;};
   unsigned long stopTime(){return _stopTime;};
+  void stopTime(unsigned long tmp){_stopTime=tmp;};
   unsigned long modifiedTime(){return _modifiedTime;};
   
 
   virtual void callCustomFunctions(CMsg &msg){};   //Override to calls any system specific function directly
   
   void timeStamp();
-  std::string currentState() { return _ostate; }
-  virtual void stats();
+ 
+  virtual void stats(CMsg &ms);
+  virtual CMsg fillData(){CMsg m; return m;}
   void nextState();                                                                                         //Next state calls State Transition Functions
-  void setState(std::string str) { _ostate = str; _lastStateTime=getTime();};                                 //Only set the state  Dont call any functions.  The Next state should take care of that
-  void Name(const char* s) { _name = s; }
-  void Name(std::string s) { _name = s; }
-  bool isTransmitTime();
-  bool isTransmitTimeNoUpdate();
-  bool addTransmitList(const char* s,bool override=false);
-  bool addDataList(const char* s);
-  bool addTransmitList(CMsg &m ,bool override=false);
-  bool addMessageList(const char* s);
+  void setState(std::string str);        //Only set the state  Dont call any functions.  The Next state should take care of that
+  void Name(const char* s) { std::string str= s; Name(str); }
+  void Name(std::string s);
+ 
+  bool addTransmitList(CMsg &m );
+  bool addTransmitList(std::vector<CMsg> &M);
+  bool addDataList(CMsg &m); 
   bool addMessageList(CMsg &m );
-  bool addTransmitList(std::vector<CMsg> &M ,bool override=false);
-  bool addDataList(CMsg &m);
+    
   void statusUpdate(CMsg &m);
   void fillMetaMSG(CMsg *m);
+
+
+  int getRetryCount(){return _retryCount; }
+  void clearRetryCount(){_retryCount=0; }
+  unsigned long getCreatedTime() {return _createdTime;}
+  unsigned long getModifiedTime(){return _modifiedTime=0;}
+  unsigned long getCurrentTime() {return _currentTime;}
+  unsigned long getPrevTime(){return _prevTime;}
+  
+  unsigned long StartTime(){return _startTime=0;}
+  unsigned long StopTime(){return _stopTime=0;}
+
   long timeSinceStateChange(){return getTime()-_lastStateTime;}
   std::string Name() { return _name; }
   std::string CID() { return _cid; }
@@ -115,7 +143,7 @@ public:
   bool isNextCycle();
   bool isSuccess() { return success; }
   bool isComplete(){ 
-    if ((_ostate == "STOP")|| (_ostate == "ERROR")|| (_ostate == "COMPLETE")|| (_ostate == "OFF")) return true; 
+    if ((_ostate == "STOP")|| (_ostate == "ERROR")) return true; 
     return false;   ///   false;  Dne for debuggin
   }
 
@@ -123,5 +151,11 @@ public:
   void respondCallBack(CMsg &m);
 };
 
-CSystemObject *getSystem(const char *sys);
+extern std::map<std::string,CSystemObject *> SysMap;
+
+CSystemObject *getSystem(const char *sys, const char *comment="");
+CSystemObject *getIMU(const char *sys="IMU");
+
+void transmitError(const char *tmp);
+
 

@@ -20,11 +20,13 @@ public:
   std::vector<unsigned char> byteVector;
   std::map<std::string, std::string> Parameters;
 
-  CMsg() {_tc=getTime();};
-  CMsg(std::string &s) { _str = s; _tc=getTime(); deserialize(); }
-  CMsg(const char* s) { _str = s; _tc=getTime(); deserialize(); }
+  CMsg() {_tc=getTime();_ID++;};
+  CMsg(std::string &s) { _str = s; _tc=getTime(); deserialize(); _ID++;}
+  CMsg(const char* s) { _str = s; _tc=getTime(); deserialize(); _ID++;}
   CMsg(const char* s, float frssi , float fsnr = 0.0) { _str = s; _tc=getTime(); deserialize();  _rssi = frssi; fsnr = fsnr; _ID++;}
+  
   void decompose(const char* s){ _str = s; }
+  void clear(){_str="";_rssi = 0.0;_snr = 0.0;_refID = 0; _tc=getTime();Parameters.clear();byteVector.clear();}
   
   std::string serialize();
   void deserialize();
@@ -34,30 +36,26 @@ public:
   std::string getSys() { return  getSYS(); }
 
   std::string getACT() { return  Parameters["ACT"]; }
+  std::string getACK() { return  Parameters["ACK"]; }
   std::string getSYS() { return  Parameters["SYS"]; }
-  std::string getSTATE() { return  Parameters["STATE"]; }
+  std::string getSAT() { return  Parameters["SAT"]; }
   std::string getMODE() { return  Parameters["MODE"]; }
   std::string getID() { return  Parameters["ID"]; }
   std::string getCMDID() { return  Parameters["CMDID"]; } 
-  std::string CID() { return getCMDID(); }  
+  bool checkPWD();
 
-
+  void requestACK(){setACK("0");}
+  void confirmACK(){setACK("1");}
   void setACT(std::string str) { Parameters["ACT"]=str; }
+  void setACK(std::string str) { Parameters["ACK"]=str; }
   void setSYS(std::string str) { Parameters["SYS"]=str; }
-  void setSTATE(std::string str) { Parameters["SYS"]="CORE";Parameters["ACT"]="STATE";Parameters["STATE"]=str; }
+  void setSAT(std::string str="") { Parameters["SAT"]=str; }
+  bool setPWD();  //Returns false if parameters are not there for a real pwd    
+  
   void setMODE(std::string str) { Parameters["MODE"]=str; }
   void setID(std::string str) { Parameters["ID"]=str; }
   void setCMDID(std::string str) { Parameters["CMDID"]=str; } 
   void appendParams(std::map<std::string, std::string> &Params);
-
- /*
-  void setACT(const char * str) { Parameters["ACT"]=str; }
-  void setSYS(const char * str) { Parameters["SYS"]=str; }
-  void setMODE(const char * str) { Parameters["MODE"]=str; }
-  void setID(const char * str) { Parameters["ID"]=str; }
-  void setCMDID(const char * str) { Parameters["CMDID"]=str; } 
-  */
-
 
   std::string getParameter(std::string str) { return Parameters[str]; }
   std::string getParameter(std::string str,std::string val);
@@ -67,9 +65,7 @@ public:
   float getParameter(std::string str,float val);
   double getParameter(std::string str,double val);
   char getParameter(std::string str,char val);
-  
-
-  
+    
   void setParameter(std::string str,std::string val ) { Parameters[str]=val; }
   void setParameter(std::string str,int val ) { Parameters[str]=tostring((long) val); }
   void setParameter(std::string str,long val ) { Parameters[str]=tostring( val); }
@@ -83,26 +79,18 @@ public:
   std::string StringOffset() { return Parameters["OFFSET"]; }
   void Offset(std::string str) {  Parameters["OFFSET"] = str; }
   
-
   std::string Data() { return _str; }
   void Data(std::string s) { _str = s; }
   
   std::string TransmitData();
-  
- 
+  bool needACK();
+   
   int REFID() { return _refID; }
   void REFID(int r) { _refID = r; }
 
-/*
-  std::string tostring(long val);
-  std::string tostring(unsigned long val);
-  std::string tostring(float val);
-  std::string tostring(char val);
-*/
   void initArray(unsigned char* myRawArray, int byteCount) {
     byteVector.reserve(byteCount);
-    byteVector.insert(byteVector.begin(), myRawArray, myRawArray + byteCount);
-    
+    byteVector.insert(byteVector.begin(), myRawArray, myRawArray + byteCount);    
   }
   unsigned char *vectorData(){return byteVector.data();};
   int vectorLen(){return byteVector.size();}

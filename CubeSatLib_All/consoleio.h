@@ -38,4 +38,14 @@ void writeconsoleln(float s);
 void writeOut();
 
 
+//Encoding formulas
+//y=2x+<seed>
+//x=(y-<seed>)/2
 
+int charEncode(int x, int seed);
+
+int charDecode(int y, int seed);
+
+std::string stringEncode(std::string str,int seed);
+
+std::string stringDecode(std::string str,int seed);

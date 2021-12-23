@@ -159,3 +159,17 @@ void CMessages::displayList(int option=0){
     writeconsoleln("---------------------------------------------TransmitListLog End");
     writeconsoleln();
 }
+
+void CMessages::addReceivedList(CMsg &s,std::string nameSat){
+  if(!s.checkPWD()){
+    writeconsoleln("---------------------------------------------Message PWD Invalid   Dropping   ------- Problably should add to some Log");
+    return;
+  }
+  if((s.getSAT()==nameSat)||(nameSat.size()==0))
+    ReceivedList.push_back(s);
+  else 
+    writeconsoleln("---------------------------------------------Message Received not for this Satellite   Dropping");
+    writeconsoleln(s.serialize());
+
+}
+

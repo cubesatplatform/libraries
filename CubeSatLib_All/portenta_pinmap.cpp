@@ -3,6 +3,7 @@
 #ifdef PORTENTA
 #include <map>
 #include "defs.h"
+
 std::map<std::string, PinName> obcPinMap;
 void fillOBCMap(){
 
