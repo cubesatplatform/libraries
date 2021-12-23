@@ -3,6 +3,7 @@
 #include "basedrive.h"
 #include <arduino.h>
 #include "consoleio.h"
+#include "system_imu.h"
 #include "PID1.h"
 
 
@@ -56,7 +57,7 @@ public:
 
     unsigned long read();
 
-    unsigned long count();
+    unsigned long getCount();
     float RPM();
     float RPS();
 };
@@ -66,6 +67,7 @@ class CMotorController:public CBaseDrive{
 private:
 
 // setting PWM properties
+  CIMU *_pIMU=NULL;
   const int freq = 10000;
   const int resolution = 12;
 
@@ -77,8 +79,8 @@ private:
   static int channel;
   int _channel;
 
-  double _Setpoint=0.0, _Input=0.0, _Output=0.0;
-
+  double _Setpoint=0.0, _Input=0.0, _Output=0.0,_Output_last=0.0;
+  char _axis='X';
   //Specify the links and initial tuning parameters
   //double Kp=2, Ki=5, Kd=1;
   double _Kp=2.0, _Ki=5.0, _Kd=1.0;
@@ -92,16 +94,19 @@ public:
   CMotorController();
   ~CMotorController();
 
-  void config(const char  *str,PinName sig, PinName fg,PinName dir);
-  void Init();
+  void configSpeed(PinName sig, PinName fg,PinName dir);
+  void configRotation(PinName sig, PinName fg,PinName dir,CIMU *pIMU, char axis);
+  void init();
   float RPM();
   float RPS();
-  unsigned long Count();
+  unsigned long getCount();
   void sendPWM(int nVal);
   void loop();
+  void loopSpeed();
+  void loopRotation();
   void setPoint(double sp){_Setpoint=sp;}
+  void setPointRotation(double sp){_Setpoint=sp;setMode("ROTATION");}
   
-  void activateDrive(float val, bool dir=true, int motor=0);
- 
+  void activateDrive(float val);
 };
 

@@ -1,4 +1,5 @@
 #include "fhmotor.h"
+#include <consoleio.h>
 #include <arduino.h>
 
 volatile unsigned long _countx=0;
@@ -46,10 +47,10 @@ void PWMCounter::init(PinName pin)       // create the InterruptIn on the pin sp
 }
 
 
-unsigned long PWMCounter::read()   { return count();    }
+unsigned long PWMCounter::read()   { return getCount();    }
 
 
-unsigned long PWMCounter::count(){
+unsigned long PWMCounter::getCount(){
   #ifdef PORTENTA
   if(_interrupt==PI_6)
     return _countz;
@@ -63,7 +64,7 @@ unsigned long PWMCounter::count(){
 
 float PWMCounter::RPS(){
     lastT=millis();   // may want micros
-    unsigned long curcount=count();
+    unsigned long curcount=getCount();
     unsigned long diffcount=curcount-lastCount;  //diff counts
     unsigned long diffsec=(lastT-prevT);
 
@@ -93,7 +94,7 @@ float PWMCounter::RPM(){
 
   
   CMotorController::CMotorController():CBaseDrive(){
-    Name("Motor");
+    Name("MOTOR");
     _channel=channel;
     channel++;
     };
@@ -104,11 +105,12 @@ float PWMCounter::RPM(){
   }
 
 
-void CMotorController::config(const char  *str,PinName sig, PinName fg,PinName dir){
+void CMotorController::configSpeed(PinName sig, PinName fg,PinName dir){
   #ifdef PORTENTA
   analogWriteResolution(12);
   #endif
-  Name(str);
+
+  setMode("SPEED");
   PIN_SIGNAL=sig;
   PIN_DIR=dir;
   PIN_FG=fg;  
@@ -120,21 +122,60 @@ void CMotorController::config(const char  *str,PinName sig, PinName fg,PinName d
   myPID.init(&_Input, &_Output, &_Setpoint, _Kp, _Ki, _Kd, DIRECT);
    myPID.SetMode(AUTOMATIC);
   myPID.SetSampleTime(50);
- // SetOutputLimits(0,100);
+  myPID.SetOutputLimits(100, 1255);
 
 
-  Init();
+  init();
+}
+
+void CMotorController::configRotation(PinName sig, PinName fg,PinName dir,CIMU *pIMU,char axis){
+  init();
+  #ifdef PORTENTA
+  analogWriteResolution(12);
+  #endif
+
+  setMode("ROTATION");
+  _pIMU=pIMU;
+  _axis=axis;
+  PIN_SIGNAL=sig;
+  PIN_DIR=dir;
+  PIN_FG=fg;  
+
+  pwmCounter.init(PIN_FG);
+  pinMode(PIN_DIR, OUTPUT);
+
+//Kp=2, Ki=5, Kd=1;
+  _pIMU->myIMU.enableGyro(50);
+  _Setpoint=0.0;
+  _Kp=5.0; _Ki=45.0; _Kd=5.0;
+  myPID.init(&_Input, &_Output, &_Setpoint, _Kp, _Ki, _Kd, DIRECT);
+   myPID.SetMode(AUTOMATIC);
+  myPID.SetSampleTime(50);
+  myPID.SetOutputLimits(-1255, 1255);
+
+  
+
+
+ 
 }
 
 
 
-  void CMotorController::Init(){
+
+  void CMotorController::init(){
+    CBaseDrive::init();
+
+  _Setpoint=0.0;
+  _Input=0.0;
+  _Output=0.0;
+  _Output_last=0.0;
+  
     #ifdef TTGO
       ledcSetup(_channel, freq, resolution);   // configure LED PWM functionalitites
       ledcAttachPin(PIN_SIGNAL, _channel);  // attach the channel to the GPIO to be controlled
     #endif
 
-     setState("READY");
+     setState("PLAY");
   }
   
   float CMotorController::RPM(){
@@ -148,24 +189,24 @@ void CMotorController::config(const char  *str,PinName sig, PinName fg,PinName d
     
   }
 
-  unsigned long CMotorController::Count(){
+  unsigned long CMotorController::getCount(){
     
-    return pwmCounter.count();
+    return pwmCounter.getCount();
     
   }
 
-void CMotorController::activateDrive(float val, bool dir, int motor){
+void CMotorController::activateDrive(float val){
   float fval;
   
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7) 
     writeconsoleln("Portenta: CMotorController  ---   ACTIVATE DRIVE !!!!!!!!!!");
     if(val<0)
-        _mdir=0;              
+      setDir(0);              
     else
-      _mdir=1;
+      setDir(1);
 
-    if(_mdir) digitalWrite(PIN_DIR,HIGH);
-    if(!_mdir) digitalWrite(PIN_DIR,LOW);
+    if(getDir()) digitalWrite(PIN_DIR,HIGH);
+    if(!getDir()) digitalWrite(PIN_DIR,LOW);
     
       fval=val*4000.0;
 
@@ -185,16 +226,16 @@ void CMotorController::activateDrive(float val, bool dir, int motor){
 
 
     if(val<0)
-      _mdir=0;              
+      setDir(0);              
     else
-      _mdir=1;
+      setDir(1);
     
     
-    _mspeed=val;
-    _PWMSpeed=fval;
+    setMSpeed(val);
+    setPWMSpeed(fval);
 
-    if(_mdir) digitalWrite(PIN_DIR,HIGH);
-    if(!_mdir) digitalWrite(PIN_DIR,LOW);
+    if(getDir()) digitalWrite(PIN_DIR,HIGH);
+    if(!getDir()) digitalWrite(PIN_DIR,LOW);
 
       short int sVal=abs(fval);
       ledcWrite(_channel, sVal); 
@@ -210,10 +251,62 @@ void CMotorController::sendPWM(int nVal){
   #endif
 }
 
-void CMotorController::loop(){
+void CMotorController::loopSpeed(){
     _Input =RPS();
     myPID.Compute();
+    
    sendPWM(_Output);
+  }
+
+void CMotorController::loopRotation(){
+  CMsg m;
+  _pIMU->runOnce(m);
+  if(_axis=='X')
+    _Input=_pIMU->Gyro.X;
+  if(_axis=='Y')
+    _Input=_pIMU->Gyro.Y;    
+  if(_axis=='Z')
+    _Input=_pIMU->Gyro.Z;
+  if(_axis=='R')
+    _Input=_pIMU->Gyro.R;
+    //_Input =RPS();
+    _Output_last=_Output;
+    myPID.Compute();
+    if(_Output_last ==_Output)
+      return;
+
+writeconsole(_axis) ;writeconsole("    Input: ");writeconsole((float)_Input);writeconsole("    Output: ");writeconsoleln((float)_Output);
+  if(_Output>=0.0){
+    
+    if(getDir()) {
+      digitalWrite(PIN_DIR,HIGH);
+      setDir(true);
+      delay(20);
+      }    
+    sendPWM(_Output);
+
+    }
+
+  if(_Output<0.0){    
+    if(getDir()) {
+      digitalWrite(PIN_DIR,LOW);
+      setDir(false);
+      delay(20);
+      }    
+    sendPWM(_Output*(-1.0));
+
+    }
+
+   
+  }
+
+void CMotorController::loop(){
+  if(Mode()=="SPEED")
+    loopSpeed();
+
+  if(Mode()=="ROTATION")    
+    loopRotation();
+    
   }
 
 

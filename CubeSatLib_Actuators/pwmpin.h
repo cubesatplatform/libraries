@@ -23,7 +23,6 @@ private:
   const int freq = 5000;
   const int resolution = 8;
 
-
   PinName PIN_SIGNAL;
   
   static int channel;  //Need this static (only one variable) as this defines what channl on the board is being used
@@ -37,12 +36,12 @@ private:
 public:
   
   CPWMController(const char *str,PinName sig);
-  CPWMController(){_INTERVAL=5;_channel=channel;channel++;};
+  CPWMController(){setInterval(5);_channel=channel;channel++;};
   ~CPWMController();
 
   void setup();
-  void config(const char *str, PinName sig);
+  void config(PinName sig);
 
-  void Init();
-  void activateDrive(float val, bool dir=true, int motor=0);  
+  void init();
+  void activateDrive(float val);  
 };

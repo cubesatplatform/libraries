@@ -1,14 +1,10 @@
 #include "pwmpin.h"
 
-int CPWMController::channel=0;
-
-
-  
+int CPWMController::channel=0;  
 
 CPWMController::CPWMController(const char *str, PinName sig){
   _channel=channel;channel++;
-  config(str, sig);
-
+  config(sig);
   }
 
   CPWMController::~CPWMController(){
@@ -18,16 +14,15 @@ CPWMController::CPWMController(const char *str, PinName sig){
   }
 
 
-void CPWMController::config(const char *str, PinName sig){
-  _INTERVAL=50;
-    Name(str);
+void CPWMController::config( PinName sig){
+    setInterval(50);
     PIN_SIGNAL=sig;
-    Init();
+    init();
 }
 
 
 
-  void CPWMController::Init(){
+  void CPWMController::init(){
     
     #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
       pMotor=new mbed::PwmOut(PIN_SIGNAL);
@@ -46,17 +41,17 @@ void CPWMController::config(const char *str, PinName sig){
   }
 
 
-void CPWMController::setup(){bOn=false;}
-void CPWMController::activateDrive(float val, bool dir, int motor){ 
+void CPWMController::setup(){} //bOn=false;
+
+void CPWMController::activateDrive(float val){ 
   writeconsoleln("PWMController ---   ACTIVATE DRIVE !!!!!!!!!!");
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
     pMotor->write(val);
   #else
-      float fval=255.0*val;
+      float fval=255.0*abs(val);
       //fval=255.0;
      
       ledcWrite(_channel, (int) fval); 
  
   #endif
-
 }

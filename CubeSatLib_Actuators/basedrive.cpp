@@ -3,51 +3,56 @@
 #include <arduino.h>
 #include "consoleio.h"
 
-  //  It uses .setDrive( motorNum <0,1>, direction<1:forward,0:backward>, level<0...255> ) to drive the motors.
+// It uses .setDrive( motorNum <0,1>, direction<1:forward,0:backward>, level<0...255> ) to drive the motors.
 
-  CBaseDrive::CBaseDrive(){_forever=true;
-    writeconsoleln("  QWEQWEQWEQWEQWE ");
-    }
- 
-  void CBaseDrive::Forward(float s,unsigned long dur){Speed(s,dur);}
-  void CBaseDrive::Backward(float s,unsigned long dur){Speed(-1.0*s,dur);}
-  void CBaseDrive::Reverse(){Speed(-1.0*_mspeed);}
-  bool CBaseDrive::isForward(){if(_mdir) return true; return false;}
-  void CBaseDrive::Stop(){Speed(0.0,0);}
-
-  void CBaseDrive::Speed(float s,unsigned long dur){
-    if(_ostate!="PLAY")
-      setState("PLAY");
-    writeconsoleln("XXXXXXXXX SPEED CALLED xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") ;
-    if(_startTime==0) _startTime=getTime();
-    _changedOn=getTime();
-
-    _mspeed=s;
-
-    
-    activateDrive(_mspeed,_mdir,_motor);
-    if (dur>0) _duration=dur;
-    }
-
+CBaseDrive::CBaseDrive(){
   
-
-void CBaseDrive::runOnce(){
- // writeconsoleln(Name());
-    if(_duration<1){
-    }
   
-    unsigned long ct=getTime();
-    
-    if((ct>_changedOn+_duration)&&(_mspeed!=0.0)){
-      Stop();
-      CMsg m;
-      m.Parameters[Name()]="1"; 
-      respondCallBack(m);
-      //setState("IDLE");
-    }
+  }
 
+void CBaseDrive::Forward(float s,unsigned long dur){Speed(abs(s),dur);}
+void CBaseDrive::Backward(float s,unsigned long dur){Speed(-1.0*abs(s),dur);}
+void CBaseDrive::Reverse(){Speed(-1.0*_mspeed);}
+bool CBaseDrive::isForward(){if(_mdir) return true; return false;}
+void CBaseDrive::stopActuator(){//Speed(0.0,0); 
+   setState("PAUSE");}
+
+void CBaseDrive::init(){
+  CSystemObject::init();
+
+  bOn=false;  
+  _motor=0;
+  _mspeed=0.0;
+  _mdir=1;
+  _setSpeed=1.0;
+  _PWMSpeed=0;
+
+  _driveStartTime=0;
+  _maxRunTime=10000;
+  _driveInterval=0;
+  _modifiedTime=0;
+  _duration=0;
+  _changedOn=0;
+  setForever();
 }
 
+void CBaseDrive::Speed(float s,unsigned long dur){
+  if(State()!="PLAY")
+    setState("PLAY");
+  writeconsoleln("XXXXXXXXX SPEED CALLED xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") ;
+  if(_driveStartTime==0) _driveStartTime=getTime();
+  _changedOn=getTime();
+
+  _mspeed=s;
+  
+  //activateDrive(_mspeed);   //For testing  put bacl
+  if (dur>0) _duration=dur;
+  }
+
+  
+
+void CBaseDrive::runOnce(CMsg &m){
+}
 
 
 void CBaseDrive::TestMotor(){
@@ -60,14 +65,22 @@ void CBaseDrive::TestMotor(){
       delay(20);
     }
          
-    Stop();
+    stopActuator();
   }
  
 
-
-
 void CBaseDrive::loop(){
-  runOnce();
+  //writeconsole("Base Drive Loop: ");
+   //writeconsoleln(Name());
+    if(_duration<1){
+    }
+    unsigned long ct=getTime();
+    
+    if(ct>_changedOn+_duration){
+      stopActuator();            
+    }
+  CMsg m;
+  runOnce(m);
   }
 
 void CBaseDrive::callNewFunction(CMsg &msg){   //Calls a specific function directly
@@ -85,7 +98,7 @@ void CBaseDrive::callNewFunction(CMsg &msg){   //Calls a specific function direc
   if (act=="FORWARD") Forward(speed,duration);
   if (act=="BACK") Backward(speed,duration);
   if (act=="REVERSE")Reverse();
-  if (act=="STOP") Stop();
+  if (act=="STOP") stopActuator();
   if (act=="SPEED") Speed(speed,duration);
   if (act=="START") Forward(speed,duration);
 
