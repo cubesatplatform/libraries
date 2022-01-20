@@ -13,14 +13,6 @@ void CDataRequest::loop() {
 }
 
 void CDataRequest::moveData() {
-	CMessages* pmsgs=getMessages();
-
-
-
-  for(auto m:pmsgs->DataList){  
-		pmsgs->TransmitList.push_back(m);
-
-		//parameters["TIME"]
-		//if (cmsg.parameters["CID"]==m.CID()
-	}
+	CMessages* pM=getMessages();
+	pM->moveDataToTransmit();
 }

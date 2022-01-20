@@ -4,46 +4,45 @@
 void CStateObj::loop() {	
 	_currentTime = getTime();
 	for (auto  psys:subsystems) {
-	//  if(Name()!="SAT") { writeconsole(psys->Name()); writeconsole("");  writeconsoleln(psys->State());}
-	//	if(Name()!="SAT") { writeconsole(psys->Name()); writeconsole("  "); writeconsole(psys->getRetryCount()); writeconsole("  "); writeconsoleln(psys->State());}
-		//writeconsoleln("");	writeconsole("State :");	writeconsole(Name());writeconsoleln("---------------------------------------------------------------------------------------------------------------------------------");
-		if(psys->isNextCycle())      	
-			psys->nextState();
-		else {
-			if((psys->getRetryCount()>30)||(psys->State()=="STOP")){
-				subsystems.remove(psys);
-				psys->clearRetryCount();
-				
-			 	writeconsole("REMOOOOOOOOOOOOOOOOOOOOOOOOOVVVVVVVVVVVVVVVVVIIIIIIIIIING : "); 
-			 	writeconsoleln(psys->Name());
-
-				CMsg m;
-				m.setSYS(Name());
-				m.setParameter("REMOVING",true);
-				m.setParameter("RETRYCOUNT",psys->getRetryCount());
-				m.setParameter("STATE",psys->State());
-				psys->setState(""); //Reset state for next time
-				addTransmitList(m);
-				return;
-			}
+		if(_currentTime>_lastDebug+2000){
+			if(Name()!="SAT") { writeconsole(psys->Name()); writeconsole("  Errors:"); writeconsole(psys->getRetryCount()); writeconsole("  State:"); writeconsoleln(psys->State());}
+		}		
+		
+		if((psys->getRetryCount()>=5)||(psys->State()=="STOP")){
+			subsystems.remove(psys);
+			psys->clearRetryCount();
+			
+			CMsg m;
+			m.setSYS(psys->Name());
+			m.setEVENT("REMOVE");
+			m.setTABLE("STATUS");
+			m.setParameter("RETRYCOUNT",psys->getRetryCount());
+			m.setParameter("STATE",psys->State());
+			m.setCOMMENT("REMOOOOOOOOOOOOOOOOOOOOOOOOOVVVVVVVVVVVVVVVVVIIIIIIIIIING : "); 
+			
+			psys->setState(""); //Reset state for next time
+			writeconsoleln(m.serializeout());
+			addTransmitList(m);
+			return;
 		}
-		//writeconsoleln("");	writeconsole("End State :");writeconsole(Name());	writeconsoleln("---------------------------------------------------------------------------------------------------------------------------------");
+		if(psys->isNextCycle())      	
+			psys->nextState();				
 	}
-	//if(getTime()>lastcleanuptime+10000)		Cleanup();
-	
+	if(_currentTime>_lastDebug+2000){
+		_lastDebug=_currentTime;
+	}	
 }
 
 void CStateObj::enter(){
 	_statecount++;
-	_starttime = getTime();
+	_startTime = getTime();
 
 }
 void CStateObj::exit(){
-	_endtime = getTime();
+	_stopTime = getTime();
 }
 
 void CStateObj::Cleanup(){
-	writeconsoleln("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Cleanup  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 	_lastcleanuptime=getTime();
 	for (auto it = subsystems.begin(); it != subsystems.end(); it++) {
 	CSystemObject* psys;
@@ -53,16 +52,23 @@ void CStateObj::Cleanup(){
 		
 		CSystemObject *pcoresys=getSystem(psys->Name().c_str(),"void CStateObj::Cleanup()");
 		if (pcoresys==NULL){							
-				writeconsole(psys->Name());
-				writeconsoleln("Deleted");
+			CMsg m;
+			m.setSYS(psys->Name());
+			m.setEVENT("REMOVE");
+			m.setTABLE("STATUS");
+			m.setINFO("CStateObj::Cleanup()");
+			m.setCOMMENT("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  Deleting from State Systems  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+			writeconsoleln(m.serializeout());
+			
+			psys->setState(""); //Reset state for next time
+			addTransmitList(m);
 
-				writeconsoleln("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  Deleting from State Systems  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-				if(!psys->Forever()) delete psys;	
-				it = subsystems.erase(it);   //Check to make sure this works			 
-				break;						//Ends loop on a delete   Will continue on next cycle. Faster than doing all cleanup here
-				}
+			if(!psys->Forever()) delete psys;	
+			it = subsystems.erase(it);   //Check to make sure this works			 
+			break;						//Ends loop on a delete   Will continue on next cycle. Faster than doing all cleanup here
+			}
 		else{	
-			//writeconsoleln("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  Not deleting memory of Heap Systems  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");		
+			
 			}	
 			
 		}
@@ -89,51 +95,37 @@ CSystemObject* CStateObj::FindCIDInSubsystems(std::string str) {
 	if (str.size() == 0)  return nullptr;
 
 	for (auto  psys:subsystems) {
-		if (psys->CID() == str) {
+		if (psys->getCID() == str) {
 			return psys;
 		}
 	}
 	return nullptr;
 }
 
+void CStateObj::newMsg(CMsg &msg) {
+	filterMsg(msg);	
+	};
+
 void CStateObj::filterMsg(CMsg &msg){		
 	std::string str = msg.getSYS();
-	//if (availablesystems[str])	processMsg(msg); 
-    //else writeconsoleln("FILTERED");
+
     processMsg(msg);   
 	}
-
-
 
 
 void CStateObj::processMsg(CMsg &msg) { 
 	std::string sys = msg.getSYS();
 	std::string act = msg.getACT();
-	std::string CMDID = msg.getCMDID();
-	std::string ID = msg.getID();
 
-	if ((Name()!="CORE") && (act == "START")) {	
-    	addSystem(msg) ;
+	//writeconsoleln(Name()+"> A    CStateObj::processMsg(CMsg &msg) ");
+	if ((Name()!="CORE") && (act == "START")) {
+		//writeconsoleln(Name()+">  B   CStateObj::processMsg(CMsg &msg) ");	
+    	addSystem(msg) ;		
 		return;
 	}
-	/*
-
-	CSystemObject* psys = nullptr;
-
-	writeconsole("State ProcessMsg: ");
-	writeconsoleln(msg.serialize());
-
-	if (psys == nullptr) psys = FindNameInSubsystems(sys);
-	if (psys == nullptr) psys = FindCIDInSubsystems(CMDID);
-	if ((psys == nullptr) && (Name()=="CORE"))psys = getSystem(sys.c_str(),"void CStateObj::processMsg(CMsg &msg) { ");
-	if (psys == nullptr) return;
-	
-	psys->newMsg(msg);   //Send the message to the SubSytem (pointed to from the find operation)
-	if (act != "START")		msg.setParameter("PROCESSED","1");
-	*/
+	CSystemObject::newMsg(msg);
+	//writeconsoleln(Name()+"> C   CStateObj::processMsg(CMsg &msg) ");	
 };
-
-
 
 
 void CStateObj::addSystem(CSystemObject* psys){
@@ -141,31 +133,50 @@ void CStateObj::addSystem(CSystemObject* psys){
  }
 
 void CStateObj::addSystem(CMsg &msg){
-  writeconsole("Adding System: ");
   std::string sys = msg.getSYS();
   std::string act = msg.getACT();
-  std::string CMDID = msg.getCMDID();
+  std::string CID = msg.getCID();
   std::string ID = msg.getID();
   CSystemObject* psys=nullptr;
   psys=FindNameInSubsystems(sys);
   if(psys!=nullptr){
-     writeconsole("Error: Object ALREADY EXISTS    Turning existong one ON()");
+    CMsg m;
+	m.setSYS(Name()+">"+psys->Name());
+	m.setEVENT("ADD");
+	m.setTABLE("STATUS");
+	m.setINFO("addSystem(CSystemObject* psys)   Already exists");
+	writeconsoleln(m.serializeout());
+	//addTransmitList(m);
+	
      psys->start();
      return;
   }
 
-  writeconsoleln(sys);  writeconsoleln("");
   if(subsystems.size()>100) {
-      writeconsole("Error: Too Many Objects    Not creating new one.");
+		CMsg m;
+		m.setSYS(Name()+">"+psys->Name());
+		m.setEVENT("ADD");
+		m.setTABLE("STATUS");
+		m.setINFO("addSystem(CSystemObject* psys)   Error  Too many objects");
+		writeconsoleln(m.serializeout());
+		//addTransmitList(m);
       return; //Prevents from too many things running and blowing up system memory
     }
   
 
-  writeconsoleln("void CStateObj::addSystem(CMsg &msg)");
-  psys=getSystem(sys.c_str(),"CStateObj::addSystem(CMsg &msg)");
-  writeconsoleln("---------------------------END void CStateObj::addSystem(CMsg &msg)");
 
-  if (psys!=NULL) subsystems.push_back(psys); 
+  psys=getSystem(sys.c_str(),"CStateObj::addSystem(CMsg &msg)");
+
+  if (psys!=NULL) {
+	  subsystems.push_back(psys); 
+		CMsg m;
+		m.setSYS(Name()+">"+psys->Name());
+		m.setEVENT("ADD");
+		m.setTABLE("STATUS");
+		m.setINFO("addSystem(CSystemObject* psys)   Success  push back");
+		writeconsoleln(m.serializeout());
+		//addTransmitList(m);
+  }
 }
 
 
@@ -187,8 +198,6 @@ bool CStateObj :: outOfTime() {
 		psys->stats(m);
 	}
 
-
-
   m.setParameter("table","stats");  
   m.setParameter("name",Name());
   m.setParameter("createdT",_createdTime);
@@ -200,21 +209,42 @@ bool CStateObj :: outOfTime() {
 
  }
 
+ void CStateObj::Output(CMsg &msg){
+  std::string log, logfinal;
+for (auto  psys:subsystems) {		
+    log+="SYS:"+psys->Name();
+    log+='\n';
+  }
+
+  for (auto c:log){
+    if(c=='~')c='\n';
+    if(c==':')c='|';
+    logfinal+=c;
+
+  }
+  CMsg cM;
+  cM.setDATA(logfinal);
+  cM.setTABLE(Name());
+  addTransmitList(cM);  
+}
+
   void CStateObj::init(){ 
 	
 	_statecount=0;
 	_enter_time=0;
 	_exit_time=0;
-	_starttime = getTime();
-	_endtime;
-	_starttimeoffset = 0;
-	_createdTime = getTime();
-	_timestamp = getTime();
-	_currentTime = getTime();
-	_maxTime = 500000;
-	_minTime = 0;
-  	_lcount=0;
+	_starttimeoffset = 0;	
 	_lastcleanuptime=0;
+	//_createdTime = getTime();
+	//_startTime = getTime();
+	//_stopTime = getTime();
+	
+	//_timestamp = getTime();
+	//_currentTime = getTime();
+	//_maxTime = 500000;
+	//_minTime = 0;
+  	//_lcount=0;
+	
 	
   	
 	_statemsg.Parameters.clear();

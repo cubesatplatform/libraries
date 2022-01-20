@@ -16,7 +16,6 @@ CRW::CRW():CSystemObject(){
 
 
 void CRW::setSpeed(CMsg &msg){
-  CMotorController *pMotor=NULL;
   double ss;
            
   ss=msg.getParameter("MOTORX",(double)-99.9);      
@@ -62,8 +61,6 @@ void CRW::setTmpSpeed(CMsg &msg){
 }
 
 void CRW::adjustSpeed(){
-  CMotorController *pMotor=NULL;
-  double ss;
   unsigned long ct=getTime();
 
   unsigned long tX=_tmpSpeed.getParameter("ENDTIMEX1",0);    
@@ -118,7 +115,12 @@ void CRW::setup()
   _pIMU=(CIMU *)getIMU();
  
   if(_pIMU==NULL){             
-    writeconsoleln("ERROR   COULDNT START IMU.  Called from Reaction Wheel ...........................................");    
+    CMsg m;
+    m.setSYS(Name());
+    m.setCOMMENT("RW - IMU Error  Setup leaving...");  
+    m.setINFO("ERROR RW");
+    addTransmitList(m);
+    writeconsoleln(m.serializeout());
     setState("ERROR");
     return;
   }   
@@ -154,7 +156,12 @@ void  CRW::callCustomFunctions(CMsg &msg){
 
 void CRW::loop(){ 
   if(_pIMU->State()=="ERROR"){
-      writeconsoleln("Reaction Wheel  - IMU Error  leaving...");
+      CMsg m;
+      m.setSYS(Name());
+      m.setCOMMENT("RW - IMU Error  Loop leaving...");  
+      m.setINFO("ERROR RW");
+      addTransmitList(m);
+      writeconsoleln(m.serializeout());
       return; 
   }
   if(_tmpSpeed.Parameters.size())

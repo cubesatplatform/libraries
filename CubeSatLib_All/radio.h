@@ -126,7 +126,7 @@ class CRadio: public CSystemObject{
   CMsg mACK;
   bool _sendACK=true;
   bool _waitForACK=false;
-  unsigned long _delayTransmit=500;
+  unsigned long _delayTransmit=RADIOTXDELAY;
   CMessages *pMsgs;
 
 public:

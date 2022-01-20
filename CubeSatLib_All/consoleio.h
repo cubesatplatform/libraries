@@ -3,6 +3,8 @@
 #include <iostream>
 #include <list>
 
+#include <Arduino.h>
+
 
 
 void writeconsole(CMsg &m);
@@ -12,6 +14,8 @@ void writeconsole(const std::string s);
 void writeconsole(const char* s);
 
 void writeconsole(int s);
+
+void writeconsole(String s);
 
 void writeconsole( long s);
 
@@ -28,6 +32,8 @@ void writeconsoleln(const std::string s);
 void writeconsoleln(const char* s);
 
 void writeconsoleln(int s);
+
+void writeconsoleln(String s);
 
 void writeconsoleln( long s);
 

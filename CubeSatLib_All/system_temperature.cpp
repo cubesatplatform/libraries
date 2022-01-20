@@ -2,8 +2,8 @@
 
 void CTemperatureObject::init(){
   CSystemObject::init();
-  float _temp=0.0;
-  long _time=0;
+  _temp=0.0;
+  _time=0;
   setInterval(10000);
 }
 

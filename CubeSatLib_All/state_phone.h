@@ -15,7 +15,7 @@ public:
   void setup() {CStateObj::init();};
 
   void enter();
-  void exit() { CStateObj::exit();writeconsoleln("Exit Phone"); }
+  void exit();
 
 
 };

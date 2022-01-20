@@ -30,8 +30,13 @@ void CMagTorquer::setup()  {
   init();
  _pIMU=(CIMU *)getIMU();
  
-  if(_pIMU==NULL){             
-    writeconsoleln("ERROR   COULDNT START IMU.  Called from MagTorquer ...........................................");  
+  if(_pIMU==NULL){           
+    CMsg m;
+    m.setSYS(Name());
+    m.setCOMMENT("ERROR   COULDNT START IMU.  Called from MagTorquer ...........................................");  
+    m.setINFO("ERROR");
+    addTransmitList(m);
+    writeconsoleln(m.serializeout());
     setState("ERROR");
     return;
   }   
@@ -59,16 +64,12 @@ bool CMagTorquer::calcDiffs(){
    _difx=(estx-_lastx);
    _dify=(esty-_lasty);
    _difz=(estz-_lastz);
-   
-   char buf[80];
-   
-   snprintf(buf,70, "%.4f, %.4f, %.4f, %.1f",_difx,_dify,_difz);
+
    
    _lastx=estx;
    _lasty=esty;
    _lastz=estz;
    
-   writeconsoleln(buf);
    return true;
 
 }
@@ -91,7 +92,13 @@ bool CMagTorquer::isIdle(){
 
 void CMagTorquer::Detumble(){  
   if(_pIMU->State()=="ERROR"){
-      writeconsoleln("Mag Torqure - IMU Error  leaving...");
+      CMsg m;
+      m.setSYS(Name());
+      m.setCOMMENT("Mag Torqure - IMU Error  leaving...");  
+      m.setINFO("ERROR Detumble");
+      addTransmitList(m);
+      writeconsoleln(m.serializeout());
+      setState("ERROR");
       return; 
   }
   if(calcDiffs()) {               

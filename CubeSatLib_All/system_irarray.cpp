@@ -3,7 +3,7 @@
 #include <cmath>
 
 const std::vector<char> pixel={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
-const std::string grayRamp = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,""^`\'. ";
+const std::string greyRamp = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+=<>i!lI;,""^`\'. ";
 
 CIRArray::CIRArray(){  
   Name("IRARRAY");  
@@ -12,33 +12,34 @@ CIRArray::CIRArray(){
 
 void CIRArray::init(){
   CSystemObject::init();
-  setForever();
   setInterval(10000);
 }
 
  void CIRArray::config( char addr, TwoWire *pWire) {
    
     _pWire=pWire;    
-    _address=addr;
-            
+    _address=addr;    
   }
 
 void CIRArray::setup()
 {
-  init();
+  CMsg m;
+  init();          
+
   for(int retries=0;retries<5;retries++){
   if (! mlx.begin(MLX90640_I2CADDR_DEFAULT, _pWire)) {
-    writeconsoleln("MLX90640 not found!");
+    
+    m.setSYS(Name());
+    m.setINFO("ERROR");
+    m.setCOMMENT("mlx.begin ERROR   IRARRAY Setup");
+    writeconsoleln(m.serializeout());
+    addTransmitList(m);    
     setState("ERROR");
     delay(300);
   }
   else{
-    writeconsoleln("Found Adafruit MLX90640");
+    writeconsoleln("Found MLX90640");
   
-    //writeconsole("Serial number: ");
-    //writeconsole(mlx.serialNumber[0], HEX);
-    //writeconsole(mlx.serialNumber[1], HEX);
-    //writeconsoleln(mlx.serialNumber[2], HEX);
     
     mlx.setMode(MLX90640_INTERLEAVED);
     //mlx.setMode(MLX90640_CHESS);
@@ -53,30 +54,30 @@ void CIRArray::setup()
     //writeconsole("Current resolution: ");
     mlx90640_resolution_t res = mlx.getResolution();
     switch (res) {
-      case MLX90640_ADC_16BIT: writeconsoleln("16 bit"); break;
-      case MLX90640_ADC_17BIT: writeconsoleln("17 bit"); break;
-      case MLX90640_ADC_18BIT: writeconsoleln("18 bit"); break;
-      case MLX90640_ADC_19BIT: writeconsoleln("19 bit"); break;
+      case MLX90640_ADC_16BIT: m.setINFO("16 bit"); break;
+      case MLX90640_ADC_17BIT: m.setINFO("17 bit"); break;
+      case MLX90640_ADC_18BIT: m.setINFO("18 bit"); break;
+      case MLX90640_ADC_19BIT: m.setINFO("19 bit"); break;
     }
   
     mlx.setRefreshRate(MLX90640_2_HZ);
     //writeconsole("Current frame rate: ");
     mlx90640_refreshrate_t rate = mlx.getRefreshRate();
     switch (rate) {
-      case MLX90640_0_5_HZ: writeconsoleln("0.5 Hz"); break;
-      case MLX90640_1_HZ: writeconsoleln("1 Hz"); break; 
-      case MLX90640_2_HZ: writeconsoleln("2 Hz"); break;
-      case MLX90640_4_HZ: writeconsoleln("4 Hz"); break;
-      case MLX90640_8_HZ: writeconsoleln("8 Hz"); break;
-      case MLX90640_16_HZ: writeconsoleln("16 Hz"); break;
-      case MLX90640_32_HZ: writeconsoleln("32 Hz"); break;
-      case MLX90640_64_HZ: writeconsoleln("64 Hz"); break;
+      case MLX90640_0_5_HZ: m.setCOMMENT("0.5 Hz"); break;
+      case MLX90640_1_HZ: m.setCOMMENT("1 Hz"); break; 
+      case MLX90640_2_HZ: m.setCOMMENT("2 Hz"); break;
+      case MLX90640_4_HZ: m.setCOMMENT("4 Hz"); break;
+      case MLX90640_8_HZ: m.setCOMMENT("8 Hz"); break;
+      case MLX90640_16_HZ: m.setCOMMENT("16 Hz"); break;
+      case MLX90640_32_HZ: m.setCOMMENT("32 Hz"); break;
+      case MLX90640_64_HZ: m.setCOMMENT("64 Hz"); break;
     }
-  
+    writeconsoleln(m.serializeout());
     setState("PLAY");
     return;
   }
-}
+  }
 
 }
 
@@ -86,80 +87,124 @@ CMsg m;
 
 }
 
-void CIRArray::consoleOut(){
+void CIRArray::consoleOutTemp(){
+writeconsoleln("   ");
 for (uint8_t h=0; h<24; h++) {
   for (uint8_t w=0; w<32; w++) {
     float t = frame[h*32 + w];
-    #ifdef PRINT_TEMPERATURES
-          writeconsole(t, 1);
-          writeconsole(", ");
-    #endif
 
-    #ifdef PRINT_ASCIIART
-    char c = '&';
-    if (t < 20) c = ' ';
-    else if (t < 23) c = '.';
-    else if (t < 25) c = '-';
-    else if (t < 27) c = '*';
-    else if (t < 29) c = '+';
-    else if (t < 31) c = 'x';
-    else if (t < 33) c = '%';
-    else if (t < 35) c = '#';
-    else if (t < 37) c = 'X';
-    writeconsole(c);
-    #endif
+    writeconsole(t);
+    writeconsole(", ");
   }
   writeconsoleln("  ");
 }
 writeconsoleln("   ");
 }
 
-void CIRArray::fillPixelTable(){
+
+void CIRArray::consoleOut(){
+writeconsoleln("   ");
+char c;
+for (uint8_t h=0; h<24; h++) {
+  for (uint8_t w=0; w<32; w++) {
+     c= imageTable[h*32 + w];
+    writeconsole(c);    
+  }
+  writeconsoleln("  ");
+}
+writeconsoleln("   ");
+}
+
+
+void CIRArray::fillPixel(){
   float y;
   int offset;
-  pixelTable[768]=NULL;
-  pixelTable[769]=NULL;
+  imageTable[768]=0;
+  imageTable[769]=0;
    
   for (int x = 0 ; x < 768 ; x++){  
+    imageTable[x]=' ';
     y=frame[x];
-    if (y!=NULL){
+    if (y!=0){
       offset= (int) map(y*10, imin, imax, 0, pixel.size()-1);
       if ((offset<0)||(offset>=pixel.size())){
-         pixelTable[x]='A';       
+         imageTable[x]='A';       
       }
-       else pixelTable[x]=pixel[offset];
-    }
-    else pixelTable[x]='A';
+       else imageTable[x]=pixel[offset];
+    }  
   }
 }
 
-void CIRArray::fillGreyTable(){
+void CIRArray::fillGrey(){
   float y;
   int offset;
-  greyTable[768]=NULL;
-  greyTable[769]=NULL;
+  imageTable[768]=0;
+  imageTable[769]=0;
+
+
+  std::string greyRamp1=greyRamp;
+/*
+  std::string greyRamp1;
+  for(auto c:greyRamp){
+    greyRamp1=c+greyRamp1;
+  }
+ */ 
+
+  for (int x = 0 ; x < 768 ; x++){  
+    imageTable[x]=' ';
+    y=frame[x];
+    if (y!=0){
+      offset= (int) map(y*10, imin, imax, 0, greyRamp1.size()-1);
+      if ((offset<0)||(offset>=greyRamp1.size())){
+         imageTable[x]=' ';       
+      }
+       else imageTable[x]=greyRamp1[offset];
+    }
+    
+  }
+}
+
+void CIRArray::fillAscii(){
+  float t;
+  char c;
+  imageTable[768]=0;
+  imageTable[769]=0;
    
   for (int x = 0 ; x < 768 ; x++){  
-    y=frame[x];
-    if (y!=NULL){
-      offset= (int) map(y*10, imin, imax, 0, pixel.size()-1);
-      if ((offset<0)||(offset>=pixel.size())){
-         greyTable[x]='A';       
-      }
-       else greyTable[x]=pixel[offset];
+    t=frame[x];
+    c  = '&';
+    if (t!=0){
+      
+      if (t < 20) c = ' ';
+      else if (t < 23) c = '.';
+      else if (t < 25) c = '-';
+      else if (t < 27) c = '*';
+      else if (t < 29) c = '+';
+      else if (t < 31) c = 'x';
+      else if (t < 33) c = '%';
+      else if (t < 35) c = '#';
+      else if (t < 37) c = 'X';
+
     }
-    else greyTable[x]='A';
+    imageTable[x]=c;
   }
 }
 
 
 void CIRArray::runOnce(CMsg &msg)
 {
+  if (State()!="PLAY")
+    setup();
+  if (State()!="PLAY")
+    return;    
   std::string sOut=msg.getParameter("OUTPUT","");
-
+  CMsg m;
   if (mlx.getFrame(frame) != 0) {
-    writeconsoleln("Failed");
-    
+    m.setSYS(Name());
+    m.setINFO("ERROR");
+    m.setCOMMENT("mlx.begin ERROR   IRARRAY runOnce");
+    addTransmitList(m);
+    writeconsoleln(m.serializeout());    
   }
 
   float y,lasty;
@@ -196,9 +241,8 @@ void CIRArray::runOnce(CMsg &msg)
 
   }
 
-  imin=(int) floor(fmin*10);
-  imax=(int) ceil(fmax*10);
-
+  imin=(int) 10*floor(fmin);
+  imax=(int) 10*ceil(fmax);
 }
 
 
@@ -206,23 +250,29 @@ void CIRArray::runOnce(CMsg &msg)
 
 void CIRArray::Output(CMsg &msg){  //Easier to send as long   convert to decimal when receiv
   runOnce(msg);
-  //fillPixelTable();
-  fillGreyTable();
+  std::string sType=msg.getParameter("TYPE","A");
+  std::string sDisplay=msg.getParameter("CONSOLE","1");
+  if(sType=="P") fillPixel();
+  if(sType=="G") fillGrey();
+  if(sType=="A") fillAscii();
+  
+  if(sDisplay=="1"){
+    consoleOutTemp();
+    consoleOut();
+  }
   
   CMsg m;
-  m.setParameter("table","irarray");
-  m.setParameter("panel",Name());
-  m.setParameter("data",greyTable);
+  m.setTABLE("IR");
+  m.setPANEL(Name());
+  m.setDATA(imageTable);
           
+
   addTransmitList(m); 
 }
 
 
 void  CIRArray::callCustomFunctions(CMsg &msg){
   std::string act=msg.getACT();
-  
-  writeconsoleln(act);
-  
+    
   if(act=="IRRUN") runOnce(msg);
- 
 }

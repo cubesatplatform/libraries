@@ -12,10 +12,12 @@ void writeOut(){
   while(qLog.size()){
     std::string str=qLog.front();
     qLog.pop_front();
-    if(!str.size())
+    if(!str.size()){
       if(Serial) Serial.println();
-    else  
+    }
+    else  {
       if(Serial) Serial.print(str.c_str());
+    }
   }
 }
 
@@ -25,6 +27,15 @@ void writeconsole(const std::string s) {
     if(Serial) Serial.print(s.c_str());
   #else
   qLog.push_back(s);  
+  #endif
+}
+
+void writeconsole(String s) {  
+  #ifdef  REALTIME
+    if(Serial) Serial.print(s.c_str());
+  #else
+  std::string str=s.c_str();
+  qLog.push_back(str);  
   #endif
 }
 
@@ -38,6 +49,18 @@ void writeconsoleln(const std::string s){
    qLog.push_back(blank);
    #endif
   }
+
+ void writeconsoleln(String s){   
+  #ifdef  REALTIME
+  if(Serial) Serial.println(s.c_str());
+  #else
+   std::string blank;
+   std::string str=s.c_str();
+   qLog.push_back(str);  
+   qLog.push_back(blank);
+   #endif
+  }
+
 
 
 

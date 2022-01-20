@@ -38,11 +38,11 @@ bool initPMU()
      *   Turn off unused power sources to save power
      * **/
 
-    PMU.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
-    PMU.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
-    PMU.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
-    PMU.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
-    PMU.setPowerOutPut(AXP192_EXTEN, AXP202_OFF);
+  //  PMU.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+  //  PMU.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
+  //  PMU.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
+ //   PMU.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
+ //   PMU.setPowerOutPut(AXP192_EXTEN, AXP202_OFF);
 
     /*
      * Set the power of LoRa and GPS module to 3.3V
@@ -78,21 +78,21 @@ bool initPMU()
 
 void disablePeripherals()
 {
-    PMU.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
-    PMU.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
-    PMU.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
+ //   PMU.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+ //   PMU.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
+ //   PMU.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
 }
 
 #endif
 
-SPIClass SDSPI(HSPI);
+//SPIClass SDSPI(HSPI);
 
 
 void initBoard()
 {
 
-    SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
-    Wire.begin(I2C_SDA, I2C_SCL);
+  //  SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
+ //   Wire.begin(I2C_SDA, I2C_SCL);
 
     Serial1.begin(GPS_BAUD_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
 
@@ -111,6 +111,6 @@ void initBoard()
     pinMode(BOARD_LED, OUTPUT);
     digitalWrite(BOARD_LED, LED_ON);
 #endif
-
+    delay(1500);
 
 }

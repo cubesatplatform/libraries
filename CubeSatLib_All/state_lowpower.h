@@ -13,7 +13,22 @@ public:
 	~CLowPowerState() {};
 
 	void setup() {CStateObj::init();};
-	void enter() { CStateObj::enter();writeconsoleln("Enter Low Power"); }
-  	void exit() { CStateObj::exit();writeconsoleln("Exit Low Power"); }
+	void enter() { 
+		CStateObj::enter();
+		CMsg m;
+		m.setTABLE("LOG");
+		m.setINFO("Enter LowPower");  
+		writeconsoleln(m.serializeout()) ;
+		addTransmitList(m);
+		}
+
+  	void exit() { 
+		CStateObj::exit();
+		CMsg m;
+		m.setTABLE("LOG");
+		m.setINFO("Exit LowPower");  
+		writeconsoleln(m.serializeout()) ;
+		addTransmitList(m);
+		}
 
 };

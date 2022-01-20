@@ -3,14 +3,18 @@
 #if !defined(_DEFS_H)
 #define _DEFS_H
 
-#define MAXLISTSIZE 100
-#define RADIOTXDELAY 500
-#define RADIOWAITFORACK 20000
-#define RADIOWAITFORCOMPLETE 20000
+#define MAXLISTSIZE 50
+#define MAXDATALEN 170
+#define RADIOTXDELAY 100
+#define RADIOWAITFORACK 15000
+#define RADIOWAITFORCOMPLETE 15000
+#define WATCHDOG_LOOP_COUNT 100000
+
+#define SATNAME "ADR1"
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
 #else
-    #define TTGO  //TTGO1
+    #define TTGO1  //TTGO1
 #endif
 //#define MYESP32
 //#define ESP32_GATEWAY
@@ -403,7 +407,7 @@
 #define SAT_STATE_TIME_MAX 10000000000
 #define IMU_WAIT_TIME 1000000
 
-#define WATCHDOG_LOOP_COUNT 100
+
 
 #define BURNWIRE_FILE "burncount.txt"
 #define DETUMBLE_FILE "dtcount.txt"

@@ -15,6 +15,8 @@ class CMsg  {
   static int _ID;       //Count of objects created
   int _refID = 0;       //May use this as a passed reference ID
   unsigned long _tc=getTime();
+
+protected:
   
 public:
   std::vector<unsigned char> byteVector;
@@ -29,6 +31,7 @@ public:
   void clear(){_str="";_rssi = 0.0;_snr = 0.0;_refID = 0; _tc=getTime();Parameters.clear();byteVector.clear();}
   
   std::string serialize();
+  std::string serializeout();
   void deserialize();
   int serialSize(){std::string s=serialize();return(s.size());}
   
@@ -41,7 +44,16 @@ public:
   std::string getSAT() { return  Parameters["SAT"]; }
   std::string getMODE() { return  Parameters["MODE"]; }
   std::string getID() { return  Parameters["ID"]; }
-  std::string getCMDID() { return  Parameters["CMDID"]; } 
+  std::string getCID() { return  Parameters["CID"]; } 
+  std::string getDATA() { return  Parameters["D"]; } 
+  std::string getOFFSET() { return  Parameters["O"]; } 
+  std::string getTABLE() { return  Parameters["T"]; }
+  std::string getEVENT() { return  Parameters["E"]; } 
+  std::string getERROR() { return  Parameters["0"]; } 
+  std::string getINFO() { return  Parameters["I"]; } 
+  std::string getVALUE() { return  Parameters["V"]; } 
+  std::string getCOMMENT() { return  Parameters["C"]; } 
+  std::string getPANEL() { return  Parameters["P"]; } 
   bool checkPWD();
 
   void requestACK(){setACK("0");}
@@ -50,11 +62,20 @@ public:
   void setACK(std::string str) { Parameters["ACK"]=str; }
   void setSYS(std::string str) { Parameters["SYS"]=str; }
   void setSAT(std::string str="") { Parameters["SAT"]=str; }
+  void setDATA(std::string str="") { Parameters["D"]=str; }
+  void setEVENT(std::string str="") { Parameters["E"]=str; }
+  void setERROR(std::string str="") { Parameters["0"]=str; }
+  void setINFO(std::string str="") { Parameters["I"]=str; }
+  void setOFFSET(std::string str="") { Parameters["O"]=str; }
+  void setOFFSET(int tmp) { Parameters["O"]=tostring(tmp); }
+  void setTABLE(std::string str) { Parameters["T"]=str; }
+  void setPANEL(std::string str) { Parameters["P"]=str; }
+  void setCOMMENT(std::string str) { Parameters["C"]=str; }
+  void setCID(std::string str="") { Parameters["CID"]=str; }
   bool setPWD();  //Returns false if parameters are not there for a real pwd    
   
   void setMODE(std::string str) { Parameters["MODE"]=str; }
-  void setID(std::string str) { Parameters["ID"]=str; }
-  void setCMDID(std::string str) { Parameters["CMDID"]=str; } 
+  void setID(std::string str) { Parameters["ID"]=str; }  
   void appendParams(std::map<std::string, std::string> &Params);
 
   std::string getParameter(std::string str) { return Parameters[str]; }
@@ -72,12 +93,11 @@ public:
   void setParameter(std::string str,unsigned long val ) { Parameters[str]=tostring( val); }
   void setParameter(std::string str,float val ) { Parameters[str]=tostring( val); } 
   void setParameter(std::string str,double val ) { Parameters[str]=tostring( val); } 
-  void setParameter(std::string str,char val ) { Parameters[str]=tostring( val); } 
-  void CID(std::string str) { Parameters["CID"]= str; }
+  void setParameter(std::string str,char val ) { Parameters[str]=tostring( val); }   
 
-  std::string Offset() {  return  Parameters["OFFSET"]; }
-  std::string StringOffset() { return Parameters["OFFSET"]; }
-  void Offset(std::string str) {  Parameters["OFFSET"] = str; }
+  //std::string Offset() {  return  Parameters["OFFSET"]; }
+  //std::string StringOffset() { return Parameters["OFFSET"]; }
+  //void Offset(std::string str) {  Parameters["OFFSET"] = str; }
   
   std::string Data() { return _str; }
   void Data(std::string s) { _str = s; }
@@ -94,4 +114,5 @@ public:
   }
   unsigned char *vectorData(){return byteVector.data();};
   int vectorLen(){return byteVector.size();}
+  void cleanup();
 };

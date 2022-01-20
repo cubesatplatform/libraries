@@ -12,6 +12,6 @@ public:
 	void setup() {CStateObj::init();};
 
 	void enter(); 
-	void exit() { CStateObj::exit();writeconsoleln("Exit Deploy Antenna"); }
+	void exit();
 
 };

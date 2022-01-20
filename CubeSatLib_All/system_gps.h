@@ -10,7 +10,7 @@
 
 class CGPS :public CSystemObject {
  // TinyGPSPlus gps;
-  TinyGPSPlus gpsl;
+  TinyGPSPlus gps;
   AXP20X_Class axp;
 
   float latitude=0.0;

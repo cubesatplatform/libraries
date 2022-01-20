@@ -25,51 +25,30 @@ volatile bool bFlag2 = false;  // flag to indicate that a packet was sent or rec
 volatile bool enableInterrupt2 = true;  // disable interrupt when it's not needed
 
 
-volatile bool EnableInterrupt(std::string Name="RADIO"){
-  if(Name=="RADIO2") return enableInterrupt;
-  return enableInterrupt;
-  }
-volatile void EnableInterrupt(bool tmp,std::string Name="RADIO"){
-  if(Name=="RADIO2") enableInterrupt2=tmp;
-  else enableInterrupt=tmp;
-  }
 
-volatile bool SRFlag(std::string Name="RADIO"){
-  if(Name=="RADIO2") return bFlag2;
-  return bFlag;
-  }
-volatile void SRFlag(bool tmp,std::string Name="RADIO"){
-  if(Name=="RADIO2") bFlag2=tmp;
-  else  bFlag=tmp;
-  }
 
 void setFlag(void) {  // this function is called when a complete packet is received or when a transmission is finished
   // check if the interrupt is enabled
-  writeconsoleln("");
-  writeconsoleln("SetFlag Called A");
-  if(!EnableInterrupt()) {
-    writeconsoleln("SetFlag Called B");
+ 
+  if(!enableInterrupt) {    
     return;
-  }
-
-  writeconsoleln("SetFlag Called C");
+  }  
 
   // we sent or received a packet, set the flag
   
-  SRFlag(true);
+  bFlag=true;
 }
 
 
 void setFlag2(void) {  // this function is called when a complete packet is received
-  // check if the interrupt is enabled
-  writeconsoleln("SetFlag 2 Called");
-  if(!EnableInterrupt(std::string("RADIO2"))) {
+  // check if the interrupt is enabled  
+  if(!enableInterrupt2) {
     return;
   }
 
   // we sent or received a packet, set the flag
   
-  SRFlag(true,std::string("RADIO2"));
+  bFlag2=true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +61,7 @@ CRadio::CRadio():CSystemObject() {
 void CRadio::init(){
   CSystemObject::init();
   setForever();
-  setInterval(100);
+  setInterval(0);
   pMsgs=getMessages();
 
 }
@@ -117,7 +96,25 @@ void CRadio::setRfMode(bool transmit) {   //True is transmit
 
 void  CRadio::Update(CMsg &msg){
   CSystemObject::Update(msg);
-
+  writeconsoleln("Radio Update Parameters ..............");
+  int power=0, bw=0, sf=0;
+  power =msg.getParameter("POWER",0);
+  bw =msg.getParameter("BW",0);
+  sf =msg.getParameter("SF",0);
+  if(power>0) {
+    
+    writeconsole("Power :");
+    writeconsoleln(lora.setOutputPower(power));
+  }
+  
+  if(bw>0) {
+    writeconsole("BW :");
+    writeconsoleln(lora.setBandwidth(bw));
+  }
+  if(sf>0) {
+    writeconsole("SF :");
+    writeconsoleln(lora.setSpreadingFactor(sf));
+  }
 
 } 
 
@@ -141,15 +138,11 @@ void CRadio::setup() {
     writeconsoleln("Initializing Radio on new TTGO ... ");
     
     #ifdef TTGO1
-      writeconsoleln("");      writeconsoleln("InitBoard TTGO1111 ... ");
+      writeconsoleln("");      writeconsoleln("InitBoard TTGO 1 ... ");
       initBoard();
       delay(1500);
     #endif  
-    
-    
-
   #endif
-
 
   
   int state;
@@ -157,12 +150,12 @@ void CRadio::setup() {
   for (int retries=0;retries<5;retries++){
     #ifdef TTGO
   //int state = lora.begin();
-    writeconsole("TTGO ... ");
+    writeconsoleln("TTGO ... ");
     //state = lora.begin(LORAFREQUENCY, BANDWIDTH, SPREADING_FACTOR);// , CODING_RATE, SYNC_WORD, OUTPUT_POWER, CURRENT_LIMIT, PREAMBLE_LENGTH);
     state = lora.begin(443.0);
 
     #elif defined(TTGO1)
-    writeconsole("TTGO1 ... ");
+    writeconsoleln("TTGO1 ... ");
     //state = lora.begin(LORAFREQUENCY, BANDWIDTH, SPREADING_FACTOR);// , CODING_RATE, SYNC_WORD, OUTPUT_POWER, CURRENT_LIMIT, PREAMBLE_LENGTH);
     state = lora.begin(886.0);
       #if defined(LoRa_frequency)
@@ -214,8 +207,7 @@ void CRadio::setup() {
       
      return;
       } else {
-        writeconsole("Start radio failed, code ");
-        writeconsoleln(state);
+        writeconsole("Start radio failed, code ");        writeconsoleln(state);
         delay(2000);
       
         
@@ -234,7 +226,7 @@ void CRadio::SendAck(CMsg &m){
   if(m.needACK()){
     mACK.setSAT(m.getSAT());
     mACK.setSYS(m.getSYS());
-    mACK.setCMDID(m.getCMDID());
+    mACK.setCID(m.getCID());
     mACK.confirmACK();
     
     }
@@ -263,20 +255,17 @@ void CRadio::TransmitPacket(CMsg &m){
 }
 
 
-void CRadio::TransmitPacket(std::string str, bool bAck){
-  
+void CRadio::TransmitPacket(std::string str, bool bAck){ 
   TransmitPacket((const unsigned char *)str.c_str(),str.length(), bAck);
 
 }
 
 void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
-  char buffer[255];
+  unsigned char buffer[300];
 
   if(len>255) {
-    writeconsole("ERROR ERROR Sending   Packet too big! :");
-    writeconsoleln(len);    
+    writeconsole("ERROR ERROR Sending   Packet too big! :");    writeconsoleln(len);    
    
-    
     len=254;
   }
 
@@ -284,7 +273,11 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
     
   // set mode to transmission
   setRfMode(true);
-  EnableInterrupt(false,Name());
+
+  if(Name()=="RADIO")
+    enableInterrupt=false;
+  else
+    enableInterrupt2=false;
 
   setMode("TX");
   _waitForACK=bAck;
@@ -292,7 +285,10 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
   if (transmissionState!=RADIOLIB_ERR_NONE){
     writeconsoleln("ERROR in Transmission");
   }
-  EnableInterrupt(true,Name());
+   if(Name()=="RADIO")
+    enableInterrupt=true;
+  else
+    enableInterrupt2=true;
  
   completedTransmit=getTime()+RADIOWAITFORCOMPLETE;   //Put a time that it should have finished by
   lastPing = getTime();
@@ -303,16 +299,12 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
 
 //Packet received.  Place in Rcvd queue.
 void CRadio::receivedLogic(unsigned char *buffer, int len){
-  // print RSSI (Received Signal Strength Indicator)
   writeconsole("RSSI:\t\t"); writeconsole(lora.getRSSI()); writeconsole(" dBm ");
-
-  // print SNR (Signal-to-Noise Ratio)
   writeconsole("SNR:\t\t");  writeconsole(lora.getSNR()); writeconsoleln(" dB ");        
 
   std::string tmpstr; 
   for (int count=0;count<len;count++) tmpstr+=buffer[count];              //Convert byte buffer to string
 
-  // print data
   writeconsole("Data:\t\t"); writeconsoleln(tmpstr.c_str());
 
   CMsg robj(tmpstr.c_str(), loraR.getRSSI(), loraR.getSNR());
@@ -323,19 +315,20 @@ void CRadio::receivedLogic(unsigned char *buffer, int len){
     }
   }
   else{
-    pMsgs->addReceivedList(robj, thisSat());
- // if ((robj.Parameters["SYS"]=="ACK")||(tmpstr.substr(0,3)=="ACK")) {}   //Don't ACK an ACK
-  //  else  SendAck(robj.CID());
+    writeconsoleln("addReceivedList-----------------------------------------------");    
+    addReceivedList(robj);
+    writeconsoleln(robj.serializeout());
     if(robj.needACK()&&robj.getSAT().size()&&(robj.getSAT()==thisSat()))  SendAck(robj);
   }
+  writeconsoleln("Received Logic End");
 }
 
 void CRadio::ReceivedPacket(){
   tic();
   writeconsoleln("Received packet!");
 
-  unsigned char buffer[300]={NULL};
-  //int state = lora.readData(str);
+  unsigned char buffer[300]={0};
+
   int len=lora.getPacketLength();
   int state = lora.readData(buffer,len);
   if(state == RADIOLIB_ERR_NONE) {    
@@ -345,9 +338,7 @@ void CRadio::ReceivedPacket(){
 
   } else {
     
-    writeconsole("failed, code "); // some other error ocurred
-    writeconsoleln(state);
-
+    writeconsole("failed, code ");     writeconsoleln(state);
   }
   lastPing = getTime();  //Added new to push out Ack send -----------------------------------------------------
   if(nextTransmit<(getTime()+RADIOTXDELAY)){
@@ -361,8 +352,7 @@ void CRadio::TransmitCmd(){
   if(pMsgs->TransmitList.size()){
       CMsg tObj = pMsgs->TransmitList.front();
       pMsgs->TransmitList.pop_front();
-      writeconsole("List Size:");
-      writeconsoleln((long)pMsgs->TransmitList.size());
+      writeconsole("List Size:");      writeconsoleln((long)pMsgs->TransmitList.size());
         
       TransmitPacket(tObj);
       pMsgs->TransmittedList.push_back(tObj);
@@ -373,7 +363,11 @@ void CRadio::TransmitCmd(){
 
 void CRadio::SetRadioReceive(){
   setRfMode(false);
-  SRFlag(false,Name());
+
+  if(Name()=="RADIO")
+    bFlag=false;
+  else  
+    bFlag2=false;
   
   
 
@@ -381,63 +375,104 @@ void CRadio::SetRadioReceive(){
   writeconsoleln("");
   if (state == RADIOLIB_ERR_NONE) {    
     setMode("RX");
-    writeconsoleln(" Listening Started successfully!");
+    writeconsoleln("Listening Started successfully!____________________________");
     if(_waitForACK){
       nextTransmit=getTime()+_delayTransmit;
     }
     if(nextTransmit<getTime()+RADIOTXDELAY){
       nextTransmit=getTime()+RADIOTXDELAY;
     }
-
-    EnableInterrupt(true,Name());
-  } else {
-    writeconsole(" Failed to start reception, code ");
-    writeconsoleln(state); 
   }
+ 
+   else {
+    writeconsole(" Failed to start reception, code ");    writeconsoleln(state); 
+  }
+
+
+   if(Name()=="RADIO")
+    enableInterrupt=true;
+  else
+    enableInterrupt2=true;
 }
 
 
 
 
 void CRadio::loopRadio(){
-
   checkMode();
-  
-  if(SRFlag(Name())) { // check if the previous operation finished     this is set by interrupt    
-    EnableInterrupt(false,Name()); // disable the interrupt service routine while processing the data      
-    SRFlag(false,Name());
-    if (Mode()=="RX")
-      ReceivedPacket();
-    SetRadioReceive();
-    return;
-  }
-  
-  if (readyToTransmit()) {  // check if it's time to transmit a ping packet
-    if(isAck()){ 
-      TransmitPacket(mACK);
-      resetAck();
+  if(Name()=="RADIO"){
+    if(bFlag) { // check if the previous operation finished     this is set by interrupt    
+      enableInterrupt=false; // disable the interrupt service routine while processing the data      
+      bFlag=false;
+      if (Mode()=="RX")
+        ReceivedPacket();
+      SetRadioReceive();
+      return;
     }
-    else  
-      TransmitCmd();      
+    
+    if (readyToTransmit()) {  // check if it's time to transmit a ping packet
+      if(isAck()){ 
+        TransmitPacket(mACK);
+        resetAck();
+      }
+      else  
+        TransmitCmd();      
+    }
   }
+  else{
+    if(bFlag2) { 
+      enableInterrupt2=false; // disable the interrupt service routine while processing the data      
+      bFlag2=false;
+      if (Mode()=="RX")
+        ReceivedPacket();
+      SetRadioReceive();
+      return;
+    }
+    
+    if (readyToTransmit()) {  // check if it's time to transmit a ping packet
+      if(isAck()){ 
+        TransmitPacket(mACK);
+        resetAck();
+      }
+      else  
+        TransmitCmd();      
+    }
 
+  }
 }
 
 
 void CRadio:: checkMode(){   //Puts radio back to receive Mode if stuck in Transmit Mode
   if (Mode()=="TX"){
-    if(SRFlag()){
-      writeconsoleln("   Transmission Complete:  Flag Fired");      
-      nextTransmit=getTime()+_delayTransmit;  //Need to account for waiting for ACK in here somehow
-      if(_waitForACK)
-        nextTransmit+=RADIOWAITFORACK;
-      SetRadioReceive();
-      return;
+    if(Name()=="RADIO"){
+      if(bFlag){
+        writeconsoleln("   Transmission Complete:  Flag Fired");      
+        nextTransmit=getTime()+_delayTransmit;  //Need to account for waiting for ACK in here somehow
+        if(_waitForACK)
+          nextTransmit+=RADIOWAITFORACK;
+        SetRadioReceive();
+        return;
+      }
+      if(getTime()>completedTransmit){
+        writeconsoleln("   CheckMode:  getTime()>completedTransmit    Transmission did not fire flag.  Finishing anyway!");
+        SetRadioReceive();
+        return;
+      }
     }
-    if(getTime()>completedTransmit){
-      writeconsoleln("   CheckMode:  getTime()>completedTransmit    Transmission did not fire flag.  Finishing anyway!");
-      SetRadioReceive();
-      return;
+    else{
+      if(bFlag2){
+        writeconsoleln("   Transmission Complete:  Flag Fired");      
+        nextTransmit=getTime()+_delayTransmit;  //Need to account for waiting for ACK in here somehow
+        if(_waitForACK)
+          nextTransmit+=RADIOWAITFORACK;
+        SetRadioReceive();
+        return;
+      }
+      if(getTime()>completedTransmit){
+        writeconsoleln("   CheckMode:  getTime()>completedTransmit    Transmission did not fire flag.  Finishing anyway!");
+        SetRadioReceive();
+        return;
+      }
     }
   }
 }
@@ -459,5 +494,5 @@ bool CRadio::readyToTransmit(){
 
 
 void CRadio::loop() {  
-  loopRadio();
+  loopRadio();  
 }

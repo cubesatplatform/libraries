@@ -12,7 +12,15 @@
 #include "consoleio.h"
 
 
-HardwareSerial GPSL(1);
+
+#define GPS_RX_PIN 34
+#define GPS_TX_PIN 12
+#define BUTTON_PIN 38
+#define BUTTON_PIN_MASK GPIO_SEL_38
+#define GPS_BAND_RATE      9600
+
+#define I2C_SDA                     21
+#define I2C_SCL                     22
 
 
 CGPS::CGPS()  {  
@@ -32,27 +40,9 @@ void CGPS::init()
 
 void CGPS::setup()
 {
-  //Serial.begin(115200);
-  //Wire.begin(TTGO_I2C_SDA, TTGO_I2C_SCL);
-  //  initBoard();
-  #ifdef TTGO1
-   initBoard();
-    // When the power is turned on, a delay is required.
-    delay(1500);  
-   #else 
+   Serial1.begin(GPS_BAND_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
 
-  if (!axp.begin(Wire, AXP192_SLAVE_ADDRESS)) {
-    writeconsole("AXP192 Begin PASS");
-  } else {
-    writeconsole("AXP192 Begin FAIL");
-  }
-  axp.setPowerOutPut(AXP192_LDO2, AXP202_ON);
-  axp.setPowerOutPut(AXP192_LDO3, AXP202_ON);
-  axp.setPowerOutPut(AXP192_DCDC2, AXP202_ON);
-  axp.setPowerOutPut(AXP192_EXTEN, AXP202_ON);
-  axp.setPowerOutPut(AXP192_DCDC1, AXP202_ON);
-  #endif
-  GPSL.begin(9600, SERIAL_8N1, 34, 12);   //17-TX 18-RX
+
   delay(1500);
   setState("PLAY");
 }
@@ -67,23 +57,23 @@ void CGPS::runOnce(CMsg &msg)
 {
   bool flag=false;
   unsigned int counter=10000;
-   while (GPSL.available()&&counter){
-      gpsl.encode(GPSL.read());
+  while ((Serial1.available() > 0)&&counter) {  
+      gps.encode(Serial1.read());
       flag=true;
       counter--;
    }
 
    if(flag){
-    latitude=gpsl.location.lat();
-    longitude=gpsl.location.lng();
-    altitude=gpsl.altitude.feet();
-    SIV=gpsl.satellites.value();
+    latitude=gps.location.lat();
+    longitude=gps.location.lng();
+    altitude=gps.altitude.feet();
+    SIV=gps.satellites.value();
    // Yr=gpsl.time.year();
     //Mon=gpsl.time.month();
     //Day=gpsl.time.day();
-    Hr=gpsl.time.hour();
-    Min=gpsl.time.minute();
-    Sec=gpsl.time.second();
+    Hr=gps.time.hour();
+    Min=gps.time.minute();
+    Sec=gps.time.second();
     //Speed=gpsl.time.kmph()
 
     //Output();   //Called automatically
@@ -91,34 +81,6 @@ void CGPS::runOnce(CMsg &msg)
  
 }
 
-
-
-/*
-void CGPS::runOnce(CMsg &msg)
-{
-  if (gps.encode(Serial1.read())){
-    if (gps.location.isValid()) {
-        latitude=gps.location.lat();        
-        longitude=gps.location.lng();
-    } 
-
-    
-    if (gps.date.isValid()) {
-        Mon=gps.date.month();        
-        Day=gps.date.day();        
-        Yr=gps.date.year();
-    } 
-    
-    if (gps.time.isValid()) {
-       Hr=gps.time.hour();
-        Min=gps.time.minute();
-        Sec=gps.time.second();        
-        //gps.time.centisecond();
-    } 
-  } 
-
-}
-*/
 
 
 CMsg CGPS::fillData(){  //Easier to send as long   convert to decimal when receive

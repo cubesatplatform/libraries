@@ -47,9 +47,6 @@ class CSystemMgr:public CSystemObject{
   const int resolution = 8;
 
   unsigned long _lastPhone=0;
-
-  std::map<std::string, PinName> Pins;
-  std::unordered_set<std::string> pwmPins;
   
 public:
   CSystemMgr(); 
@@ -100,6 +97,8 @@ public:
   
   void initPins();
   void controlPlan();
+  void testMAG();
+  void Output(CMsg &msg);
   void sendSerial(const char* cmd);
 };
 

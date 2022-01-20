@@ -21,9 +21,15 @@ CDeployAntennaState::CDeployAntennaState() {
 void CDeployAntennaState::enter() { 
    
   CStateObj::enter();
-  writeconsole("Enter Deploy Antenna"); 
 
   _burncount++;
+
+  CMsg m;
+  m.setTABLE("LOG");
+  m.setINFO("Enter DeployAntenna");  
+  
+  addTransmitList(m);
+  writeconsoleln(m.serializeout()) ;
 
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
   CFS fs;
@@ -33,5 +39,20 @@ void CDeployAntennaState::enter() {
   
   #endif
 
+  }
+
+
+void CDeployAntennaState::exit() { 
+   
+  CStateObj::exit();
+  
+  CMsg m;
+  m.setTABLE("LOG");
+  m.setINFO("Enter DeployAntenna");  
+  
+  addTransmitList(m);
+  writeconsoleln(m.serializeout()) ;
+
+  
 
   }

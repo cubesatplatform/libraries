@@ -15,21 +15,24 @@ int CSystemObject::sid=0;
 CSystemObject::CSystemObject() {
   sid++;
   _sid=sid;
+  init();
   }
 
 void CSystemObject::init(){
   success=false;
 
-  std::string _cid;
-  _createdTime=0;
-  _modifiedTime=0;
-  _currentTime=0;
+  _currentTime=getTime();
+  _createdTime=getTime();
+  _modifiedTime=getTime();
+  _currentTime=getTime();
   _prevTime=0;
   
-  _startTime=0;
-  _stopTime=0;
+  _maxTime=500000;
+  _minTime=1000;
+
+  _startTime=_createdTime;
+  _stopTime=_startTime+_maxTime;
   
-  _maxTime=20000;
   _minTime=0;
   _interval=0;  //loop time interval in MicroSeconds,  0 means no delay
   
@@ -49,24 +52,31 @@ void CSystemObject::init(){
 
 CSystemObject *getSystem(const char *sys,const char *comment){ 
   std::string sysstr=sys;
-  writeconsole("GetSystem: ");
-  writeconsole(sys);
-  writeconsoleln("..");
   std::string tmpstr=sys;
+  std::string cstr;
   //if(tmpstr=="SAT") return NULL;
   CSystemObject * psys= SysMap[sysstr]; 
+  char c='a';
+  CMsg m;
     if (psys==NULL) {
-      writeconsole("Can't find system  (getSystem): ");
-      writeconsoleln(comment);
+      m.setINFO("Can't find system  (getSystem): ");      
+      m.setCOMMENT(comment);
 
       for(auto x:SysMap){
-        writeconsoleln(x.first);
+        cstr=c;
+        m.setParameter(cstr,x.first);
+        c++;
       }
-      for(int count=0;count<15;count++){writeconsole("Bug ");writeconsoleln(sys);delay(50);}
+      m.setSYS(sys);
+      for(int count=0;count<10;count++){
+        cstr=c;
+        m.setParameter(cstr,"BUG");
+        c++;
+        }
+      return NULL;
     }
-  writeconsoleln(comment);
-  return psys;
-  }   //Due to polymorphism, will return whatever system you want
+    return psys;   //Due to polymorphism, will return whatever system you want
+}
 
 CSystemObject *getIMU(const char *tmp){
   CSystemObject *pIMU=getSystem(tmp,"CSystemObject *getIMU(const char *tmp)");
@@ -96,7 +106,7 @@ void CSystemObject::Name(std::string s) {
     _currentTime = getTime(); 
     if((m->getSYS()=="")&&(m->getSYS()!="RADIO"))m->setSYS(Name());
     if(m->getSAT()=="")m->setSAT(_sat);
-    m->CID(_cid);
+    if(_cid.size())m->setCID(_cid);
  }
 
 void CSystemObject::newMode(CMsg &msg){
@@ -105,10 +115,8 @@ void CSystemObject::newMode(CMsg &msg){
   initMode();
 }
 
- void CSystemObject::stats(CMsg &msg){
-    
+ void CSystemObject::stats(CMsg &msg){    
   CMsg m;
-
 
   m.setParameter("table","stats");
   
@@ -130,12 +138,10 @@ void CSystemObject::newMode(CMsg &msg){
 
   m.setParameter("loopCount",_loopCount);
   m.setParameter("procCount",_procCount);
-  writeconsoleln("");
-  writeconsoleln("------------------------------------------- System Stats ---------------------------------");
-  writeconsoleln(m.serialize());
-  writeconsoleln("------------------------------------------- End System Stats -----------------------------");
-  addTransmitList(m);
 
+  writeconsoleln(m.serializeout());
+
+  addTransmitList(m);
  }
 
 
@@ -147,8 +153,9 @@ void CSystemObject::newMsg(CMsg &msg){
   if(callbackoff.size()) Callback[callbackoff]="0";
  
   std::string act=msg.getACT();
-  writeconsole(Name());   writeconsoleln(": System received message");
-  
+  CMsg m=msg;
+  m.setINFO(Name());   
+  m.setCOMMENT("...........................System received message...............................");  
 
   if (act.substr(0,4)=="MODE") { newMode(msg); return;} //Updates a parameter in the Subsystem
   //if (act == "SETMODE") { newMode(msg); return;} //Updates a parameter in the Subsystem
@@ -160,22 +167,22 @@ void CSystemObject::newMsg(CMsg &msg){
   if (act == "STATS") {stats(msg);return;}
 
   if ((Name()!="RADIO")&&(Name()!="RADIO2")){
-  if (act == "PAUSE") {pause();return;}
-  if (act == "STOP") {stop();return;}  
+    if (act == "PAUSE") {pause();return;}
+    if (act == "STOP") {stop();return;}  
   }
 
-if(act=="SETUP") {setup();return;}
-if(act=="LOOP") {loop();return;}
-if(act=="INIT") {init();return;}
-if(act=="RUNONCE") {runOnce(msg);return;}
-          
-if(act=="STATE") {State(msg);return;}
-if(act=="UPDATE") {Update(msg);return;}
-if(act=="STATUSUPDATE") {statusUpdate(msg);return;}
-if(act=="ADDDATALIST") {addDataList(msg);return;}
-if(act=="ADDTRANSMITLIST") {addTransmitList(msg);return;}
+  if(act=="SETUP") {setup();return;}
+  if(act=="LOOP") {loop();return;}
+  if(act=="INIT") {init();return;}
+  if(act=="RUNONCE") {runOnce(msg);return;}
+            
+  if(act=="STATE") {State(msg);return;}
+  if(act=="UPDATE") {Update(msg);return;}
+  if(act=="STATUSUPDATE") {statusUpdate(msg);return;}
+  if(act=="ADDDATALIST") {addDataList(msg);return;}
+  if(act=="ADDTRANSMITLIST") {addTransmitList(msg);return;}
 
-
+writeconsoleln(m.serializeout());
 callCustomFunctions(msg);
 }
 
@@ -213,22 +220,15 @@ std::string CSystemObject::outputStatus(long val) {
   if (val==0) val=1;
   if (_procCount%val==0){
     
-
     m.setParameter("Proc",_sid);    
     m.setParameter("Name",_name);
     m.setParameter("Forever",_forever);
-   // writeconsole("; MaxTime: ");
-   // writeconsole( _maxTime);
-   // writeconsole("; MinTime: ");
-   // writeconsole( _minTime);
-    
+
     m.setParameter("Interval",_interval);
     m.setParameter("Time",_currentTime);
         
     m.setParameter("State",_ostate);
-    //writeconsole("; procCount: ");
-    //writeconsoleln( _procCount);  
-    str=m.serialize();     
+    str=m.serializeout();     
     
   }
   return str;     
@@ -238,7 +238,7 @@ std::string CSystemObject::outputStatus(long val) {
 void CSystemObject::nextState() {
     _procCount++;
     _currentTime = getTime();   
-    writeconsole(Name()); writeconsole(" Errors:"); writeconsole(_retryCount); writeconsole(" State:"); writeconsoleln(State());delay(500);
+
     //std::string str=outputStatus(0);
     
 
@@ -265,23 +265,20 @@ if (_ostate == "ERROR") {
     return;
   }
 
-
   if (_ostate == "PAUSE") { // Pause    
     return;
   }
-
 
   if (_ostate == "STOP") { // Pause    
     off();
     return;
   }
- 
-   
-  
 }
 
 bool CSystemObject :: outOfTime() {
   if (!_forever && ((_currentTime - _createdTime) > _maxTime)&&((_currentTime - _createdTime) > _minTime)) {   //Play ->Out of Time
+    CMsg m;
+    stats(m);
     return true;
   }
   return false;
@@ -289,7 +286,6 @@ bool CSystemObject :: outOfTime() {
 }
 
 void CSystemObject::timeStamp() { 
-
   _currentTime = getTime(); 
   _loopCount++; 
 }
@@ -299,7 +295,10 @@ bool CSystemObject::isNextCycle() {
     return false;  
   timeStamp();
   if (outOfTime()) {
-    writeconsole(Name()); writeconsoleln (" Out of time.  Stopping.");
+    CMsg m;
+    m.setSYS(Name()); 
+    m.setINFO("Out of time.  Stopping.");
+    writeconsoleln(m.serializeout());
     setState("STOP");
     return false;
   }
@@ -319,77 +318,161 @@ bool CSystemObject::isNextCycle() {
 
 
 bool CSystemObject::addMessageList(CMsg &m){
-  CMessages* pM = getMessages(); 
-  while(pM->MessagesList.size()>MAXLISTSIZE){pM->MessagesList.pop_front();}
-  pM->MessagesList.push_back(m);
+  CMessages* pM = getMessages();  
+  pM->MessageList.push_back(m);
   return true;
 
 }
 
+bool CSystemObject::addReceivedList(CMsg &s){
+  
+  if(!s.checkPWD()){    
+    CMsg m;
+    m.setCOMMENT("Message PWD Invalid   Dropping   ------- Problably should add to some Log");
+    writeconsoleln(s.serializeout());
+    //addTransmitList(s);
+    return false;
+  }
+  CMessages* pM = getMessages();  
+  
+  if((s.getSAT()==SATNAME)|| (s.getSAT()=="") ){
+     pM->ReceivedList.push_back(s);
+     return true;
+  }
+  else {
+    CMsg m;
+    m.setCOMMENT("Message Received not for this Satellite   Dropping");
+    writeconsoleln(s.serializeout());
+    //addTransmitList(s);
+  }
+  return true;
+}
+
 
 bool CSystemObject::_addTransmit(CMsg &m){     
-    CMessages* pM = getMessages();
-    while(pM->TransmitList.size()>MAXLISTSIZE){pM->TransmitList.pop_front(); }  
+    CMessages* pM = getMessages();    
+    fillMetaMSG(&m);    
+    m.setPWD();
+
+    m.cleanup();
     pM->TransmitList.push_back(m);
     return true;
 }
 
 
 
-bool CSystemObject::addTransmitList(CMsg &m){
-const int MAXDATALEN=170;
-int offset=0;
-fillMetaMSG(&m);    
 
-std::string data=m.getParameter("DATA","");
-if(data.size()<MAXDATALEN){
-  _addTransmit(m);
-  return true;
+std::list<CMsg> CSystemObject::splitMsg(CMsg &m){
+  std::list<CMsg> lM;
+
+  std::string strSYS=m.getSYS();
+  std::string strACT=m.getACT();
+  std::string strSAT=m.getSAT();
+  
+
+  CMsg cm;
+  int totsize=0;
+  int part=0;
+  
+  
+  for(auto x:m.Parameters){
+    std::string tmpstr;
+    tmpstr=cm.serialize();
+    totsize=tmpstr.size();
+    
+    std::string str=x.first+x.second+"~:";
+    int size=str.size();
+
+    if((size+totsize)<200){  //&&(x==m.Parameters.end())){
+  
+      std::string sfirst=x.first;
+      std::string ssecond=x.second;
+      cm.setParameter(sfirst,ssecond);  
+
+    }
+    else{
+      
+      cm.setSYS(strSYS);
+      cm.setACT(strACT);
+      cm.setSAT(strSAT);
+      cm.setParameter("PT",part);
+      lM.push_back(cm);
+      part++;
+      cm.clear();
+    }
+  }
+
+
+  if(cm.serialize().size())
+    {
+      cm.setSYS(strSYS);
+      cm.setACT(strACT);
+      cm.setSAT(strSAT);
+      cm.setParameter("PT",part);
+      lM.push_back(cm);
+      part++;
+      cm.clear();
+    }
+  
+  return lM;
 }
-for(int count=0;count<data.size();){
-  std::string tmpstr;
+
+std::list<CMsg> CSystemObject::splitMsgData(CMsg &m){
+  int offset=0;
+  std::list<CMsg> lM;
+
   CMsg cm;
   cm=m;
-  tmpstr=data.substr(count,MAXDATALEN);
-  m.setParameter("DATA",tmpstr);
-  m.setParameter("OFFSET",offset);
-  _addTransmit(m);
-  count+=MAXDATALEN;
-  offset++;
 
+  std::string tmpstr;
+  std::string data=m.getDATA();
 
+  int datasize=data.size();
+
+  if(datasize>0){
+    for(int count=0;count<datasize;){
+      int len=MAXDATALEN;
+      if(len>(datasize-count))
+        len=(datasize-count);
+
+      tmpstr=data.substr(count,len);
+      cm.setDATA(tmpstr);
+      cm.setOFFSET(offset);
+      lM.push_back(cm);
+
+      count+=MAXDATALEN;
+      offset++;
+    }
+  }
+  else{
+    lM.push_back(m);
+  }
+  return lM;
 }
-return true;
+
+
+
+bool CSystemObject::addTransmitList(CMsg &m){
+
+std::list<CMsg> lMD;
+
+lMD=splitMsgData(m);
+
+for(auto x:lMD){
+  std::list<CMsg> lM=splitMsg(x);  
+    for(auto y:lM){
+    _addTransmit(y);  
+    }  
+  }
+  return true;
 }
 
-
-
-
-
-bool CSystemObject::addTransmitList(std::vector<CMsg> &M )
-{
-  bool ready=false;
-
-  ready=true;
-  CMessages* pM = getMessages();
-  pM->displayList(1);                                  //Debugging
-  for(int count=0;count<M.size();count++){
-    CMsg m=M[count];
-    fillMetaMSG(&m);
-      while(pM->TransmitList.size()>MAXLISTSIZE){pM->TransmitList.pop_front(); }
-    pM->TransmitList.push_back(m);  
-  }          
-  pM->displayList(1);
-  return ready;
-
-}
 
 
 bool CSystemObject::addDataList(CMsg &m) {
   CMessages* pM = getMessages();
-  while(pM->DataList.size()>MAXLISTSIZE){pM->DataList.pop_front(); }
   pM->DataList.push_back(m);
-  
+  return true;
   }
 
 void CSystemObject::State(CMsg &m) { 
@@ -404,8 +487,6 @@ void CSystemObject::State(CMsg &m) {
 
 
 void CSystemObject::statusUpdate(CMsg &m){  //NEED TO HANDLE MULTIPLE CALLBACKS HERE
-  //writeconsole("----- STATUS UPDATE: ");
-  //writeconsoleln(m.serialize());
   for (auto it : m.Parameters  ){
     if((it.first=="CALLBACK")||(it.first=="CALLBACKOFF")){
       if(it.first=="CALLBACK")
@@ -433,12 +514,10 @@ void CSystemObject::respondCallBack(CMsg &m){
       timestr+="_TIME";      
       m.setSYS(strsystem);      
       m.setACT("STATUSUPDATE");            
-      //m.Parameters["ACT"]="STATUSUPDATE"; 
-      //m.Parameters[Name()]=sval;      
+    
       m.setParameter(timestr,getTimeString());
       addMessageList(m);
-      //writeconsole("--------------------------------- Respond CallBack -----------------------------------");    
-      //writeconsoleln(m.serialize());
+
     }       
   }  
 }

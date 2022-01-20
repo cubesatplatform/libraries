@@ -14,8 +14,7 @@ private:
   Adafruit_MLX90640 mlx;
   
   float frame[32*24]; // buffer for full frame of temperatures
-  char pixelTable[770];  //need it null terminated
-  char greyTable[770];  //need it null terminated
+  char imageTable[770];  //need it null terminated  
   char _address=IRARRAY_ADDRESS_X1; 
   
 
@@ -26,9 +25,11 @@ public:
   void setup();
   void loop();
   void init();
-  void fillPixelTable();
-  void fillGreyTable();
+  void fillPixel();
+  void fillGrey();
+  void fillAscii();
   void consoleOut();
+  void consoleOutTemp();
   void runOnce(CMsg &msg);
   void Output(CMsg &msg);
   void callCustomFunctions(CMsg &msg);

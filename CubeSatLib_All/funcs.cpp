@@ -14,7 +14,7 @@ std::string getTimeString(){
 
 std::string tostring(unsigned long val) {
   std::string s;
-  char buffer [30];
+  char buffer [300];
   int cx;
   
   cx = snprintf ( buffer, 30, "%lu", val );
@@ -25,8 +25,8 @@ std::string tostring(unsigned long val) {
 
 std::string tostring(long val) {
   std::string s;
-  char buffer [30];
-  int cx;
+  char buffer [300];
+  long cx;
   
   cx = snprintf ( buffer, 30, "%li", val );
   if((cx>0)&&(cx<100)) s=buffer;
@@ -35,7 +35,7 @@ std::string tostring(long val) {
 
 std::string tostring(int val) {
   std::string s;
-  char buffer [30];
+  char buffer [300];
   int cx;
   
   cx = snprintf ( buffer, 30, "%d", val );
@@ -45,7 +45,7 @@ std::string tostring(int val) {
 
 std::string tostring(float val) {
   std::string s;
-  char buffer [30];
+  char buffer [300];
   int cx;
   
   cx = snprintf ( buffer, 30, "%f", val );
@@ -55,7 +55,7 @@ std::string tostring(float val) {
 
 std::string tostring(double val) {
   std::string s;
-  char buffer [30];
+  char buffer [300];
   int cx;
   
   cx = snprintf ( buffer, 30, "%f", val );

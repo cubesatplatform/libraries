@@ -16,6 +16,7 @@ void CSystemMgr::init(){
   CSystemObject::init();
   setForever();
   setInterval(3000);
+  initPins();
   initCommands();
 
 }
@@ -25,18 +26,19 @@ void CSystemMgr::init(){
   
 
 void CSystemMgr::SendCmdToScheduler(std::string str){
-  writeconsoleln("");
-  writeconsoleln("SendCmdToScheduler: ");
-  writeconsoleln(str);
+  CMsg m;
+  m.setSYS(Name());
+  m.setINFO("SendCmdToScheduler: ");
+  m.setCOMMENT(str);
+  writeconsoleln(m.serializeout());
   std::list<CMsg> ml=Commands[str];
   for(auto m:ml){
     if(m.Parameters.size()){
-      writeconsole("CMD>");
-      writeconsoleln(m.serialize());
+      
+      writeconsoleln(m.serializeout());
       Scheduler.push_back(m);
     }
   }
-writeconsoleln("");
 }
 
 void CSystemMgr::setup(){
@@ -44,7 +46,24 @@ void CSystemMgr::setup(){
   setState("PLAY");
   }
 
+void CSystemMgr::Output(CMsg &msg){
+  std::string log, logfinal;
+  for (auto m : Scheduler){
+    log+=m.serialize();
+    log+="\n";
+  }
 
+  for (auto c:log){
+    if(c=='~')c='_';
+    if(c==':')c='|';
+    logfinal+=c;
+
+  }
+  CMsg cM;
+  cM.setDATA(logfinal);
+  cM.setTABLE("MGR");
+  addTransmitList(cM);  
+}
 
 void CSystemMgr::loop(){
 
@@ -63,7 +82,6 @@ void CSystemMgr::loop(){
     
     writeconsoleln(m->serialize());
     if(last==0){
-      writeconsoleln("Step> A     last==0");
       start=start+currentTime;
       stop=start+stop;     
       m->setParameter("_START",start);     
@@ -72,16 +90,13 @@ void CSystemMgr::loop(){
      
 
     if(currentTime>(last+interval)){      
-      writeconsoleln("Step> B     currentTime>(last+interval)");
       last=currentTime;
       m->setParameter("_LAST",last);      
       addMessageList(*m);
     }
 
     if((currentTime>stop)||(start==stop)) {
-      writeconsoleln("Step> C  Erasing   (currentTime>stop)||(start==stop)");       
       m = Scheduler.erase(m);   //Check to make sure this works			 
-			//break;		
       continue;
     }
 
@@ -99,8 +114,7 @@ void CSystemMgr::loop(){
   sendHealth();
   sendBeacon();
   */
-  //writeconsoleln("System Manager.   Scheduler Loop  End--------------------------------------------------------------------------------");
-    
+ 
   }
 
 

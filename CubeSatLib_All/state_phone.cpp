@@ -13,4 +13,20 @@
     msg.setACT(str);
     psys->addMessageList(msg);
     }        
+    CMsg m;
+		m.setTABLE("LOG");
+		m.setINFO("Enter Phone");  
+		writeconsoleln(m.serializeout()) ;
+		addTransmitList(m);
+}
+
+
+void CPhoneState::exit() { 
+  CStateObj::exit();
+    
+  CMsg m;
+  m.setTABLE("LOG");
+  m.setINFO("Exit Phone");  
+  writeconsoleln(m.serializeout()) ;
+  addTransmitList(m);
 }

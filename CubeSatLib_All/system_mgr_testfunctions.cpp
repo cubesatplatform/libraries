@@ -1,28 +1,44 @@
-#pragma once
 #include "system_mgr.h"
 #include "messages.h"
 #include "defs.h"
 #include "powerup.h"
 
 void CSystemMgr::showTests() {
-
-  writeconsoleln("");
-  writeconsoleln("Commands: ");
+  initPins();
+  CMsg m;
+  
   std::string tmpstr;
   int n;
-  for (auto it : Pins) {
-    tmpstr = it.first;
-    writeconsole(tmpstr.c_str());
-    writeconsole(":");
-    n = it.second;
-    writeconsole(n);
+  for (auto it : Pins) {    
+    m.setParameter(it.first,it.second);    
   }
-  writeconsoleln("");
-  writeconsoleln("MAGX, MAGY, MAGZ");
-  writeconsoleln("I2C0, I2C1, I2C2");
-  writeconsoleln("IMU0, IMU1, IMU2, IMUSPI");
-  writeconsoleln("HPH_15, LPH_15, WPH_15   -  High,  Low,  PWM");
-  writeconsoleln("");
+  
+m.setParameter("RADIO","RADIO");
+m.setParameter("MAG","MAG");
+m.setParameter("MAGX","MAGX");
+m.setParameter("MAGY","MAGY");
+m.setParameter("MAGZ","MAGZ");
+m.setParameter("PINSON","PINSON");
+m.setParameter("PINSOFF","PINSOFF");
+m.setParameter("PHONEON","PHONEON");
+m.setParameter("PHONEOFF","PHONEOFF");
+m.setParameter("BURN","BURN");
+m.setParameter("IMUSPI","IMUSPI");
+m.setParameter("IMU0","IMU0");
+m.setParameter("IMU1","IMU1");
+m.setParameter("IMU2","IMU2");
+m.setParameter("I2C0","I2C0");
+m.setParameter("I2C1","I2C1");
+m.setParameter("I2C2","I2C2");
+m.setParameter("H","H4");
+m.setParameter("L","L4");
+m.setParameter("W","PWM4");
+m.setParameter("Magnets","MAGX, MAGY, MAGZ");
+m.setParameter("ICUs","I2C0, I2C1, I2C2");
+m.setParameter("IMUs","IMU0, IMU1, IMU2, IMUSPI");
+m.setParameter("Pins","HPH_15, LPH_15, WPH_15   -  High,  Low,  PWM");
+writeconsoleln(m.serializeout());
+addTransmitList(m);
 }
 
 
@@ -48,7 +64,23 @@ void CSystemMgr::initPins() {
   Pins["0"] = 0;
   Pins["22"] = 22;
   Pins["21"] = 21;
-  pwmPins={"36","39","34","35","32","33","25","14","13","2","1","3","23","4","0","22","21"};
+  pwmPins["36"]=36;
+  pwmPins["39"]=39;
+  pwmPins["34"]=34;
+  pwmPins["35"]=35;
+  pwmPins["32"]=32;
+  pwmPins["33"]=33;
+  pwmPins["25"]=25;
+  pwmPins["14"]=14;
+  pwmPins["13"]=13;
+  pwmPins["2"]=2;
+  pwmPins["1"]=1;
+  pwmPins["3"]=3;
+  pwmPins["23"]=23;
+  pwmPins["4"]=4;
+  pwmPins["0"]=0;
+  pwmPins["22"]=22;
+  pwmPins["21"]=21;
 }
 #else
 
@@ -229,7 +261,13 @@ void CSystemMgr::initPins() {
   Pins["PK_6"]=PK_6;
   Pins["PK_7"]=PK_7;
   
-  pwmPins={"PH_15","PK_1","PJ_11","PG_7","PC_7","PC_6","PA_8"};
+  pwmPins["PH_15"]=PH_15;
+  pwmPins["PK_1"]=PK_1;
+  pwmPins["PJ_11"]=PJ_11;
+  pwmPins["PG_7"]=PG_7;
+  pwmPins["PC_7"]=PC_7;
+  pwmPins["PC_6"]=PC_6;
+  pwmPins["PA_8"]=PA_8;
 }
 
 #endif
@@ -239,52 +277,49 @@ void CSystemMgr::setupIMUI2C(TwoWire *wire){
   BNO080 myIMU;
 
   myIMU.enableDebugging();
-  writeconsoleln("");
-  writeconsoleln("IMU I2C");
+  CMsg m;
+  m.setSYS("TESTIMUI2C");
   for(int count=0; count<5;count++){
-    writeconsoleln("IMU Loop");
+
     if (myIMU.begin(IMUADDRESS1,*wire) ){  //IMUADDRESS1
 
-      writeconsoleln("IMU Loop TRUE");
+      m.setINFO("I2C IMU FOUND");
       wire->setClock(400000); //Increase I2C data rate to 400kHz
     
       myIMU.enableRotationVector(50); //Send data update every 50ms
     
-      writeconsoleln("Rotation vector enabled");
-      writeconsoleln("Output in form i, j, k, real, accuracy");    
-
       long ct=getTime();
       while(getTime()<(ct+IMU_WAIT_TIME)){
          if (myIMU.dataAvailable() == true) {
-//            writeconsole((float)myIMU.getPitch() * 180.0 / PI); // Convert pitch to degrees
-            writeconsole(",");
-    //        writeconsole(float)myIMU.getRoll() * 180.0 / PI); // Convert roll to degrees
-            writeconsole(",");
-    //        writeconsoleln(float)myIMU.getYaw() * 180.0 / PI); // Convert yaw / heading to degrees          
+          m.setParameter("PITCH",(float)myIMU.getPitch() * 180.0 / PI); // Convert pitch to degrees            
+          m.setParameter("ROLL",(float)myIMU.getRoll() * 180.0 / PI); // Convert roll to degrees
+          m.setParameter("YAW",(float)myIMU.getYaw() * 180.0 / PI); // Convert yaw / heading to degrees          
          }
 
         
-      }
-     return;     
+      }   
     }
     else{
-      writeconsoleln("IMU Loop IF");
-      writeconsoleln("BNO080 not detected at default I2C address. Check your jumpers and the hookup guide.");
+      m.setERROR("I2C IMU Not Deteced");
       delay(500);
        
     }
   }  
-   return;
+  writeconsoleln(m.serializeout());
+  addTransmitList(m);
+  return;
 }
 
 
 void CSystemMgr::setupIMUSPI(){
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)  
   BNO080 myIMU;
+  CMsg m;
+  m.setSYS("TESTIMUSPI");
 for(int retries=0;retries<5;retries++){
     if(myIMU.beginSPI(IMU_OBC_NSS, IMU_OBC_WAKE, IMU_OBC_INT, IMU_OBC_RST) == false)
     {
-      writeconsoleln("BNO080 over SPI not detected. Are you sure you have all 6 connections? F");
+    m.setERROR("SPI IMU Not Deteced");     
       
     }
     else{ 
@@ -293,32 +328,38 @@ for(int retries=0;retries<5;retries++){
      myIMU.enableGyroIntegratedRotationVector(50); //Send data update every 50ms
   
       
-     writeconsoleln("IMU Ready");
+     m.setINFO("SPI IMU FOUND");
      return;
     }
   }
+  writeconsoleln(m.serializeout());
+  addTransmitList(m);
 #endif  
 }
 
 void CSystemMgr::pinsOn(){
-  writeconsoleln("");
-  writeconsoleln("---------------------------------------------------------------------------------------------Pins ON  HIGH..........");
+  CMsg m;
+  m.setSYS("Pins ON");
   for (auto x:Pins){
-     writeconsoleln(x.first.c_str());     
-     digitalWrite(x.second, HIGH);    
-     delay(250);
+    writeconsoleln(x.first.c_str());     
+    digitalWrite(x.second, HIGH);    
+    delay(250);
   }
+  writeconsoleln(m.serializeout());
+  addTransmitList(m);
 }
 
 void CSystemMgr::pinsOff(){
-  writeconsoleln("");
-  writeconsoleln("----------------------------------------------------------------------------------------------Pins OFF  LOW..........");
+  CMsg m;
+  m.setSYS("Pins OFF");
   for (auto x:Pins){
-      writeconsoleln(x.first.c_str());
+    writeconsoleln(x.first.c_str());
      
-     digitalWrite(x.second, LOW);    
-     delay(250);
+    digitalWrite(x.second, LOW);    
+    delay(250);
   }  
+  writeconsoleln(m.serializeout());
+  addTransmitList(m);
 }
 
 
@@ -349,6 +390,13 @@ void CSystemMgr::sendSerial(const char* cmd) {    //Send to Phone
 
   Serial.print("Sending to phone => ");
   Serial.print(cmd);
+
+  CMsg m;
+  m.setSYS("SendSerial");
+  m.setINFO(cmd);
+  writeconsoleln(m.serializeout());
+  
+  addTransmitList(m);
 }
 
 
@@ -356,9 +404,15 @@ void CSystemMgr::burn(){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   // pinMode(PI_10, OUTPUT);
   enableBurnWire();
-   delay(10000);
-   disableBurnWire();
-   #endif
+  delay(10000);
+  disableBurnWire();
+  CMsg m;
+  m.setSYS("BURN");
+  m.setINFO("ACTIVATED");
+  writeconsoleln(m.serializeout());
+  
+  addTransmitList(m);
+  #endif
 }
 
 
@@ -371,27 +425,33 @@ void CSystemMgr::enableI2C(){
 
  // pinMode(PH_15, OUTPUT);
  enableMags();  //
+
+  CMsg m;
+  m.setSYS("ENABLE I2C");
+  m.setINFO("enableSensors");
+  m.setCOMMENT("enableMags");
+  writeconsoleln(m.serializeout());
+  
+  addTransmitList(m);
   #endif
 }
 
 void CSystemMgr::loopWire(TwoWire *wire) {
   byte error, address;
-  int nDevices;
-  writeconsole("");
-  writeconsole("Loopwire Scanning...");
-
-  nDevices = 0;  
+  int nDevices=0;
+  
+  CMsg m;
+  m.setSYS("LoopWire");
+  m.setINFO("Scanning");
   for(byte address = 1; address < 127; address++ ) {
     writeconsole(".");
     wire->beginTransmission(address);
     error = wire->endTransmission();
-    if (error == 0) {
-      writeconsoleln("");
-      writeconsole("I2C device found at address 0x");
+    if (error == 0) {      
       if (address<16) {
         writeconsole("0");
-      }
-      writeconsoleln(address);  //HEX
+      }      
+      m.setParameter("Address"+nDevices,address);
       nDevices++;
     }
     else if (error==4) {
@@ -403,13 +463,12 @@ void CSystemMgr::loopWire(TwoWire *wire) {
     }    
   }
   if (nDevices == 0) {
-    writeconsoleln("");
-    writeconsoleln("No I2C devices found\n");
+    m.setINFO("No devices found.");
   }
-  else {
-    writeconsoleln("done\n");
-  }
-  writeconsoleln("");
+ 
+  writeconsoleln(m.serializeout());
+  
+  addTransmitList(m);
   delay(150);          
 }
 
@@ -417,70 +476,41 @@ void CSystemMgr::loopWire(TwoWire *wire) {
 void CSystemMgr::SendCmd(std::string str) {
   PinName  n = Pins[str];
   char action = 'H';
-  writeconsoleln("");
-  writeconsole("Send Cmd: ");
-  writeconsoleln(str.c_str());
-
+  
   if ((str[0] == 'H') || (str[0] == 'L') || (str[0] == 'W')) {
     action = str[0];
-
     str.erase(0, 1);
     writeconsole(">");
   }
 
-  writeconsole(str.c_str());
-  writeconsole(" ");
-  writeconsole(action);
-  writeconsole(":");
   n = Pins[str];
-  writeconsoleln(n);
 
   if (str == "RADIO") {
-  CRadio radio;
-  radio.setup();
+    CMsg m;
+    m.setSYS("Radio");
+    m.setINFO("setup");
+    CRadio *pradio=(CRadio *)getSystem("RADIO");
+    if(pradio!=NULL) pradio->setup();
+    writeconsoleln(m.serializeout());
+    addTransmitList(m);
   return;
   }
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
 if  (str == "MAG"){
-  Adafruit_DRV8830 drv;
-  #define DRV_I2C_ADDR 0x60
-  
-  TwoWire myWire2(I2C_SDA2,I2C_SCL2); 
-
-  enableSensors();
-  enableMags();
-
-  
-    if (! drv.begin(0X60, &myWire2)) {
-    writeconsoleln("Failed to find DRV8830");
-    while (1);
-  }
-  writeconsoleln("Adafruit DRV8830 found!");
-
-
-   writeconsoleln("Forward");
-  drv.run(FORWARD);
-  drv.setSpeed(255);
-  delay(5000);
-
-  writeconsoleln("Release");
-  drv.run(RELEASE);
-  delay(500);
-
-  writeconsoleln("Backward");
-  drv.run(BACKWARD);
-  drv.setSpeed(255);
-  delay(5000);
-
-  drv.run(RELEASE);
-  return;
+  testMAG();
 }
 
   
   if ( (str == "MAGX")||(str == "MAGY")||(str == "MAGZ")) {
+    CMsg m;
+    m.setSYS("MAGXYZ");
+    m.setINFO(str);
+    writeconsoleln(m.serializeout());
+    addTransmitList(m);
+
     enableI2C();
-    writeconsole(str.c_str());
+  
 
     #ifndef TTGO
    enableSensors();
@@ -497,17 +527,15 @@ if  (str == "MAG"){
     if(str == "MAGZ") {address=ADDRESS_MAGZ;}
     
     
-    
-
     MAG.config(str.c_str(),address,&mWire2);
-   MAG.Speed(1.0);
+    MAG.Speed(1.0);
  
-      delay(5000);
+    delay(5000);
     MAG.Speed(-1.0);
       
-      delay(5000);
+    delay(5000);
     
-     MAG.Speed(0.0);
+    MAG.Speed(0.0);
     #endif
     return;
   }
@@ -518,10 +546,7 @@ if  (str == "MAG"){
     return;
   }
 
-  if (str == "MOTOR") {
-  //  Motor();
-    return;
-  }
+
 
   if (str == "PINSON") {
     pinsOn();
@@ -538,17 +563,13 @@ if  (str == "MAG"){
     return;
   }
 
-  if (str == "BURNON") {
+  if (str == "BURN") {
     burn();
     return;
   }
 
 
-
   if (str == "IMUSPI") {
-    writeconsoleln("IMU SPI");
-    
-    delay(10);
     setupIMUSPI();
     return;
   }
@@ -615,7 +636,7 @@ if  (str == "MAG"){
 
   if (action == 'H') {
     writeconsoleln("High");
- //   pinMode(n, OUTPUT);
+    pinMode(n, OUTPUT); ///Set is to output mode   
     delay(10);
     digitalWrite(n, HIGH);
     return;
@@ -623,7 +644,7 @@ if  (str == "MAG"){
 
   if (action == 'L') {
     writeconsoleln("Low");
- //   pinMode(n, OUTPUT);
+    pinMode(n, OUTPUT);   ///Set is to output mode
     delay(10);
     digitalWrite(n, LOW);
     return;
@@ -653,4 +674,42 @@ if  (str == "MAG"){
     return;    
   }
  writeconsoleln("");
+}
+
+
+void CSystemMgr::testMAG(){
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+  Adafruit_DRV8830 drv;
+  #define DRV_I2C_ADDR 0x60
+  
+  TwoWire myWire2(I2C_SDA2,I2C_SCL2); 
+
+  enableSensors();
+  enableMags();
+
+  
+    if (! drv.begin(0X60, &myWire2)) {
+    writeconsoleln("Failed to find DRV8830");
+    while (1);
+  }
+  writeconsoleln("Adafruit DRV8830 found!");
+
+
+   writeconsoleln("Forward");
+  drv.run(FORWARD);
+  drv.setSpeed(255);
+  delay(5000);
+
+  writeconsoleln("Release");
+  drv.run(RELEASE);
+  delay(500);
+
+  writeconsoleln("Backward");
+  drv.run(BACKWARD);
+  drv.setSpeed(255);
+  delay(5000);
+
+  drv.run(RELEASE);
+  return;
+  #endif
 }

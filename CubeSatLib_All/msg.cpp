@@ -4,9 +4,6 @@
 
 int CMsg::_ID = 0;
 
-
-
-
 std::string CMsg::getParameter(std::string str,std::string val){
   std::string res=getParameter(str);
   if (res.size()==0) res=val;
@@ -18,8 +15,6 @@ char CMsg::getParameter(std::string str,char val){
   if (res.size()==0) res=val;
   return res[0];
 }
-
-
 
 long CMsg::getParameter(std::string str,long val){
   std::string res=getParameter(str);
@@ -53,11 +48,10 @@ double CMsg::getParameter(std::string str,double val){
 
 void CMsg::appendParams(std::map<std::string, std::string> &Params){
   for (auto x:Params){
-    Parameters[x.first]=x.second;
+    if(x.second.size())
+      Parameters[x.first]=x.second;
   }
 }
-
-
 
 bool CMsg::needACK(){
   bool flag=false;
@@ -67,23 +61,42 @@ bool CMsg::needACK(){
 }
 
 std::string CMsg::TransmitData() { 
- // std::string ss=str + "&" + "ID=" + getID() + "&CID=" + getCMDID() + StringOffset()+"&TS="+tostring(getTime())+"&TC="+tostring(tc); 
- std::string ss=serialize();
- ss+="~TS:"+tostring(getTime())+"~TC:"+tostring(_tc); 
-  writeconsole(ss);
+  std::string ss=serialize(); 
   return ss;
   }
 
 std::string CMsg::serialize() {
+  //writeconsoleln("x");
+  cleanup();
+  //writeconsoleln("y");
   std::string str1;
- // for (std::map<std::string, std::string>::iterator it = Parameters.begin(); it != Parameters.end(); ++it) {
-    //for (auto it = Parameters.begin(); it != Parameters.end(); ++it) {
+ 
     for (auto it : Parameters  ){
-    std::string s = it.first + ":" + it.second;
-    //str1 += s + "~";
-    str1 = s + "~"+str1;
+      if(it.second.size()){
+        std::string s = it.first + ":" + it.second;
+        str1 = s + "~"+str1;
+      }
   }
   return str1;
+}
+
+std::string CMsg::serializeout() {
+  cleanup();
+  std::string str1,str2;
+    for (auto it : Parameters  ){
+      if(it.second.size()){
+        std::string s = it.first + ":" + it.second;    
+        str1 = s + "~"+str1;
+      }
+  }
+
+str1='~'+str1+'~';
+for(auto c:str1){
+  if (c=='~') c='\n';
+  str2+=c;
+}
+
+  return str2;
 }
 
 void CMsg::deserialize() {
@@ -121,6 +134,7 @@ void CMsg::deserialize() {
       }
     }
   }
+  cleanup();
 }
 
 
@@ -135,7 +149,7 @@ bool CMsg::checkPWD(){
   
   std::string pwd,dwp;
   dwp=getParameter("DWP","");
-  int seed=getParameter("CDDWP",1);
+  int seed=getParameter("SD",1);
 
   pwd=stringDecode(dwp,seed);
   if(key==pwd)
@@ -151,8 +165,19 @@ bool CMsg::setPWD(){
   if(key.size()==0)
     return false;
 
-  setParameter("CDDWP",_ID);
+  setParameter("SD",_ID%10);
   std::string pwd=stringEncode(key,_ID);
   setParameter("DWP",pwd);
   return true;
+}
+
+void CMsg::cleanup(){
+
+for (auto it = Parameters.begin(); it != Parameters.end(); ++it) {  
+  std::string str;
+  str=it->second;
+  if(str.size()<1){
+    Parameters.erase(it);   //Check to make sure this works			 
+  }
+  }				
 }

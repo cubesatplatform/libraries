@@ -3,41 +3,36 @@
 #include <arduino.h>
 
 
-void CMessages::newMessage(const char* s) {
-  CMsg m(s);
-
-  ReceivedList.push_back(m);
-
-}
 
 
 void CMessages::moveReceived() {
- // for (std::list<CMsg>::iterator it = ReceivedList.begin(); it != ReceivedList.end(); ++it) {
-   // for (auto it = ReceivedList.begin(); it != ReceivedList.end(); ++it) {
-   // CMsg m = *it;
-   for (auto m:ReceivedList){
-    MessagesList.push_back(m);
-  }
-  ReceivedList.clear();
+  
+  while (ReceivedList.size()){
+    CMsg m=ReceivedList.front(); 
+    ReceivedList.pop_front();
+    
+    MessageList.push_back(m);    
+  }  
 }
 
 CMsg CMessages::findinDataList(std::string filename,std::string block){
   CMsg m;
+  /*
   m.Parameters["FOUND"]="0";
 
-
   for(auto x:DataList){
-    if((filename==x.Parameters["FILE"])&&(block==x.Parameters["BLK"])){
-      x.Parameters["FOUND"]="1";
-      return x;
+    if((filename==x->Parameters["FILE"])&&(block==x->Parameters["BLK"])){
+      x->Parameters["FOUND"]="1";
+      return *x;
     }
   }
+  */
   return m;
 }
 
 
 void  CMessages::movetoTransmitList(CMsg &msg){
-  
+  /*
   std::string filename=msg.Parameters["FILE"];
   std::string block=msg.Parameters["BLK"];
   std::string blockend=msg.Parameters["BLKEND"];
@@ -51,10 +46,11 @@ void  CMessages::movetoTransmitList(CMsg &msg){
     for (int x=startBlock;x<=endBlock;x++){
       CMsg m=findinDataList(filename,tostring(x));
         if(m.Parameters["FOUND"]=="1"){
-          TransmitList.push_back(m);
+          push_backTransmitList(m);
           writeconsoleln("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ FOUND IT ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");          
         }
     }
+    
     return;
   }
 
@@ -63,78 +59,26 @@ void  CMessages::movetoTransmitList(CMsg &msg){
     writeconsoleln("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ FOUND ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
     CMsg m=findinDataList(filename,block);
       if(m.Parameters["FOUND"]=="1"){
-        TransmitList.push_back(m);
+        push_backTransmitList(m);
         writeconsoleln("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ FOUND IT ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
         
       }
     return;
+
   }
 
 
-
-  
   int count=0;
   int items=msg.getParameter("ITEMS",100);
   while(count<items&&DataList.size()){
-    CMsg m=DataList.front();
-    DataList.pop_front();
-    TransmitList.push_back(m);
+    CMsg m=frontDataList();
+    pop_frontDataList();
+    push_backTransmitList(m);
     count++;
   }
+  */
 }
 
-void CMessages::newMessage(CMsg &m) {
-  MessagesList.push_back(m);
-}
-
-
-void CMessages::newTransmitMessage(const char* s) {
-  CMsg m(s);
-
-  newTransmitMessage(m);
-
-}
-
-
-
-void CMessages::newTransmitMessage(CMsg &s) {
-  if(s.serialSize()<TRANSMITMSGLENGTH ){
-    TransmitList.push_back(s);
-  }
-  else  {
-   newTransmitMessageLarge(s);
-  }
-}
-
-void CMessages::newTransmitMessageLarge(CMsg &s) {
-  std::string tablestr = "table:" + s.Parameters["table"]+ "~";
-  int size=0;
-  CMsg m;
-  m.Parameters["table"]=s.Parameters["table"];
-  size+=tablestr.size();
-    
-
-  for (auto it = s.Parameters.begin(); it != s.Parameters.end(); ++it) {    
-    std::string tmpstr = it->first + ":" + it->second+ "~";
-
-    if(size>TRANSMITMSGLENGTH ){
-      TransmitList.push_back(m);
-      //writeconsoleln("TransmitMessageLarge");
-      m.Parameters.clear();
-      size=0;
-
-      m.Parameters["table"]=s.Parameters["table"];
-      size+=tablestr.size();
-      }
-    m.Parameters[it->first]=it->second;
-    size+=tmpstr.size();
-    }
-  if(size>tablestr.size())
-    //writeconsoleln("TransmitMessageLarge");
-    TransmitList.push_back(m);
-  return;
-  
-}
 
 
 void CMessages::prune() {
@@ -143,33 +87,80 @@ void CMessages::prune() {
   if(TransmitList.size()>size) while (TransmitList.size() > newsize) TransmitList.pop_front();
   if(TransmittedList.size()>size) while (TransmittedList.size() > newsize) TransmittedList.pop_front();
   if(ReceivedList.size()>size) while (ReceivedList.size() > newsize) ReceivedList.pop_front();
-  if(MessagesList.size()>size) while (MessagesList.size() > newsize) MessagesList.pop_front();
+  if(MessageList.size()>size) while (MessageList.size() > newsize) MessageList.pop_front();
   if(DataList.size()>size) while (DataList.size() > newsize) DataList.pop_front();
 }
 
 void CMessages::displayList(int option=0){
-    writeconsoleln();
-    writeconsoleln("---------------------------------------------TransmitListLog Begin");
-   // for (std::list<CMsg>::iterator it = TransmitList.begin(); it != TransmitList.end(); ++it) {
-   //   for (auto it = TransmitList.begin(); it != TransmitList.end(); ++it) {
-   //    CMsg m = *it;
-    for (auto m:TransmitList){
-       writeconsoleln(m.Data());
-    }  
-    writeconsoleln("---------------------------------------------TransmitListLog End");
-    writeconsoleln();
+   
 }
 
-void CMessages::addReceivedList(CMsg &s,std::string nameSat){
-  if(!s.checkPWD()){
-    writeconsoleln("---------------------------------------------Message PWD Invalid   Dropping   ------- Problably should add to some Log");
+
+
+
+void CMessages::moveDataToTransmit(){
+
+   while (DataList.size()){
+    CMsg m=DataList.front();
+    DataList.pop_front();
+    TransmitList.push_back(m);
+  }
+  DataList.clear();
+}
+
+/////////////////////////////////////////////////////////////////
+  
+
+
+CMessageList::CMessageList(){}
+CMessageList::~CMessageList(){}
+
+int CMessageList::size(){
+  return MList.size();
+}
+
+CMsg CMessageList::front(){    
+  if(MList.size()==0){
+    CMsg m;
+    return m;
+  }
+  CMsg *pM=MList.front();
+  return *pM;
+};
+
+CMsg CMessageList::back(){    
+  if(MList.size()==0){
+    CMsg m;
+    return m;
+  }
+  CMsg *pM=MList.back();
+  return *pM;
+};
+
+void CMessageList::pop_front(){
+  
+  if(MList.size()==0){
     return;
   }
-  if((s.getSAT()==nameSat)||(nameSat.size()==0))
-    ReceivedList.push_back(s);
-  else 
-    writeconsoleln("---------------------------------------------Message Received not for this Satellite   Dropping");
-    writeconsoleln(s.serialize());
-
+  CMsg *pM=MList.front();
+  
+  delete pM;
+  MList.pop_front();
 }
 
+void CMessageList::push_back(CMsg &m){
+
+  CMsg *pM=new CMsg;  
+  *pM=m;
+  while(MList.size()>_maxsize){
+    pop_front();     
+    } 
+  MList.push_back(pM);
+}
+
+void CMessageList::clear(){
+  for(auto pM:MList){
+    delete pM;
+  }
+  MList.clear();
+}

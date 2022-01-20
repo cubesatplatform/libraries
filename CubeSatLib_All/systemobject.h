@@ -5,8 +5,14 @@
 
 #include "consoleio.h"
 
-//SYS:TURNX,TURNY,TURNZ,MAG,DETUMBLE
-//ACT:START,STOP,PAUSE,UPDATE,FUNCTION
+#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+ // #include <mbed.h>
+ // #include <PwmOut.h>
+using namespace mbed;
+#else
+//#include <arduino.h>
+typedef int PinName; 
+#endif
 
 
 class CSystemObject {  
@@ -17,25 +23,16 @@ class CSystemObject {
   static int sid;
   static std::string _sat;
   int _sid;
-  unsigned long _createdTime;
-  unsigned long _modifiedTime=0;
-  unsigned long _currentTime;
-  unsigned long _prevTime;
   
-  unsigned long _startTime=0;
-  unsigned long _stopTime=0;
-  
-  unsigned long _maxTime=0;
-  unsigned long _minTime=0;
-  unsigned long _interval=0;  //loop time interval in MicroSeconds,  0 means no delay
-  
+  unsigned long _modifiedTime=0;  
+  unsigned long _prevTime=0;
+  unsigned long _interval=0;  //loop time interval in MicroSeconds,  0 means no delay  
   unsigned long _loopCount=0;
   unsigned long _procCount=0;
 
   std::string _ostate;   //"" || "START","PLAY","PAUSE","STOP","ERROR" 
   std::string _olaststate;
-  bool _forever = false;
-   
+
   unsigned long _lastStateTime=0;  
   unsigned long _lastUse=0;
   int _retryCount=0;
@@ -43,12 +40,20 @@ class CSystemObject {
   std::string _mode;   //This determines what you are doing   Set to IDLE when done and nothing left to do  When u set new mode need to get it out of IDLE
 
 protected:
+  bool _forever = false;
+  unsigned long _createdTime=0;
+  unsigned long _currentTime=0;
+  unsigned long _startTime=0;
+  unsigned long _stopTime=0;
+  unsigned long _maxTime=5000;
+  unsigned long _minTime=0;
   std::map<std::string, std::string> Callback;  
   CMsg _cmsg;
   bool _addTransmit(CMsg &m);
 
 public:
   unsigned long _lastDebug=0;
+  unsigned long _lastDebug1=0;
   CSystemObject();
   virtual ~CSystemObject() {}
 
@@ -57,7 +62,7 @@ public:
   virtual void runOnce(CMsg &msg)  {};
   virtual void config(CMsg &msg)  {};
           
-  virtual void start() {setup(); if(State()=="") setState("PLAY"); };   //It sets the state to the next state if nothing to do.  Your setup can override
+  virtual void start() {CSystemObject::init();setup(); if(State()=="") setState("PLAY"); };   //It sets the state to the next state if nothing to do.  Your setup can override
   virtual void play() {if(State()=="PAUSE") setState(lastState()); loop(); }
   virtual void pause() {setState("PAUSE");}  
   virtual void stop()  {setState("STOP");};  
@@ -118,9 +123,9 @@ public:
   void Name(std::string s);
  
   bool addTransmitList(CMsg &m );
-  bool addTransmitList(std::vector<CMsg> &M);
   bool addDataList(CMsg &m); 
   bool addMessageList(CMsg &m );
+  bool addReceivedList(CMsg &m );
     
   void statusUpdate(CMsg &m);
   void fillMetaMSG(CMsg *m);
@@ -138,7 +143,7 @@ public:
 
   long timeSinceStateChange(){return getTime()-_lastStateTime;}
   std::string Name() { return _name; }
-  std::string CID() { return _cid; }
+  std::string getCID() { return _cid; }
 
   bool isNextCycle();
   bool isSuccess() { return success; }
@@ -147,11 +152,16 @@ public:
     return false;   ///   false;  Dne for debuggin
   }
 
+  std::list<CMsg> splitMsg(CMsg &m);
+  std::list<CMsg> splitMsgData(CMsg &m);
+
   std::string outputStatus(long val=100000);
   void respondCallBack(CMsg &m);
 };
 
 extern std::map<std::string,CSystemObject *> SysMap;
+extern std::map<std::string, PinName> Pins;
+extern std::map<std::string, PinName> pwmPins;
 
 CSystemObject *getSystem(const char *sys, const char *comment="");
 CSystemObject *getIMU(const char *sys="IMU");

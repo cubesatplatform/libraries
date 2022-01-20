@@ -15,7 +15,6 @@ void  CPhone::callCustomFunctions(CMsg &msg){
   writeconsoleln(act);
   
   if(act.size()>1)  commandQueue.push(msg);
- 
 }
 
 
@@ -158,8 +157,8 @@ std::string str;
 //std::string str = std::string("fileid:")+std::to_string(id)+std::string("~filename:")+std::string((char *)fileName)+std::string("~len:")+ std::to_string(int(len))+std::string("~more:")+ std::to_string(int(hasMore));
 //if(hasMore)  str= std::string("cid:")+std::to_string(id)+std::string("~b:")+std::to_string(block);
 //else str = std::string("X")+CID()+std::string("B")+std::to_string(block);
-if(hasMore)  str= std::string("X")+CID()+std::string("b")+tostring(block);                    
-else str = std::string("X")+CID()+std::string("B")+tostring(block);
+if(hasMore)  str= std::string("X")+getCID()+std::string("b")+tostring(block);                    
+else str = std::string("X")+getCID()+std::string("B")+tostring(block);
 
 while (str.length()<STREAMHEADERLEN) str=str+" ";
  writeconsoleln();

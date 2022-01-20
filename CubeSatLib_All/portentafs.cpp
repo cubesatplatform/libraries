@@ -27,13 +27,17 @@ void CFS::setup()
 
   if (!myFS.init()) 
   {
-    writeconsoleln("LITTLEFS Mount Failed");    
+    CMsg m;
+    m.setTABLE("LOG")
+    m.setINFO("LITTLEFS Mount Failed");  
+    addTransmitList(m);
+    writeconsoleln(m.serializeout()) ;
     return;
   }
 }
 
 bool CFS::deleteFile(){  
-  writeconsole("Deleting file: "); writeconsole(fileName.c_str());  
+  //writeconsole("Deleting file: "); writeconsole(fileName.c_str());  
   if (remove(fileName.c_str()) == 0) 
   {
     return true;
@@ -44,7 +48,7 @@ bool CFS::deleteFile(){
 
 
 int CFS::readFile(){  
-  writeconsole("Reading from  file: "); writeconsole(fileName.c_str());  
+  //writeconsole("Reading from  file: "); writeconsole(fileName.c_str());  
   char buff[BUF_SIZE];
   int count=0;
     
@@ -64,6 +68,13 @@ int CFS::readFile(){
     }
     
     fclose(file);
+
+    CMsg m;
+    m.setTABLE("LOG")
+    m.setINFO(filename);  
+    m.setParameter("COUNT", numRead);
+    addTransmitList(m);
+    writeconsoleln(m.serializeout()) ;
   }
   return count;
 }
@@ -85,6 +96,14 @@ void CFS::writeFile(int count){
     fwrite((uint8_t *) buff, 1, BUF_SIZE - 1, file) ;
     fclose(file);
   }
+
+  
+    CMsg m;
+    m.setTABLE("LOG")
+    m.setINFO(filename);  
+    m.setParameter("COUNT", count);
+    addTransmitList(m);
+    writeconsoleln(m.serializeout()) ;
   
 }
 #endif

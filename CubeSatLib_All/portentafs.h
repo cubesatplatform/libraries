@@ -21,10 +21,13 @@
 
 #define _LFS_LOGLEVEL_          1
 
+#include "defs.h"
+
+#include "systemobject.h"
 #include <string>
 
 
-class CFS{
+class CFS:public CSystemObject{
   std::string fileName;
   int BUF_SIZE=32;
   
