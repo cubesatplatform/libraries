@@ -1,4 +1,3 @@
-#pragma once
 #include "basedrive.h"
 #include <arduino.h>
 #include "consoleio.h"
@@ -39,7 +38,7 @@ void CBaseDrive::init(){
 void CBaseDrive::Speed(float s,unsigned long dur){
   if(State()!="PLAY")
     setState("PLAY");
-  writeconsoleln("XXXXXXXXX SPEED CALLED xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") ;
+
   if(_driveStartTime==0) _driveStartTime=getTime();
   _changedOn=getTime();
 
@@ -70,8 +69,6 @@ void CBaseDrive::TestMotor(){
  
 
 void CBaseDrive::loop(){
-  //writeconsole("Base Drive Loop: ");
-   //writeconsoleln(Name());
     if(_duration<1){
     }
     unsigned long ct=getTime();
@@ -88,11 +85,7 @@ void CBaseDrive::callNewFunction(CMsg &msg){   //Calls a specific function direc
   float speed=msg.getParameter("SPEED",(float)1.0);
   unsigned long duration=msg.getParameter("DURATION",0);
 
-  writeconsoleln("");
-  writeconsole("BaseDrive Speed, Dir:");
-  writeconsole(speed);
-  writeconsoleln(duration);
-
+  writeconsoleln(msg.serializeout());
   //std::string callback=msg.getParameter("CALLBACK");
  // if(callback.size()) _cmsg.Parameters["CALLBACK"]=callback;
   if (act=="FORWARD") Forward(speed,duration);
