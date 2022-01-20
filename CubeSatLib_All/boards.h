@@ -1,3 +1,4 @@
+#include <defs.h>
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
@@ -8,8 +9,7 @@
 
 
 
-#define LILYGO_TBeam_V1_1                                          
-#if defined(LILYGO_TBeam_V1_0) || defined(LILYGO_TBeam_V1_1)    
+#if defined(TTGO1) || defined(TTGO)
     #include <axp20x.h>
     #define UNUSE_PIN                   (0)    
 

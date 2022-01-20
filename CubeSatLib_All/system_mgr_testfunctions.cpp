@@ -527,7 +527,7 @@ if  (str == "MAG"){
     if(str == "MAGZ") {address=ADDRESS_MAGZ;}
     
     
-    MAG.config(str.c_str(),address,&mWire2);
+    MAG.config(address,&mWire2);
     MAG.Speed(1.0);
  
     delay(5000);

@@ -35,7 +35,7 @@ void CDetumbleState::enter() {
     CFS fs;
 //  fs.writeFile(100);
 //  fs.deleteFile();
-    fs.filename(DETUMBLE_FILE);
+    fs.setFilename(DETUMBLE_FILE);
     fs.writeFile(_detumblecount);    
     #endif
   

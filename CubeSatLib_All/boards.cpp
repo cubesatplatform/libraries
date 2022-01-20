@@ -8,8 +8,8 @@
 
 
 
-#define LILYGO_TBeam_V1_1                                          
-#if defined(LILYGO_TBeam_V1_0) || defined(LILYGO_TBeam_V1_1)
+                                       
+#if defined(TTGO1) || defined(TTGO)
 
 #include <axp20x.h>
 AXP20X_Class PMU;
@@ -83,7 +83,7 @@ void disablePeripherals()
  //   PMU.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
 }
 
-#endif
+
 
 //SPIClass SDSPI(HSPI);
 
@@ -114,3 +114,4 @@ void initBoard()
     delay(1500);
 
 }
+#endif

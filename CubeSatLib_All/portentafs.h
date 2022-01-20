@@ -32,9 +32,9 @@ class CFS:public CSystemObject{
   int BUF_SIZE=32;
   
 public:
-  CFS(){setup();filename("burncount.txt");}
+  CFS(){setup();setFilename("burncount.txt");}
   ~CFS(){}
-  void filename(const char  *fn);
+  void setFilename(const char  *fn);
   void setup();
   bool deleteFile();
   int readFile();

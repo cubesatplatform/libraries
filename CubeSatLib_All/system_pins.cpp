@@ -7,12 +7,17 @@ void CSatPins::loop() {
 
 int CSatPins::digitalReadOutputPin(PinName pin)
 {
+  #if defined(TTGO1) || defined(TTGO)
   uint8_t bit = digitalPinToBitMask(pin);
   uint8_t port = digitalPinToPort(pin);
   if (port == NOT_A_PIN) 
     return LOW;
 
   return (*portOutputRegister(port) & bit) ? HIGH : LOW;
+  #else
+  return HIGH;
+  #endif
+
 }
 
 void CSatPins::high(CMsg &msg){
@@ -20,7 +25,11 @@ void CSatPins::high(CMsg &msg){
 
 	std::string strpin=msg.getParameter("PIN","");
 	PinName n=Pins[strpin];
+   #if defined(TTGO1) || defined(TTGO)
   pinMode(n, GPIO_MODE_INPUT_OUTPUT); ///Set is to output mode   
+  #else
+    pinMode(n, GPIO_MODE_INPUT);
+  #endif
 	delay(10);
 	digitalWrite(n, HIGH);
   writeconsole("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX HIGH ");

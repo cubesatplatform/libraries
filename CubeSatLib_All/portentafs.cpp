@@ -8,7 +8,7 @@
 
 LittleFS_MBED myFS;
 
-void CFS::filename(const char  *fn){
+void CFS::setFilename(const char  *fn){
   fileName = MBED_LITTLEFS_FILE_PREFIX;
   fileName +="/";
   fileName +=fn;
@@ -28,7 +28,7 @@ void CFS::setup()
   if (!myFS.init()) 
   {
     CMsg m;
-    m.setTABLE("LOG")
+    m.setTABLE("LOG");
     m.setINFO("LITTLEFS Mount Failed");  
     addTransmitList(m);
     writeconsoleln(m.serializeout()) ;
@@ -70,8 +70,8 @@ int CFS::readFile(){
     fclose(file);
 
     CMsg m;
-    m.setTABLE("LOG")
-    m.setINFO(filename);  
+    m.setTABLE("LOG");
+    m.setINFO(fileName);  
     m.setParameter("COUNT", numRead);
     addTransmitList(m);
     writeconsoleln(m.serializeout()) ;
@@ -99,8 +99,8 @@ void CFS::writeFile(int count){
 
   
     CMsg m;
-    m.setTABLE("LOG")
-    m.setINFO(filename);  
+    m.setTABLE("LOG");
+    m.setINFO(fileName);  
     m.setParameter("COUNT", count);
     addTransmitList(m);
     writeconsoleln(m.serializeout()) ;
