@@ -29,6 +29,7 @@ void CMagTorquer::init()  {
 void CMagTorquer::setup()  {
   init();
  _pIMU=(CIMU *)getIMU();
+ subscribe(_pIMU->Name());
  
   if(_pIMU==NULL){           
     CMsg m;

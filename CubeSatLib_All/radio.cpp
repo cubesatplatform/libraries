@@ -355,7 +355,7 @@ void CRadio::TransmitCmd(){
       writeconsole("List Size:");      writeconsoleln((long)pMsgs->TransmitList.size());
         
       TransmitPacket(tObj);
-      pMsgs->TransmittedList.push_back(tObj);
+      pMsgs->TransmittedList.push_front(tObj);
     }  
   }
 

@@ -49,8 +49,10 @@ void CGPS::setup()
 
 void CGPS::loop()
 {
-  CMsg m;
-  runOnce(m);
+  if(subscribers(Name())){
+    CMsg m;
+    runOnce(m);
+  }
 }
 
 void CGPS::runOnce(CMsg &msg)
@@ -97,6 +99,8 @@ CMsg CGPS::fillData(){  //Easier to send as long   convert to decimal when recei
    m.setParameter("mon",(long) Mon);
    m.setParameter("day",(long) Day);
    m.setParameter("yr",(long) Yr);
+
+   addDataList(m);
 
    
   return m;

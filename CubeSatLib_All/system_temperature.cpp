@@ -27,8 +27,10 @@ return;
 }
 
 void CTemperatureObject::loop(){
+  if(subscribers(Name())){
   CMsg m;
   runOnce(m);
+  }
 }
 
 
@@ -60,60 +62,10 @@ CMsg CTemperatureObject::getTempMSG(){
   m.setSYS(Name());
   m.setParameter("TEMP",_temp);
   m.setParameter("TIME",_time);
+
+  addDataList(m);
   return m;
 }
 
 
 
-
-void CTempMaster::setup() {
-  CSystemObject::init();  
-  setInterval(1000);
-
-
-  setState("PLAY");
-}
-
-void CTempMaster::runCustomFunctions(CMsg &m){
-
-  m.setACT("");
-}
-
-
-float CTempMaster::getTemp(const char *sysname){
-  CTemperatureObject *pTemp=(CTemperatureObject *) getSystem(sysname,"float CTempMaster::getTemp(const char *sysname)");
-  float ftmp=-99.0;
-  if(pTemp!=NULL){
-    ftmp=pTemp->getTemp();
-  }
-  return(ftmp);
-    
-}
-
-void CTempMaster::output(){
-  std::string act=_cmsg.getACT();
-  CMsg m;
-
-  if(act=="SENDALL"){
-    m.setParameter("TEMPX1",getTemp("TEMPX1"));
-    m.setParameter("TEMPX2",getTemp("TEMPX2"));
-
-    m.setParameter("TEMPY1",getTemp("TEMPY1"));
-    m.setParameter("TEMPY2",getTemp("TEMPY2"));
-
-    m.setParameter("TEMPZ1",getTemp("TEMPZ1"));
-    m.setParameter("TEMPZ2",getTemp("TEMPZ2"));
-  }
-  else{    
-    m.setParameter(act.c_str(),getTemp(act.c_str()));
-  }
- 
-  addTransmitList(m);    
-}
- 
-
-void CTempMaster::loop(){
-  _cmsg.setACT("SENDALL");
-  output();
-
-}

@@ -36,18 +36,3 @@ public:
 
 };
 
-class CIRMaster:public CSystemObject{
-
-public:
-  CIRMaster();
-  ~CIRMaster();
-  void setup();
-  void loop();
-  void init();
-  void runOnce(CMsg &msg){};  
-  std::string strData(int z);
-  void Output(CMsg &msg);
-  void callCustomFunctions(CMsg &msg);
-  void callOutput(const char *sysname);
-
-};

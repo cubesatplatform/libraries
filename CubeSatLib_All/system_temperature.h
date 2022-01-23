@@ -22,14 +22,3 @@ public:
   void runOnce(CMsg &m);
 };
 
-class CTempMaster:public CSystemObject{  
-public:
-  CTempMaster(){Name("TEMPMASTER");};
-  ~CTempMaster(){};
-
-  void setup();
-  void loop();
-  void output();
-  float getTemp(const char *sysname);
-  void runCustomFunctions(CMsg &m);
-};

@@ -473,6 +473,9 @@ void CSystemMgr::loopWire(TwoWire *wire) {
 }
 
 
+
+
+
 void CSystemMgr::SendCmd(std::string str) {
   PinName  n = Pins[str];
   char action = 'H';
@@ -484,6 +487,8 @@ void CSystemMgr::SendCmd(std::string str) {
   }
 
   n = Pins[str];
+
+
 
   if (str == "RADIO") {
     CMsg m;

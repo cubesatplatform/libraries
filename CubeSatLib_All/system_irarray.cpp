@@ -82,9 +82,12 @@ void CIRArray::setup()
 }
 
 void CIRArray::loop(){
-CMsg m;
-//runOnce(m);
-
+  if(subscribers(Name())){
+    CMsg m;
+    runOnce(m);
+    Output(m);
+    //writeconsoleln("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   SUBSCRIBED IRARRAY XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+  }
 }
 
 void CIRArray::consoleOutTemp(){
@@ -252,9 +255,11 @@ void CIRArray::Output(CMsg &msg){  //Easier to send as long   convert to decimal
   runOnce(msg);
   std::string sType=msg.getParameter("TYPE","A");
   std::string sDisplay=msg.getParameter("CONSOLE","1");
-  if(sType=="P") fillPixel();
-  if(sType=="G") fillGrey();
-  if(sType=="A") fillAscii();
+
+  
+  if((sType=="P")||(subscribers(Name()+"P"))) fillPixel();
+  if((sType=="G")||(subscribers(Name()+"G"))) fillGrey();
+  if((sType=="A")||(subscribers(Name()+"A"))) fillAscii();
   
   if(sDisplay=="1"){
     consoleOutTemp();
@@ -266,8 +271,7 @@ void CIRArray::Output(CMsg &msg){  //Easier to send as long   convert to decimal
   m.setPANEL(Name());
   m.setDATA(imageTable);
           
-
-  addTransmitList(m); 
+  addDataList(m); 
 }
 
 

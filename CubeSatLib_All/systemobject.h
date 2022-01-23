@@ -49,7 +49,7 @@ protected:
   unsigned long _minTime=0;
   std::map<std::string, std::string> Callback;  
   CMsg _cmsg;
-  bool _addTransmit(CMsg &m);
+  
 
 public:
   unsigned long _lastDebug=0;
@@ -122,12 +122,12 @@ public:
   void Name(const char* s) { std::string str= s; Name(str); }
   void Name(std::string s);
  
-  bool addTransmitList(CMsg &m );
-  bool addDataList(CMsg &m); 
-  bool addMessageList(CMsg &m );
-  bool addReceivedList(CMsg &m );
+  void addTransmitList(CMsg &m );
+  void addDataList(CMsg &m); 
+  void addMessageList(CMsg &m );
+  void addReceivedList(CMsg &m );
     
-  void statusUpdate(CMsg &m);
+  //void statusUpdate(CMsg &m);
   void fillMetaMSG(CMsg *m);
 
 
@@ -152,11 +152,12 @@ public:
     return false;   ///   false;  Dne for debuggin
   }
 
-  std::list<CMsg> splitMsg(CMsg &m);
-  std::list<CMsg> splitMsgData(CMsg &m);
 
   std::string outputStatus(long val=100000);
-  void respondCallBack(CMsg &m);
+ // void respondCallBack(CMsg &m);
+  void subscribe(std::string str);
+  void unsubscribe(std::string str);
+  int subscribers(std::string str);
 };
 
 extern std::map<std::string,CSystemObject *> SysMap;

@@ -146,11 +146,11 @@ void CSystemObject::newMode(CMsg &msg){
 
 
 void CSystemObject::newMsg(CMsg &msg){
-  std::string callback=msg.getParameter("CALLBACK");
-  std::string callbackoff=msg.getParameter("CALLBACKOFF");
+ // std::string callback=msg.getParameter("CALLBACK");
+ // std::string callbackoff=msg.getParameter("CALLBACKOFF");
 
-  if(callback.size()) Callback[callback]="1";
-  if(callbackoff.size()) Callback[callbackoff]="0";
+//  if(callback.size()) Callback[callback]="1";
+  //if(callbackoff.size()) Callback[callbackoff]="0";
  
   std::string act=msg.getACT();
   CMsg m=msg;
@@ -178,7 +178,7 @@ void CSystemObject::newMsg(CMsg &msg){
             
   if(act=="STATE") {State(msg);return;}
   if(act=="UPDATE") {Update(msg);return;}
-  if(act=="STATUSUPDATE") {statusUpdate(msg);return;}
+  //if(act=="STATUSUPDATE") {statusUpdate(msg);return;}
   if(act=="ADDDATALIST") {addDataList(msg);return;}
   if(act=="ADDTRANSMITLIST") {addTransmitList(msg);return;}
 
@@ -317,175 +317,9 @@ bool CSystemObject::isNextCycle() {
 
 
 
-bool CSystemObject::addMessageList(CMsg &m){
-  CMessages* pM = getMessages();  
-  pM->MessageList.push_back(m);
-  return true;
-
-}
-
-bool CSystemObject::addReceivedList(CMsg &s){
-  
-  if(!s.checkPWD()){    
-    CMsg m;
-    m.setCOMMENT("Message PWD Invalid   Dropping   ------- Problably should add to some Log");
-    writeconsoleln(s.serializeout());
-    //addTransmitList(s);
-    return false;
-  }
-  CMessages* pM = getMessages();  
-  
-  if((s.getSAT()==SATNAME)|| (s.getSAT()=="") ){
-     pM->ReceivedList.push_back(s);
-     return true;
-  }
-  else {
-    CMsg m;
-    m.setCOMMENT("Message Received not for this Satellite   Dropping");
-    writeconsoleln(s.serializeout());
-    //addTransmitList(s);
-  }
-  return true;
-}
 
 
-bool CSystemObject::_addTransmit(CMsg &m){     
-    CMessages* pM = getMessages();    
-    fillMetaMSG(&m);    
-    m.setPWD();
-
-    m.cleanup();
-    pM->TransmitList.push_back(m);
-    return true;
-}
-
-
-
-
-std::list<CMsg> CSystemObject::splitMsg(CMsg &m){
-  std::list<CMsg> lM;
-
-  std::string strSYS=m.getSYS();
-  std::string strACT=m.getACT();
-  std::string strSAT=m.getSAT();
-  
-
-  CMsg cm;
-  int totsize=0;
-  int part=0;
-  
-  
-  for(auto x:m.Parameters){
-    std::string tmpstr;
-    tmpstr=cm.serialize();
-    totsize=tmpstr.size();
-    
-    std::string str=x.first+x.second+"~:";
-    int size=str.size();
-
-    if((size+totsize)<200){  //&&(x==m.Parameters.end())){
-  
-      std::string sfirst=x.first;
-      std::string ssecond=x.second;
-      cm.setParameter(sfirst,ssecond);  
-
-    }
-    else{
-      
-      cm.setSYS(strSYS);
-      cm.setACT(strACT);
-      cm.setSAT(strSAT);
-      cm.setParameter("PT",part);
-      lM.push_back(cm);
-      part++;
-      cm.clear();
-    }
-  }
-
-
-  if(cm.serialize().size())
-    {
-      cm.setSYS(strSYS);
-      cm.setACT(strACT);
-      cm.setSAT(strSAT);
-      cm.setParameter("PT",part);
-      lM.push_back(cm);
-      part++;
-      cm.clear();
-    }
-  
-  return lM;
-}
-
-std::list<CMsg> CSystemObject::splitMsgData(CMsg &m){
-  int offset=0;
-  std::list<CMsg> lM;
-
-  CMsg cm;
-  cm=m;
-
-  std::string tmpstr;
-  std::string data=m.getDATA();
-
-  int datasize=data.size();
-
-  if(datasize>0){
-    for(int count=0;count<datasize;){
-      int len=MAXDATALEN;
-      if(len>(datasize-count))
-        len=(datasize-count);
-
-      tmpstr=data.substr(count,len);
-      cm.setDATA(tmpstr);
-      cm.setOFFSET(offset);
-      lM.push_back(cm);
-
-      count+=MAXDATALEN;
-      offset++;
-    }
-  }
-  else{
-    lM.push_back(m);
-  }
-  return lM;
-}
-
-
-
-bool CSystemObject::addTransmitList(CMsg &m){
-
-std::list<CMsg> lMD;
-
-lMD=splitMsgData(m);
-
-for(auto x:lMD){
-  std::list<CMsg> lM=splitMsg(x);  
-    for(auto y:lM){
-    _addTransmit(y);  
-    }  
-  }
-  return true;
-}
-
-
-
-bool CSystemObject::addDataList(CMsg &m) {
-  CMessages* pM = getMessages();
-  pM->DataList.push_back(m);
-  return true;
-  }
-
-void CSystemObject::State(CMsg &m) { 
-  std::string s=m.getParameter("STATE");
-  if ((_name=="RADIO")||(_name=="RADIO1")||(_name=="RADIO2")||(_name=="RADIO3")){
-    writeconsoleln("-------------- NO STATE UPDATES TO RADIO -----------------------");    
-  }
-  else {
-    setState(s); 
-  }  
-}
-
-
+/*
 void CSystemObject::statusUpdate(CMsg &m){  //NEED TO HANDLE MULTIPLE CALLBACKS HERE
   for (auto it : m.Parameters  ){
     if((it.first=="CALLBACK")||(it.first=="CALLBACKOFF")){
@@ -521,3 +355,60 @@ void CSystemObject::respondCallBack(CMsg &m){
     }       
   }  
 }
+*/
+
+void CSystemObject::State(CMsg &m) { 
+  std::string s=m.getParameter("STATE");
+  if ((_name=="RADIO")||(_name=="RADIO1")||(_name=="RADIO2")||(_name=="RADIO3")){
+    writeconsoleln("-------------- NO STATE UPDATES TO RADIO -----------------------");    
+  }
+  else {
+    setState(s); 
+  }  
+}
+
+
+void CSystemObject::subscribe(std::string str){
+  CMessages* pM = getMessages();  
+  pM->subscribe(str);
+}
+
+void CSystemObject::unsubscribe(std::string str){
+  CMessages* pM = getMessages();  
+  pM->unsubscribe(str);
+}
+
+int CSystemObject::subscribers(std::string str){
+  CMessages* pM = getMessages();  
+  return(pM->subscribers(str));
+}
+
+
+
+  
+  void CSystemObject::addTransmitList(CMsg &m ){
+    CMessages* pM = getMessages();  
+    fillMetaMSG(&m);    
+    pM->addTransmitList(m);
+    
+  }
+
+  void CSystemObject::addDataList(CMsg &m){
+    CMessages* pM = getMessages();  
+    if(m.getSYS().size()<1)
+    m.setSYS(Name());
+    pM->addDataList(m);
+    
+  }
+
+  void CSystemObject::addMessageList(CMsg &m ){
+    CMessages* pM = getMessages();  
+    pM->addMessageList(m);
+    
+  }
+
+  void CSystemObject::addReceivedList(CMsg &m ){
+    CMessages* pM = getMessages();  
+    pM->addReceivedList(m);
+
+  }

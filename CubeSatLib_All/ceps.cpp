@@ -72,6 +72,7 @@ void CEPS::output(){   //FIX THIS  JUST FOR TESTING
   
   writeconsoleln("HELLO POWER");
 
+
  // writeSWSelflock(0);
   writeSHDChrg(0);
   /*
@@ -85,67 +86,68 @@ void CEPS::output(){   //FIX THIS  JUST FOR TESTING
   writeSHD3V3(1);
   delay(300);
 */
-  writeconsole("readBatteryVoltage() "); writeconsoleln(readBatteryVoltage());  
-  writeconsole("readBatteryCurrent() "); writeconsoleln(readBatteryCurrent());  
-  writeconsole("readBCRVoltage() "); writeconsoleln(readBCRVoltage());
-  writeconsole("readBCRCurrent() "); writeconsoleln(readBCRCurrent());   
-  writeconsole("read3V3Current() "); writeconsoleln(read3V3Current());
-  writeconsole("read5VCurrent() "); writeconsoleln(read5VCurrent());
-  writeconsole("readLUP3V3() "); writeconsoleln(readLUP3V3());
-  writeconsole("readLUP5V() "); writeconsoleln(readLUP5V());
-  writeconsole("readMCUTemp() ");writeconsoleln(readMCUTemp());    
-  writeconsole("readInputConditions() ");  writeconsoleln(readInputConditions());
-  writeconsole("readOutputCOnditions() "); writeconsoleln(readOutputCOnditions());
-  writeconsole("readOutputCOnditions2() "); writeconsoleln(readOutputCOnditions2());
-  writeconsole("readPowerONCycles() "); writeconsoleln(readPowerONCycles());
-  writeconsole("readVUnderVoltage() "); writeconsoleln(readVUnderVoltage());
-  writeconsole("readVShortCircuit() "); writeconsoleln(readVShortCircuit());
-  writeconsole("readVOverTemperature() "); writeconsoleln(readVOverTemperature());
-  writeconsole("readSoftwareVersion() "); writeconsoleln(readSoftwareVersion());
-  writeconsole("readDefaults1() "); writeconsoleln(readDefaults1());
-  writeconsole("readDefaults12() "); writeconsoleln(readDefaults12());
-  writeconsole("readChargeCycles() "); writeconsoleln(readChargeCycles());
+  CMsg m;
+m.setParameter("readBatteryVoltage",readBatteryVoltage());  
+  m.setParameter("readBatteryCurrent",readBatteryCurrent());  
+  m.setParameter("readBCRVoltage",readBCRVoltage());
+  m.setParameter("readBCRCurrent",readBCRCurrent());   
+  m.setParameter("read3V3Current",read3V3Current());
+  m.setParameter("read5VCurrent",read5VCurrent());
+  m.setParameter("readLUP3V3",readLUP3V3());
+  m.setParameter("readLUP5V",readLUP5V());
+  m.setParameter("readMCUTemp",readMCUTemp());    
+  m.setParameter("readInputConditions",readInputConditions());
+  m.setParameter("readOutputCOnditions",readOutputCOnditions());
+  m.setParameter("readOutputCOnditions2",readOutputCOnditions2());
+  m.setParameter("readPowerONCycles",readPowerONCycles());
+  m.setParameter("readVUnderVoltage",readVUnderVoltage());
+  m.setParameter("readVShortCircuit",readVShortCircuit());
+  m.setParameter("readVOverTemperature",readVOverTemperature());
+  m.setParameter("readSoftwareVersion",readSoftwareVersion());
+  m.setParameter("readDefaults1",readDefaults1());
+  m.setParameter("readDefaults12",readDefaults12());
+  m.setParameter("readChargeCycles",readChargeCycles());
 
   TEMPERATURE_INFO  tBatt=readBatteryTemperature();
-  writeconsole("readBatteryTemperature readTemp1() "); writeconsoleln(tBatt.readTemp1());
-  writeconsole("readBatteryTemperature readTemp2() "); writeconsoleln(tBatt.readTemp2());
-  writeconsole("readBatteryTemperature readTemp3() "); writeconsoleln(tBatt.readTemp3());
-  writeconsole("readBatteryTemperature readTemp4() "); writeconsoleln(tBatt.readTemp4());  
+  m.setParameter("readBatteryTemperature readTemp1",tBatt.readTemp1());
+  m.setParameter("readBatteryTemperature readTemp2",tBatt.readTemp2());
+  m.setParameter("readBatteryTemperature readTemp3",tBatt.readTemp3());
+  m.setParameter("readBatteryTemperature readTemp4",tBatt.readTemp4());  
 
   tBatt=readMaxTemperature();
-  writeconsole("readMaxTemperature readTemp1() "); writeconsoleln(tBatt.readTemp1());
-  writeconsole("readMaxTemperature readTemp2() "); writeconsoleln(tBatt.readTemp2());
-  writeconsole("readMaxTemperature readTemp3() "); writeconsoleln(tBatt.readTemp3());
-  writeconsole("readMaxTemperature readTemp4() "); writeconsoleln(tBatt.readTemp4());
+  m.setParameter("readMaxTemperature readTemp1",tBatt.readTemp1());
+  m.setParameter("readMaxTemperature readTemp2",tBatt.readTemp2());
+  m.setParameter("readMaxTemperature readTemp3",tBatt.readTemp3());
+  m.setParameter("readMaxTemperature readTemp4",tBatt.readTemp4());
 
   tBatt= readMinTemperature();
-  writeconsole("readMinTemperature readTemp1() "); writeconsoleln(tBatt.readTemp1());
-  writeconsole("readMinTemperature readTemp2() "); writeconsoleln(tBatt.readTemp2());
-  writeconsole("readMinTemperature readTemp3() "); writeconsoleln(tBatt.readTemp3());
-  writeconsole("readMinTemperature readTemp4() "); writeconsoleln(tBatt.readTemp4());
+  m.setParameter("readMinTemperature readTemp1",tBatt.readTemp1());
+  m.setParameter("readMinTemperature readTemp2",tBatt.readTemp2());
+  m.setParameter("readMinTemperature readTemp3",tBatt.readTemp3());
+  m.setParameter("readMinTemperature readTemp4",tBatt.readTemp4());
 
   tBatt=readTemperatureSensor();
-  writeconsole("readTemperatureSensor readTemp1() "); writeconsoleln(tBatt.readTemp1());
-  writeconsole("readTemperatureSensor readTemp2() "); writeconsoleln(tBatt.readTemp2());
-  writeconsole("readTemperatureSensor readTemp3() "); writeconsoleln(tBatt.readTemp3());
-  writeconsole("readTemperatureSensor readTemp4() "); writeconsoleln(tBatt.readTemp4());
+  m.setParameter("readTemperatureSensor readTemp1",tBatt.readTemp1());
+  m.setParameter("readTemperatureSensor readTemp2",tBatt.readTemp2());
+  m.setParameter("readTemperatureSensor readTemp3",tBatt.readTemp3());
+  m.setParameter("readTemperatureSensor readTemp4",tBatt.readTemp4());
     
   AXIS_INFO axis=readXAxisInfo();
-  writeconsole("axisX readVoltage() "); writeconsoleln(axis.readVoltage());
-  writeconsole("axisX readCurrentM() "); writeconsoleln(axis.readCurrentM());
-  writeconsole("axisX readCurrentP() "); writeconsoleln(axis.readCurrentP());
+  m.setParameter("axisX readVoltage",axis.readVoltage());
+  m.setParameter("axisX readCurrentM",axis.readCurrentM());
+  m.setParameter("axisX readCurrentP",axis.readCurrentP());
 
   axis=readYAxisInfo();
-  writeconsole("axisY readVoltage() "); writeconsoleln(axis.readVoltage());
-  writeconsole("axisY readCurrentM() "); writeconsoleln(axis.readCurrentM());
-  writeconsole("axisY readCurrentP() "); writeconsoleln(axis.readCurrentP());
+  m.setParameter("axisY readVoltage",axis.readVoltage());
+  m.setParameter("axisY readCurrentM",axis.readCurrentM());
+  m.setParameter("axisY readCurrentP",axis.readCurrentP());
 
   axis=readZAxisInfo();
-  writeconsole("axisZ readVoltage() "); writeconsoleln(axis.readVoltage());
-  writeconsole("axisZ readCurrentM() "); writeconsoleln(axis.readCurrentM());
-  writeconsole("axisZ readCurrentP() "); writeconsoleln(axis.readCurrentP());
+  m.setParameter("axisZ readVoltage",axis.readVoltage());
+  m.setParameter("axisZ readCurrentM",axis.readCurrentM());
+  m.setParameter("axisZ readCurrentP",axis.readCurrentP());
 
-
+  addDataList(m);
 }
 
 

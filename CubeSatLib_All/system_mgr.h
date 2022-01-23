@@ -70,13 +70,10 @@ public:
   void chkCoreSystems(){writeconsoleln("Checking CoreSystems...");};
   void chkMessages(){writeconsoleln("Checking Messages...");};
 
-  
   void sendHealth(){writeconsoleln("Send Health...");};
   void sendBeacon(){writeconsoleln("Send Beacon...");};
   void sendError(std::string str){};
-  
-  
-  
+    
   void newState(const char *str="LOWPOWER");
   
   void addSchedule(CMsg &msg);
