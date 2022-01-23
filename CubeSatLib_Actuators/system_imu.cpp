@@ -31,9 +31,13 @@ void CIData::init(){
   }
 
 void CIMU::loop(){
+  if(subscribers(Name())){
   CMsg m;
   runOnce(m);
+    }
   }
+
+
 void CIMU::runOnce(CMsg &m){
      if((State()!="READY")&&(State()!="PLAY") )setup();
     if((State()!="READY")&&(State()!="PLAY") ) return;
@@ -101,33 +105,33 @@ void CIMU::GetData(){
 
       if (Gyro.anythingNew()){
         mGyro=Gyro.makeMessage("GYRO");
-       // respondCallBack(m);
+        addDataList(mGyro);
       }
 
-      /*
+      
       if (Lin.anythingNew()){
         mLin=Lin.makeMessage("LIN");
-       // respondCallBack(m);
+        addDataList(mLin);
       }
 
       if (Mag.anythingNew()){
         mMag=Mag.makeMessage("Mag");
-       // respondCallBack(m);
+        addDataList(mMag);
       }
 
       
       if (PRY.anythingNew()){
         mPRY=PRY.makeMessage("PRY");
-       // respondCallBack(m);
+        addDataList(mPRY);
       }
 
-      mGyro.appendParams(mLin.Parameters);   
-      mGyro.appendParams(mMag.Parameters);
-      mGyro.appendParams(mPRY.Parameters);
-      */
+      //mGyro.appendParams(mLin.Parameters);   
+      //mGyro.appendParams(mMag.Parameters);
+      //mGyro.appendParams(mPRY.Parameters);
+      
 
-      if(mGyro.Parameters.size())
-        respondCallBack(mGyro);
+      //if(mGyro.Parameters.size())
+        //respondCallBack(mGyro);
       
 }    
 
@@ -150,6 +154,15 @@ void CIMU::setup(){
   
  // setupSPI();
   setupI2C();
+}
+
+void CIMU::config(std::string option, int period){
+  if(option=="ROT") myIMU.enableRotationVector(period); //Send data update every 50ms
+  if(option=="GYRO") myIMU.enableGyro(period); //Send data update every 50ms
+  if(option=="GYROROT") myIMU.enableGyroIntegratedRotationVector(period); //Send data update every 50ms
+  if(option=="MAG") myIMU.enableMagnetometer(period);
+  if(option=="ACCEL") myIMU.enableAccelerometer(period);
+  if(option=="LINACCEL") myIMU.enableLinearAccelerometer(period);
 }
 
 void CIMU::setupSPI(){
@@ -180,6 +193,7 @@ for(int retries=0;retries<5;retries++){
   }
 #endif  
 }
+
 
 void CIMU::setupI2C(){
   Name("IMU");

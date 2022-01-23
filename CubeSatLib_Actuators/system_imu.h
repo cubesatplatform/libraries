@@ -141,6 +141,7 @@ class CIMU:public CSystemObject{
 
     void Output(CMsg &msg);
     void GetData();
+    void config(std::string option, int period=50);
     CMsg fillData(){
       CMsg m;
       return m;
