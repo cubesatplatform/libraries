@@ -17,12 +17,12 @@ CMDrive::~CMDrive(){
   
 void CMDrive::config(char addr, TwoWire *twowire,int m){
   _address=addr;
-  setMotor(m);
+  setMotor(m);   
   setForever();
   setInterval(10);
-  pWire=twowire;
+  pWire=twowire;  
   setDuration(20000);
-  init();
+  init();  
   }
 
 
@@ -31,22 +31,19 @@ void CMDrive::init(){
   //setState("ERROR");
   int count=0;
   
-
   while ( !myMotorDriver.begin(_address, pWire) ) //Wait until a valid ID word is returned
   {      
     delay(100);
     count++;
-
-      writeconsole(Name());writeconsoleln("  Fail");
+    writeconsoleln(Name());writeconsoleln("  Fail");
     if (count>5) {
       setState("ERROR");
       return;
     }
   }
+  writeconsoleln(Name()); writeconsoleln("  Success");
 
-  writeconsole(Name()); writeconsoleln("  Success");
-  //setState("IDLE");
-  setState("READY");
+  setState("PLAY");
   myMotorDriver.run(RELEASE);
 
   return;

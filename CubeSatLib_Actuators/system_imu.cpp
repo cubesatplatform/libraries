@@ -1,14 +1,19 @@
-
 #include "system_imu.h"
+
 
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
 #include <pinDefinitions.h>
 
-#define IMU_OBC_NSS PinNameToIndex(PB_4)
+//#define IMU_OBC_NSS PinNameToIndex(PB_4)
+//#define IMU_OBC_RST PinNameToIndex(PI_14)
+//#define IMU_OBC_INT PinNameToIndex(PI_15)
+//#define IMU_OBC_WAKE PinNameToIndex(PB_3)
+
+#define IMU_OBC_NSS PinNameToIndex(PJ_8)
 #define IMU_OBC_RST PinNameToIndex(PI_14)
 #define IMU_OBC_INT PinNameToIndex(PI_15)
-#define IMU_OBC_WAKE PinNameToIndex(PB_3)
+#define IMU_OBC_WAKE PinNameToIndex(PJ_9)
 #endif
 
 
@@ -143,17 +148,15 @@ void CIMU::GetData(){
 }
 
   
-void CIMU::init(){
-  Name("IMU"); 
+void CIMU::init(){  
   setInterval(5);
   setForever();
 }
 
 
 void CIMU::setup(){
-  
- // setupSPI();
-  setupI2C();
+  if(Name()=="IMUSPI") setupSPI();
+  if(Name()=="IMUI2C") setupI2C();
 }
 
 void CIMU::config(std::string option, int period){
@@ -167,7 +170,6 @@ void CIMU::config(std::string option, int period){
 
 void CIMU::setupSPI(){
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-    Name("IMUSPI");
 //   myIMU.enableDebugging(Serial); //Pipe debug messages to Serial port
    delay(100);
 
