@@ -1,6 +1,8 @@
  #include "state_phone.h"
+ #include "powerup.h"
 
  void CPhoneState::enter() { 
+  enablePhone();
   CStateObj::enter();
   writeconsoleln("Enter Phone  Need to charge Phone"); 
   CSystemObject * psys=getSystem("PHONE");
@@ -22,6 +24,7 @@
 
 
 void CPhoneState::exit() { 
+  disablePhone();
   CStateObj::exit();
     
   CMsg m;

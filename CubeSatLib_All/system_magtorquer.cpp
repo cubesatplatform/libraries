@@ -56,7 +56,7 @@ void CMagTorquer::setup()  {
 
 
 bool CMagTorquer::calcDiffs(){  
-   if((abs(_pIMU->Mag.X)>200) || (abs(_pIMU->Mag.Y)>200)  || (abs(_pIMU->Mag.Z)>200)) return false;   //Bad data  continue
+   if((abs(_pIMU->Mag.X)>200) || (abs(_pIMU->Mag.Y)>200)  || (abs(_pIMU->Mag.Z)>200)) return false;   //invalid data  continue
   
    float estx = _pIMU->Mag.K_X();
    float esty = _pIMU->Mag.K_Y();

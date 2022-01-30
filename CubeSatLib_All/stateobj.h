@@ -17,15 +17,6 @@ class CStateObj:public CSystemObject {
 	unsigned long _starttimeoffset = 0;
 	unsigned long _lastcleanuptime=0;
 
-	//bool _forever = false;
-	//unsigned long _timestamp = getTime();
-	//unsigned long _lcount=0;
-	//unsigned long _createdTime = getTime();
-	//unsigned long _starttime = getTime();
-	//unsigned long _endtime;
-	//unsigned long _currentTime = getTime();
-	//unsigned long _maxTime = 500000;
-	//unsigned long _minTime = 0;
   	
 protected:
 	void processMsg(CMsg &msg);
@@ -41,8 +32,7 @@ public:
 	virtual void init();
 	virtual void de_init() {};
 	void loop();
-	//virtual void setup() {};
-	//unsigned long startTime(){return _starttime;}
+
 	void newMsg(CMsg &msg); 
 	void filterMsg(CMsg &msg);	
 	

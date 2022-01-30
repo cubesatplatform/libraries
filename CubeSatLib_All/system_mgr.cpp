@@ -18,6 +18,7 @@ void CSystemMgr::init(){
   setInterval(3000);
   initPins();
   initCommands();
+  initI2CMap();
 
 }
    

@@ -24,6 +24,7 @@ public:
   CMsg find(std::string str);
   CMsg findwRemove(std::string str);
   void clear();
+    void prune();
 
 };
 

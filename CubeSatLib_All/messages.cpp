@@ -143,14 +143,12 @@ void  CMessages::movetoTransmitList(CMsg &msg){
 
 
 
-void CMessages::prune() {
-  const int size = 100;
-  const int newsize=60;
-  if(TransmitList.size()>size) while (TransmitList.size() > newsize) TransmitList.pop_front();
-  if(TransmittedList.size()>size) while (TransmittedList.size() > newsize) TransmittedList.pop_front();
-  if(ReceivedList.size()>size) while (ReceivedList.size() > newsize) ReceivedList.pop_front();
-  if(MessageList.size()>size) while (MessageList.size() > newsize) MessageList.pop_front();
-  if(DataList.size()>size) while (DataList.size() > newsize) DataList.pop_front();
+void CMessages::prune() { 
+  TransmitList.prune();
+  TransmittedList.prune();
+  ReceivedList.prune();
+  MessageList.prune();
+  DataList.prune();
 }
 
 void CMessages::displayList(int option=0){
@@ -231,6 +229,12 @@ for (auto it = MList.begin(); it != MList.end(); ++it) {
     }
   }		
   return m;		
+}
+
+void CMessageList::prune(){
+  if(size()>_maxsize){
+    while (size() > (_maxsize-15)) pop_back();
+  }
 }
 
 int CMessageList::size(){
@@ -453,8 +457,10 @@ void CMessages::addTransmitList(CMsg &m){
 std::list<CMsg> lMD;
 
 lMD=splitMsgData(m);
+//writeconsoleln(m.serializeout());
 
 for(auto x:lMD){
+  //writeconsoleln(x.serializeout());
   std::list<CMsg> lM=splitMsg(x);  
     for(auto y:lM){
     _addTransmit(y);  
@@ -466,7 +472,7 @@ for(auto x:lMD){
 
 
 void CMessages::addDataList(CMsg &m) {
-  
+  DataList.prune();
   DataList.push_front(m);
   return;
   }

@@ -2,9 +2,10 @@
 #include "messages.h"
 #include "defs.h"
 #include "powerup.h"
+#include "system_imu.h"
 
 void CSystemMgr::showTests() {
-  initPins();
+  initPins();  
   CMsg m;
   
   std::string tmpstr;
@@ -83,6 +84,29 @@ void CSystemMgr::initPins() {
   pwmPins["21"]=21;
 }
 #else
+
+void CSystemMgr::initI2CMap(){
+  
+  I2CMap["0_74"]="0>Temp_OBC - 0x4A/74";
+
+  I2CMap["0_73"]="2> Temp X1 - 0x49/73";
+  I2CMap["0_72"]="2> Temp X - 0x48/72";
+
+  
+  I2CMap["1_73"]="2> Temp Y1 - 0x49/73";
+  I2CMap["1_72"]="2> Temp Y - 0x48/72";
+
+  I2CMap["1_96"]="1> 96";  
+  I2CMap["1_54"]="1> 54";
+  I2CMap["1_8"]=" 1> 8";
+  
+  I2CMap["2_99"]="2> Mag Z - 0x63/99";
+  I2CMap["2_97"]="2> Mag Y - 0x61/97";
+  I2CMap["2_96"]="2> Mag X - 0x60/96";
+  I2CMap["2_73"]="2> Temp Z1 - 0x49/73";
+  I2CMap["2_72"]="2> Temp Z - 0x48/72";
+
+};
 
 void CSystemMgr::initPins() {
   
@@ -312,6 +336,7 @@ void CSystemMgr::setupIMUI2C(TwoWire *wire){
 
 
 void CSystemMgr::setupIMUSPI(){
+  //writeconsoleln("B xxxxxxxxxxxxxxxxxx1");
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)  
   BNO080 myIMU;
   CMsg m;
@@ -320,18 +345,18 @@ for(int retries=0;retries<5;retries++){
     if(myIMU.beginSPI(IMU_OBC_NSS, IMU_OBC_WAKE, IMU_OBC_INT, IMU_OBC_RST) == false)
     {
     m.setERROR("SPI IMU Not Deteced");     
-      
+      //writeconsoleln("C xxxxxxxxxxxxxxxxxx1");
     }
     else{ 
      //  myIMU.enableRotationVector(50); //Send data update every 50ms
      //   myIMU.enableGyro(50); //Send data update every 50ms
      myIMU.enableGyroIntegratedRotationVector(50); //Send data update every 50ms
   
-      
-     m.setINFO("SPI IMU FOUND");
-     return;
+      //writeconsoleln("D xxxxxxxxxxxxxxxxxx1");
+     m.setINFO("SPI IMU FOUND");     
     }
   }
+  writeconsoleln("E xxxxxxxxxxxxxxxxxx1");
   writeconsoleln(m.serializeout());
   addTransmitList(m);
 #endif  
@@ -365,11 +390,10 @@ void CSystemMgr::pinsOff(){
 
 void CSystemMgr::phone(){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
- //  pinMode(PA_11, OUTPUT);
-
-
-   enablePhone();
- // Serial1.begin(PHONE_BAUD_RATE);
+ 
+  enablePhone();
+   
+  Serial1.begin(PHONE_BAUD_RATE);
 #else  
    Serial1.begin(PHONE_BAUD_RATE,SERIAL_8N1, PHONE_TX, PHONE_RX);
 #endif  
@@ -420,11 +444,9 @@ void CSystemMgr::burn(){
 
 void CSystemMgr::enableI2C(){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
- // pinMode(PA_12, OUTPUT);
- enableSensors();  //
-
- // pinMode(PH_15, OUTPUT);
- enableMags();  //
+ 
+  enableSensors();  
+  enableMagsMotors();  
 
   CMsg m;
   m.setSYS("ENABLE I2C");
@@ -436,22 +458,35 @@ void CSystemMgr::enableI2C(){
   #endif
 }
 
-void CSystemMgr::loopWire(TwoWire *wire) {
+void CSystemMgr::loopWire(TwoWire *wire,const char * s) {
   byte error, address;
   int nDevices=0;
+  int naddress;
+  enableSensors();
+  enableMagsMotors();  
   
   CMsg m;
   m.setSYS("LoopWire");
   m.setINFO("Scanning");
   for(byte address = 1; address < 127; address++ ) {
+    std::string strI;
+    std::string strIM;
+    strI=s;
+    strI+="_";
+
     writeconsole(".");
     wire->beginTransmission(address);
     error = wire->endTransmission();
     if (error == 0) {      
-      if (address<16) {
-        writeconsole("0");
-      }      
-      m.setParameter("Address"+nDevices,address);
+      //if (address<16)  writeconsole("0");
+      
+      std::string pstr= "Address_";
+      pstr+=address; 
+      naddress=address;
+      strI+=tostring(naddress);
+      strIM=I2CMap[strI];
+      m.setParameter(pstr,address);
+      m.setParameter(strI,strIM);
       nDevices++;
     }
     else if (error==4) {
@@ -460,6 +495,9 @@ void CSystemMgr::loopWire(TwoWire *wire) {
         writeconsole("0");
       }
       writeconsoleln(address);  //HEX
+      std::string pstr= "UnknownAddress_";
+      pstr+=address; 
+      m.setParameter(pstr,address);
     }    
   }
   if (nDevices == 0) {
@@ -502,48 +540,48 @@ void CSystemMgr::SendCmd(std::string str) {
   }
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-if  (str == "MAG"){
-  testMAG();
+if  (str == "MAGX"){
+  testMAG(MAG_ADDRESS_X);
+  return;
 }
 
-  
-  if ( (str == "MAGX")||(str == "MAGY")||(str == "MAGZ")) {
-    CMsg m;
-    m.setSYS("MAGXYZ");
-    m.setINFO(str);
-    writeconsoleln(m.serializeout());
-    addTransmitList(m);
+if  (str == "MAGDX"){
+  testMAGDrive(MAG_ADDRESS_X);
+  return;
+}
 
-    enableI2C();
-  
+if  (str == "MAGY"){
+  testMAG(MAG_ADDRESS_Y);
+  return;
+}
 
-    #ifndef TTGO
-   enableSensors();
-   enableMags();
+if  (str == "MAGDY"){
+  testMAGDrive(MAG_ADDRESS_Y);
+  return;
+}
 
-    TwoWire mWire2(I2C_SDA2,I2C_SCL); 
-    mWire2.begin();
+if  (str == "MAGZ"){
+  testMAG(MAG_ADDRESS_Z);
+  return;
+}
 
-    CMDrive MAG;
-  //return;  
-    delay(10);
-    char address=ADDRESS_MAGX;
-    if(str == "MAGY") {address=ADDRESS_MAGY;}
-    if(str == "MAGZ") {address=ADDRESS_MAGZ;}
-    
-    
-    MAG.config(address,&mWire2);
-    MAG.Speed(1.0);
- 
-    delay(5000);
-    MAG.Speed(-1.0);
-      
-    delay(5000);
-    
-    MAG.Speed(0.0);
-    #endif
-    return;
-  }
+if  (str == "MAGDZ"){
+  testMAGDrive(MAG_ADDRESS_Z);
+  return;
+}
+
+
+if  (str == "ADCSON"){
+  enableADCS();
+  return;
+}
+
+if  (str == "ADCSOFF"){
+  disableADCS();
+  return;
+}
+
+
 #endif
 
   if (str == "?") {
@@ -568,6 +606,11 @@ if  (str == "MAG"){
     return;
   }
 
+  if (str == "PHONEOFF") {
+    disablePhone();
+    return;
+  }
+
   if (str == "BURN") {
     burn();
     return;
@@ -575,6 +618,7 @@ if  (str == "MAG"){
 
 
   if (str == "IMUSPI") {
+    //writeconsoleln("A xxxxxxxxxxxxxxxxxx1");
     setupIMUSPI();
     return;
   }
@@ -598,11 +642,9 @@ if  (str == "MAG"){
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)  
   if (str == "IMU2") {
     writeconsoleln("IMU2");
-    TwoWire mWire2(I2C_SDA2,I2C_SCL);
-    mWire2.begin();
     
     delay(10);
-    setupIMUI2C(&mWire2);
+    setupIMUI2C(getWire2());
     return;
   }
   #endif
@@ -613,7 +655,7 @@ if  (str == "MAG"){
     writeconsoleln("I2C0");
     Wire.begin();
     delay(10);
-    loopWire(&Wire);
+    loopWire(&Wire, "0");
     return;
   }
 
@@ -622,7 +664,7 @@ if  (str == "MAG"){
     writeconsoleln("I2C1");
     Wire1.begin();
     delay(10);
-    loopWire(&Wire1);
+    loopWire(&Wire1,"1");
     return;
   }
 
@@ -631,10 +673,8 @@ if  (str == "MAG"){
     writeconsoleln("I2C2");
 
     #ifndef TTGO
-    TwoWire mWire2(I2C_SDA2,I2C_SCL);
-    mWire2.begin();
-    delay(10);
-    loopWire(&mWire2);
+    
+    loopWire(getWire2(),"2");
     #endif
     return;
   }
@@ -682,20 +722,52 @@ if  (str == "MAG"){
 }
 
 
-void CSystemMgr::testMAG(){
+void CSystemMgr::testMAGDrive(char addr){
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+  writeconsoleln("ENTER void CSystemMgr::testMAGDrive(char addr)");  
+  enableSensors();  
+  enableMagsMotors();  
+
+
+  CMDrive MAG;
+  delay(10);
+  
+  MAG.Name("TestMag");
+  
+  MAG.config(addr,getWire2());
+  
+  MAG.setup();
+  
+  MAG.Speed(1.0);
+  
+
+  delay(5000);
+  
+  MAG.Speed(-1.0);
+  
+  delay(5000);
+  
+  
+  MAG.Speed(0.0);
+  
+  disableMagsMotors();
+  
+  writeconsoleln("EXIT void CSystemMgr::testMAGDrive(char addr)");
+  #endif
+}
+
+void CSystemMgr::testMAG(char addr){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   Adafruit_DRV8830 drv;
-  #define DRV_I2C_ADDR 0x60
-  
-  TwoWire myWire2(I2C_SDA2,I2C_SCL2); 
+
 
   enableSensors();
-  enableMags();
-
+  enableMagsMotors();
   
-    if (! drv.begin(0X60, &myWire2)) {
+  if (! drv.begin(addr,   getWire2() )) {
     writeconsoleln("Failed to find DRV8830");
-    while (1);
+    disableMagsMotors();
+    return;
   }
   writeconsoleln("Adafruit DRV8830 found!");
 
@@ -715,6 +787,8 @@ void CSystemMgr::testMAG(){
   delay(5000);
 
   drv.run(RELEASE);
+  writeconsoleln("Mag test Done");
+  disableMagsMotors();
   return;
   #endif
 }

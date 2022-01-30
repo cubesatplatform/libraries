@@ -26,6 +26,7 @@ NSS & BUSY Necessary to initialize, other two are not
 
 class CRadio: public CSystemObject{
 #if defined(TTGO)
+  #define LORACHIP "TTGO  SX1278"
   SX1278 radio = new Module(TTGO_SS, TTGO_DIO0, TTGO_RST, TTGO_DIO1);
   SX1278 radio2 = new Module(TTGO_SS, TTGO_DIO0, TTGO_RST, TTGO_DIO1);
   SX1278& lora=radio;
@@ -33,13 +34,14 @@ class CRadio: public CSystemObject{
   SX1278& loraR=radio;
   
 #elif defined(TTGO1)
+  #define LORACHIP "TTGO  SX1262"
   SX1262 radio =  new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
   SX1262 radio2 =  new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
   SX1262& lora=radio;
   SX1262& loraT=radio;
   SX1262& loraR=radio;
 
-
+/*
 #elif defined(ESP32_GATEWAY)
   //SPIClass spi(HSPI);
   //RFM96 lora = new Module(NSS_BUILTIN, DIO0_BUILTIN, NRST_BUILTIN, DIO1_BUILTIN, spi);
@@ -48,30 +50,27 @@ class CRadio: public CSystemObject{
   RFM96& loraR=lora;
  // SX1280 lora = new Module(25, 27, 23, 19);
 
-
 #elif defined(PORTENTA_E22_900M30S)
 
   //SX1262 radio = new Module(NSS, DIO1, NRST, BUSY);
   //SX1262 lora = new Module(RADIO1_NSS, RADIO1_DIO1, RADIO1_RST, RADIO1_BUSY);
- #define NSS PinNameToIndex(PI_4) //7
-#define NRST PinNameToIndex(PH_14) //3
-#define BUSY PinNameToIndex(PH_10) //4
-#define DIO1 PinNameToIndex(PI_5) //5
+  #define NSS PinNameToIndex(PI_4) //7
+  #define NRST PinNameToIndex(PH_14) //3
+  #define BUSY PinNameToIndex(PH_10) //4
+  #define DIO1 PinNameToIndex(PI_5) //5
 
   SX1262 radio = new Module(NSS, DIO1, NRST, BUSY);
   SX1262 radio2 = new Module(NSS, DIO1, NRST, BUSY);
   SX1262& lora=radio;
   SX1262& loraT=radio;
   SX1262& loraR=radio;
-
+*/
 
 
 #elif defined(PORTENTA_E22_400M30S)
-  //SX1262 radio = new Module(NSS, DIO1, NRST, BUSY);
-  //SX1262 lora = new Module(RADIO1_NSS, RADIO1_DIO1, RADIO1_RST, RADIO1_BUSY);
-
 
 //  Worked!!!
+#define LORACHIP "PORTENTA_E22_400M30S SX1268"
 #define NSS PinNameToIndex(PC_6) //  PI_0
 #define BUSY PinNameToIndex(PC_7) //  PC_7
 #define NRST PinNameToIndex(PK_1) // PG_7 
@@ -103,11 +102,11 @@ class CRadio: public CSystemObject{
 #define NRST_2 PinNameToIndex(PH_14) //3
 #define BUSY_2 PinNameToIndex(PH_10) //4
 #define DIO1_2 PinNameToIndex(PI_5) //5
-  SX1268 radio_1 = new Module(NSS_1, DIO1_1, NRST_1, BUSY_1);
-  SX1268 radio_2 = new Module(NSS_2, DIO1_2, NRST_2, BUSY_2);
-  SX1268& lora=radio_1;
-  SX1268& loraT=radio_1;
-  SX1268& loraR=radio_1;
+SX1268 radio_1 = new Module(NSS_1, DIO1_1, NRST_1, BUSY_1);
+SX1268 radio_2 = new Module(NSS_2, DIO1_2, NRST_2, BUSY_2);
+SX1268& lora=radio_1;
+SX1268& loraT=radio_1;
+SX1268& loraR=radio_1;
   
 #endif
 
@@ -135,6 +134,8 @@ public:
   void init();
   void setMessages(CMessages *ptr){pMsgs=ptr;}
   void setRfMode(bool transmit);// function to set RF mode to transmit or receive
+  void enableRX();
+  void enableTX();
   void receivedLogic(unsigned char *buffer, int len);
   void setup();
   bool isTransmitTime();

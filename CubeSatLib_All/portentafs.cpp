@@ -69,12 +69,6 @@ int CFS::readFile(){
     
     fclose(file);
 
-    CMsg m;
-    m.setTABLE("LOG");
-    m.setINFO(fileName);  
-    m.setParameter("COUNT", numRead);
-    addTransmitList(m);
-    writeconsoleln(m.serializeout()) ;
   }
   return count;
 }
@@ -97,13 +91,6 @@ void CFS::writeFile(int count){
     fclose(file);
   }
 
-  
-    CMsg m;
-    m.setTABLE("LOG");
-    m.setINFO(fileName);  
-    m.setParameter("COUNT", count);
-    addTransmitList(m);
-    writeconsoleln(m.serializeout()) ;
   
 }
 #endif

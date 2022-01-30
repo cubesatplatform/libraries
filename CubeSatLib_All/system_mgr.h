@@ -83,7 +83,7 @@ public:
   
   void SendCmd(std::string str);
   void SendCmdToScheduler(std::string str);
-  void loopWire(TwoWire *wire);
+  void loopWire(TwoWire *wire, const char* s);
   void enableI2C();
   void burn();
   void phone();
@@ -93,8 +93,11 @@ public:
   void setupIMUI2C(TwoWire *wire);
   
   void initPins();
+  void initI2CMap();
   void controlPlan();
-  void testMAG();
+  void testMAG(char addr=MAG_ADDRESS_Z);
+  void testMAGDrive(char addr=MAG_ADDRESS_Z);
+  
   void Output(CMsg &msg);
   void sendSerial(const char* cmd);
 };

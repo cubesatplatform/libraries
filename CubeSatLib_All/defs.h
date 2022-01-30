@@ -14,7 +14,7 @@
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
 #else
-    #define TTGO1  //TTGO1
+    #define TTGO  //TTGO1
 #endif
 //#define MYESP32
 //#define ESP32_GATEWAY
@@ -134,18 +134,19 @@
 
 #define PHONE_ENABLE PA_11
 
-
-#define MAG_ENABLE PH_15
+#define MAGMOTORPOWER_ENABLE PH_15
 
 #define SENSORS_ENABLE  PA_12
+
+#define ADCS_ENABLE  PI_0
 
 #define BURN_WIRE PI_10
 
 /*
-#define IMU_OBC_NSS PinNameToIndex(PB_4)
+#define IMU_OBC_NSS PinNameToIndex(PJ_8)
 #define IMU_OBC_RST PinNameToIndex(PI_14)
 #define IMU_OBC_INT PinNameToIndex(PI_15)
-#define IMU_OBC_WAKE PinNameToIndex(PB_3)
+#define IMU_OBC_WAKE PinNameToIndex(PJ_9)
 */
 
 #define MOTOR_X_FG PJ_10
@@ -163,10 +164,6 @@
 #define CAN1_TX PH_13
 #define CAN1_RX PB_8
 
-
-
-#define R1_TXEN PG_3
-#define R1_RXEN PG_10
 
 #define R1_TXEN PG_3
 #define R1_RXEN PG_10
@@ -192,16 +189,13 @@
 #define MISO_PIN   PC_2
 #define SCLK_PIN   PI_1
  
-
 #define R3_RX_ENABLE PG_3
 #define R3_TX_ENABLE PD_5
-
 
 #define IMU_CS PJ_8
 #define IMU_WAKE PJ_9
 #define IMU_INT PI_15
 #define IMU_RST PI_14
-
 
 #define RW_SIG_X  PA_8
 #define RW_FG_X  PJ_10
@@ -247,24 +241,25 @@
 #define IRARRAY_ADDRESS_Y2  0x33
 #define IRARRAY_ADDRESS_Z1  0x33
 #define IRARRAY_ADDRESS_Z2  0x33
-#define TEMP_X1 0x31
-#define TEMP_X2 0x31
-#define TEMP_Y1 0x31
-#define TEMP_Y2 0x31
-#define TEMP_Z1 0x31
-#define TEMP_Z2 0x31
-#define TEMP_OBC 0x31
-#define TEMP_MOTORS 0x31
+#define TEMP_X1 0x48
+#define TEMP_X2 0x49
+#define TEMP_Y1 0x48
+#define TEMP_Y2 0x49
+#define TEMP_Z1 0x48
+#define TEMP_Z2 0x49
+#define TEMP_OBC 0x4A
+#define TEMP_ADCS 0x4B
 
 
-#define MAG_ADDRESS_X  0x43
-#define MAG_ADDRESS_Y  0x41
-#define MAG_ADDRESS_Z  0x42
+#define MAG_ADDRESS_X  0x60
+#define MAG_ADDRESS_Y  0x61
+#define MAG_ADDRESS_Z  0x63
 
 #define PING_INTERVAL             2       // seconds, how much time to wait between PINGs sent from this node
-#define FREQUENCY_900M30S         915.0   // MHz carrier, for E22-900M30S
-#define FREQUENCY_400M30S         433.0   // MHz carrier, for E22-400M30S
-#define FREQUENCY_GATEWAY         433.0   // MHz carrier, for ESP32 single-channel gateway
+//#define FREQUENCY_900M30S         915.0   // MHz carrier, for E22-900M30S
+#define LORAFREQUENCY             443.0   //FREQUENCY_900M30S
+#define FREQUENCY_400M30S         443.0   // MHz carrier, for E22-400M30S
+#define FREQUENCY_GATEWAY         443.0   // MHz carrier, for ESP32 single-channel gateway
 #define BANDWIDTH                 250  //125.0   // kHz dual-sideband
 #define SPREADING_FACTOR          9       // 2^9 chips
 #define CODING_RATE               7       // 4/7 coding
@@ -275,14 +270,10 @@
 #define TCXO_VOLTAGE              1.6     // V
 
 
-#define LORAFREQUENCY 433.0   //FREQUENCY_900M30S
-
-
 #define ESP32_GATEWAY_NSS_BUILTIN               16
 #define ESP32_GATEWAY_DIO0_BUILTIN              26
 #define ESP32_GATEWAY_NRST_BUILTIN             -1// RADIOLIB_PIN_UNUSED
 #define ESP32_GATEWAY_DIO1_BUILTIN              33
-
 
 #define TTGO_SCK        5
 #define TTGO_MISO       19
@@ -322,46 +313,14 @@
  
  
 
+
 /*
- * 00:38:32.536 -> Scanning...
-00:38:32.536 -> I2C device found at address 0x49  !
-00:38:32.536 -> I2C device found at address 0x69  !
-00:38:32.536 -> done
-00:38:32.536 -> 
-00:38:32.536 -> Wire1
-00:38:32.536 -> Scanning...
-00:38:32.536 -> I2C device found at address 0x08  !
-00:38:32.536 -> I2C device found at address 0x49  !
-00:38:32.582 -> I2C device found at address 0x60  !
-00:38:32.582 -> I2C device found at address 0x69  !
-00:38:32.582 -> done
-00:38:32.582 -> 
-00:38:32.582 -> Wire2
-00:38:32.582 -> Scanning...
-00:38:32.582 -> I2C device found at address 0x48  !
-00:38:32.582 -> I2C device found at address 0x49  !
-00:38:32.582 -> I2C device found at address 0x4A  !
-00:38:32.582 -> I2C device found at address 0x4B  !
-00:38:32.582 -> I2C device found at address 0x60  !
-00:38:32.582 -> I2C device found at address 0x61  !
-00:38:32.582 -> I2C device found at address 0x63  !
-00:38:32.582 -> I2C device found at address 0x68  !
-00:38:32.582 -> I2C device found at address 0x69  
- */
-
-
-
-
 #define ADDRESS_IMU1     0x4B
 #define ADDRESS_TEMPOBC  0x4A
-
 
 #define ADDRESS_IMU2     0x4B
 #define ADDRESS_TEMPADCS  0x4A
 
-#define ADDRESS_MAGX     0x60
-#define ADDRESS_MAGY     0x61
-#define ADDRESS_MAGZ     0x63
 
 
 #define ADDRESS_PORTENTA     0x08
@@ -376,7 +335,7 @@
 #define ADDRESS_TEMP    0x69
 #define ADDRESS_TEMP1   0x68
 #define ADDRESS_TEMP2    0x4A
-
+*/
 
 #define ADDRESS_RW_X
 #define ADDRESS_RW_X_PWM
@@ -411,6 +370,7 @@
 
 #define BURNWIRE_FILE "burncount.txt"
 #define DETUMBLE_FILE "dtcount.txt"
+#define RS_FILE "rscount.txt"
 
 
 #endif

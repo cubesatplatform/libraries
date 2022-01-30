@@ -4,10 +4,10 @@
 
 
 #include "consoleio.h"
+#include "Wire.h"
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
- // #include <mbed.h>
- // #include <PwmOut.h>
+ TwoWire *getWire2();
 using namespace mbed;
 #else
 //#include <arduino.h>
@@ -163,9 +163,11 @@ public:
 extern std::map<std::string,CSystemObject *> SysMap;
 extern std::map<std::string, PinName> Pins;
 extern std::map<std::string, PinName> pwmPins;
+extern std::map<std::string, std::string> I2CMap;
 
 CSystemObject *getSystem(const char *sys, const char *comment="");
 CSystemObject *getIMU(const char *sys="IMU");
+
 
 void transmitError(const char *tmp);
 

@@ -1,5 +1,5 @@
 #include "state_adcs.h"
-
+#include "powerup.h"
 
 CADCSState::CADCSState() {
   Name("ADCS");
@@ -18,6 +18,7 @@ CADCSState::~CADCSState() {};
 void CADCSState::setup() {CStateObj::init();};
 void CADCSState::stateMsg(CMsg &msg){_statemsg=msg;};
 void CADCSState::enter() {  
+    enableMagsMotors();
     CMsg m;
     m.setTABLE("LOG");
     m.setINFO("Enter ADCS");  
@@ -29,11 +30,12 @@ void CADCSState::enter() {
    }
 
 void CADCSState::exit() { 
+  disableMagsMotors();
   CMsg m;
   m.setTABLE("LOG");
   m.setINFO("Exit ADCS");  
   
   addTransmitList(m);
 
-  CStateObj::exit();  
+  CStateObj::exit();    
   }

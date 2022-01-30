@@ -90,7 +90,7 @@ std::string CMsg::serializeout() {
       }
   }
 
-str1='~'+str1+'~';
+str1="~vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv~"+str1+"^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~";
 for(auto c:str1){
   if (c=='~') c='\n';
   str2+=c;

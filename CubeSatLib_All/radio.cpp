@@ -1,6 +1,6 @@
 #include "radio.h"
 #include "funcs.h"
-
+#include <SPI.h>
 
 /* 
 ////DANGER  PIN 23 TTGO USED BY RADIO!!!!
@@ -54,7 +54,7 @@ void setFlag2(void) {  // this function is called when a complete packet is rece
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 CRadio::CRadio():CSystemObject() {
-  Name("RADIO");
+  Name("RADIO2");
   init();
   };
 
@@ -68,14 +68,15 @@ void CRadio::init(){
 
 // function to set RF mode to transmit or receive
 void CRadio::setRfMode(bool transmit) {   //True is transmit
+
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
   if(Name()=="RADIO"){
     if(transmit) {
       digitalWrite(R1_RXEN, LOW);
       digitalWrite(R1_TXEN, HIGH);
     } else {
-      digitalWrite(R1_RXEN, HIGH);
       digitalWrite(R1_TXEN, LOW);
+      digitalWrite(R1_RXEN, HIGH);      
     }
   }
 
@@ -85,13 +86,54 @@ void CRadio::setRfMode(bool transmit) {   //True is transmit
       digitalWrite(R2_RXEN, LOW);
       digitalWrite(R2_TXEN, HIGH);
     } else {
-      digitalWrite(R2_RXEN, HIGH);
       digitalWrite(R2_TXEN, LOW);
+      digitalWrite(R2_RXEN, HIGH);      
     }
   }
   delay(20);  //100
   #endif
 }
+
+void CRadio::enableRX(){
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
+  lora.standby();
+  delay(20);
+  if(Name()=="RADIO"){
+    digitalWrite(R1_TXEN, LOW);
+    delay(20);
+    digitalWrite(R1_RXEN, HIGH);   
+    delay(20);
+  }
+  else{
+    digitalWrite(R2_TXEN, LOW);
+    delay(20);
+    digitalWrite(R2_RXEN, HIGH);    
+    delay(20);
+  }
+  #endif
+}
+
+
+void CRadio::enableTX(){  
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
+  lora.standby();
+  delay(20);
+  if(Name()=="RADIO"){    
+    digitalWrite(R1_RXEN, LOW);
+    delay(20);
+    digitalWrite(R1_TXEN, HIGH);
+    delay(20);
+  }
+  else{
+    digitalWrite(R2_RXEN, LOW);
+    delay(20);
+    digitalWrite(R2_TXEN, HIGH);
+    delay(20);
+  }
+  #endif
+}
+
+
 
 
 void  CRadio::Update(CMsg &msg){
@@ -120,11 +162,14 @@ void  CRadio::Update(CMsg &msg){
 
 
 void CRadio::setup() {
+   SPI.begin();
+
   init();
   
 
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
   writeconsole("Initializing Radio on Portenta... ");
+  /*
   if(Name()=="RADIO"){
     pinMode(R1_RXEN, OUTPUT);
     pinMode(R1_TXEN, OUTPUT);
@@ -134,6 +179,7 @@ void CRadio::setup() {
     pinMode(R2_TXEN, OUTPUT);
     lora=radio_2;
   }
+  */
   #else    
     writeconsoleln("Initializing Radio on new TTGO ... ");
     
@@ -147,36 +193,50 @@ void CRadio::setup() {
   
   int state;
 
-  for (int retries=0;retries<5;retries++){
-    #ifdef TTGO
-  //int state = lora.begin();
-    writeconsoleln("TTGO ... ");
-    //state = lora.begin(LORAFREQUENCY, BANDWIDTH, SPREADING_FACTOR);// , CODING_RATE, SYNC_WORD, OUTPUT_POWER, CURRENT_LIMIT, PREAMBLE_LENGTH);
-    state = lora.begin(443.0);
+  for (int retries=0;retries<15;retries++){
+    #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+    writeconsole("CUBESAT ... "); writeconsoleln(LORACHIP);
+    //     int16_t begin(float freq = 443.0, float bw = 125.0,   uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = SX126X_SYNC_WORD_PRIVATE, int8_t power = 10, uint16_t preambleLength = 8, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);
+    //state =  lora.begin(LORAFREQUENCY);//      (LORAFREQUENCY,        BANDWIDTH, SPREADING_FACTOR,    CODING_RATE,                                   SYNC_WORD,      OUTPUT_POWER,             PREAMBLE_LENGTH,            TCXO_VOLTAGE);
+    //state =  lora.begin(float freq = 434.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX126X_SYNC_WORD_PRIVATE, int8_t power = 10, uint16_t preambleLength = 8, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);
 
-    #elif defined(TTGO1)
-    writeconsoleln("TTGO1 ... ");
+    state =  lora.begin(434.0, 125.0,  9,  7,  RADIOLIB_SX127X_SYNC_WORD  , 11,  8,  2.4,  false);   //RADIOLIB_SX126X_SYNC_WORD_PRIVATE
+    if (lora.setTCXO(2.4) == RADIOLIB_ERR_INVALID_TCXO_VOLTAGE)
+    {
+      writeconsoleln(F("Selected TCXO voltage is invalid for this module!"));
+    }
+
+    
+    #elif defined(TTGO)  
+    
+    writeconsole("TTGO ... "); writeconsoleln(LORACHIP);
     //state = lora.begin(LORAFREQUENCY, BANDWIDTH, SPREADING_FACTOR);// , CODING_RATE, SYNC_WORD, OUTPUT_POWER, CURRENT_LIMIT, PREAMBLE_LENGTH);
-    state = lora.begin(886.0);
-      #if defined(LoRa_frequency)
-          state = lora.begin(LoRa_frequency);
-      #else
-          state = lora.begin(868.0);
-      #endif
+    //state = lora.begin(443.0);
+    //state =  lora.begin(LORAFREQUENCY);//state =  lora.begin      (LORAFREQUENCY,        BANDWIDTH, SPREADING_FACTOR,    CODING_RATE,                                   SYNC_WORD,      14,             PREAMBLE_LENGTH);
+
+        //SX1268 state =  lora.begin(float freq = 434.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX126X_SYNC_WORD_PRIVATE, int8_t power = 10, uint16_t preambleLength = 8, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);
+        //SX1268 state = begin(float freq = 434.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX127X_SYNC_WORD,         int8_t power = 10, uint16_t preambleLength = 8, uint8_t gain = 0);
+
+
+    state =  lora.begin(434.0, 125.0,  9,  7, RADIOLIB_SX127X_SYNC_WORD, 16,  8);
+
+    #elif  defined(TTGO1)
+    writeconsole("TTGO1 ... "); writeconsoleln(LORACHIP);
+    //state = lora.begin(LORAFREQUENCY, BANDWIDTH, SPREADING_FACTOR);// , CODING_RATE, SYNC_WORD, OUTPUT_POWER, CURRENT_LIMIT, PREAMBLE_LENGTH);
+    //state = lora.begin(443.0);
+    //state =  lora.begin(LORAFREQUENCY);//state =  lora.begin      (LORAFREQUENCY,        BANDWIDTH, SPREADING_FACTOR,    CODING_RATE,                                   SYNC_WORD,      OUTPUT_POWER,             PREAMBLE_LENGTH);
+    state =  lora.begin(434.0, 125.0,  9,  7, RADIOLIB_SX127X_SYNC_WORD, 16,  8);
       
     #elif defined(ESP32_GATEWAY)
-        state = lora.begin(LORAFREQUENCY, BANDWIDTH, SPREADING_FACTOR, CODING_RATE, SYNC_WORD, OUTPUT_POWER, CURRENT_LIMIT, PREAMBLE_LENGTH);  
-    #else
-    
-        //     int16_t begin(float freq = 434.0, float bw = 125.0,   uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = SX126X_SYNC_WORD_PRIVATE, int8_t power = 10, uint16_t preambleLength = 8, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);
-        //state =  lora.begin      (LORAFREQUENCY,        BANDWIDTH, SPREADING_FACTOR,    CODING_RATE,                                   SYNC_WORD,      OUTPUT_POWER,             PREAMBLE_LENGTH,            TCXO_VOLTAGE);
-        state =  lora.begin();
+    writeconsole("GATEWAY ... "); writeconsoleln(LORACHIP);
+    //state =  lora.begin(LORAFREQUENCY); //state = lora.begin(LORAFREQUENCY, BANDWIDTH, SPREADING_FACTOR, CODING_RATE, SYNC_WORD, OUTPUT_POWER, CURRENT_LIMIT, PREAMBLE_LENGTH);      
+    state =  lora.begin(434.0, 125.0,  9,  7, RADIOLIB_SX127X_SYNC_WORD, 16,  8);
     #endif
 
     if(state == RADIOLIB_ERR_NONE) {
       
     
-        // set the function that will be called when packet transmission or reception is finished
+        // set the function that will be called when packet transmission or reception is finished   
       if(Name()=="RADIO2"){
       #if defined(TTGO)
         lora.setDio0Action(setFlag2);
@@ -208,9 +268,7 @@ void CRadio::setup() {
      return;
       } else {
         writeconsole("Start radio failed, code ");        writeconsoleln(state);
-        delay(2000);
-      
-        
+        delay(2000);        
       }
 
   delay(50);
@@ -272,7 +330,7 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
   memcpy(buffer,buf,254);
     
   // set mode to transmission
-  setRfMode(true);
+  enableTX();//setRfMode(true);
 
   if(Name()=="RADIO")
     enableInterrupt=false;
@@ -284,6 +342,8 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
   transmissionState = lora.startTransmit((uint8_t*)buffer,len);  //Asynch  Comes right back and sends on its own
   if (transmissionState!=RADIOLIB_ERR_NONE){
     writeconsoleln("ERROR in Transmission");
+    setup();
+    return;
   }
    if(Name()=="RADIO")
     enableInterrupt=true;
@@ -299,15 +359,23 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
 
 //Packet received.  Place in Rcvd queue.
 void CRadio::receivedLogic(unsigned char *buffer, int len){
-  writeconsole("RSSI:\t\t"); writeconsole(lora.getRSSI()); writeconsole(" dBm ");
-  writeconsole("SNR:\t\t");  writeconsole(lora.getSNR()); writeconsoleln(" dB ");        
+  //writeconsole("RSSI:\t\t"); writeconsole(lora.getRSSI()); writeconsole(" dBm ");
+  //writeconsole("SNR:\t\t");  writeconsole(lora.getSNR()); writeconsoleln(" dB ");        
+
+  //CMsg mm;
+  //mm.setSYS(Name());
+  //mm.setINFO("Received");
+  
+  //writeconsoleln(mm.serializeout());
 
   std::string tmpstr; 
   for (int count=0;count<len;count++) tmpstr+=buffer[count];              //Convert byte buffer to string
-
-  writeconsole("Data:\t\t"); writeconsoleln(tmpstr.c_str());
+  //mm.setDATA(tmpstr);
+  //writeconsole("Data:\t\t"); writeconsoleln(tmpstr.c_str());
 
   CMsg robj(tmpstr.c_str(), loraR.getRSSI(), loraR.getSNR());
+  robj.setParameter("RSSI",lora.getRSSI());
+  robj.setParameter("S/N",lora.getSNR());
   if(robj.getACK()=="1"){// This is an acknowledgement of a requested ACK.  No need to push to reeceived list
     if(nextTransmit>(getTime()+RADIOTXDELAY)){    //No need to wait longer as we got the ack
       nextTransmit=getTime()+RADIOTXDELAY;
@@ -320,7 +388,7 @@ void CRadio::receivedLogic(unsigned char *buffer, int len){
     writeconsoleln(robj.serializeout());
     if(robj.needACK()&&robj.getSAT().size()&&(robj.getSAT()==thisSat()))  SendAck(robj);
   }
-  writeconsoleln("Received Logic End");
+  //writeconsoleln("Received Logic End");
 }
 
 void CRadio::ReceivedPacket(){
@@ -362,7 +430,7 @@ void CRadio::TransmitCmd(){
 
 
 void CRadio::SetRadioReceive(){
-  setRfMode(false);
+  enableRX();
 
   if(Name()=="RADIO")
     bFlag=false;
@@ -386,6 +454,8 @@ void CRadio::SetRadioReceive(){
  
    else {
     writeconsole(" Failed to start reception, code ");    writeconsoleln(state); 
+    setup();
+    return;
   }
 
 

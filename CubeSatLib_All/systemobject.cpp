@@ -182,7 +182,7 @@ void CSystemObject::newMsg(CMsg &msg){
   if(act=="ADDDATALIST") {addDataList(msg);return;}
   if(act=="ADDTRANSMITLIST") {addTransmitList(msg);return;}
 
-writeconsoleln(m.serializeout());
+
 callCustomFunctions(msg);
 }
 
