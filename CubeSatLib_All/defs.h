@@ -197,33 +197,13 @@
 #define IMU_INT PI_15
 #define IMU_RST PI_14
 
-#define RW_SIG_X  PA_8
-#define RW_FG_X  PJ_10
-#define RW_DIR_X  PC_6
 
-#define RW_SIG_Y  PC_7
-#define RW_FG_Y  PI_7
-#define RW_DIR_Y  PJ_7
-
-#define RW_SIG_Z  PH_6
-#define RW_FG_Z PI_6 
-#define RW_DIR_Z  PK_1
 
 #define PWM_SIG PK_1
 
 #else
 
-#define RW_SIG_X  2
-#define RW_FG_X  14
-#define RW_DIR_X  13
 
-#define RW_SIG_Y  25
-#define RW_FG_Y  33
-#define RW_DIR_Y  32
-
-#define RW_SIG_Z  35
-#define RW_FG_Z 15 
-#define RW_DIR_Z  4
 
 #define PWM_SIG 4
 #endif

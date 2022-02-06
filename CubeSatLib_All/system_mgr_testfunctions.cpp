@@ -540,6 +540,21 @@ void CSystemMgr::SendCmd(std::string str) {
   }
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+if  (str == "MOTORX"){
+  testMotor("MOTORX");
+  return;
+}
+
+if  (str == "MOTORY"){
+  testMotor("MOTORY");
+  return;
+}
+
+if  (str == "MOTORZ"){
+  testMotor("MOTORZ");
+  return;
+}
+
 if  (str == "MAGX"){
   testMAG(MAG_ADDRESS_X);
   return;
@@ -721,6 +736,20 @@ if  (str == "ADCSOFF"){
  writeconsoleln("");
 }
 
+
+void CSystemMgr::testMotor(const char *s){
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+  writeconsoleln("ENTER void CSystemMgr::testMotor(char axis)");  
+  
+  enableMagsMotors();        
+  enableADCS();
+
+  CMotorController *pM=(CMotorController *)getSystem(s);
+  if(pM!=NULL) pM->test();
+  disableMagsMotors();  
+  disableADCS();
+  #endif
+}
 
 void CSystemMgr::testMAGDrive(char addr){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)

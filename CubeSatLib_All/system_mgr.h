@@ -97,6 +97,7 @@ public:
   void controlPlan();
   void testMAG(char addr=MAG_ADDRESS_Z);
   void testMAGDrive(char addr=MAG_ADDRESS_Z);
+  void testMotor(const char* s);
   
   void Output(CMsg &msg);
   void sendSerial(const char* cmd);
