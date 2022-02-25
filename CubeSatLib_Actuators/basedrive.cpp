@@ -2,19 +2,20 @@
 #include <arduino.h>
 #include "consoleio.h"
 
+int CBaseDrive::channel=0;
+
 // It uses .setDrive( motorNum <0,1>, direction<1:forward,0:backward>, level<0...255> ) to drive the motors.
 
-CBaseDrive::CBaseDrive(){
-  
-  
-  }
+CBaseDrive::CBaseDrive(){}
 
 void CBaseDrive::Forward(float s,unsigned long dur){Speed(abs(s),dur);}
 void CBaseDrive::Backward(float s,unsigned long dur){Speed(-1.0*abs(s),dur);}
 void CBaseDrive::Reverse(){Speed(-1.0*_mspeed);}
 bool CBaseDrive::isForward(){if(_mdir) return true; return false;}
-void CBaseDrive::stopActuator(){//Speed(0.0,0); 
-   setState("PAUSE");}
+void CBaseDrive::stopActuator(){
+  Speed(0.0,0); 
+  setState("PAUSE");
+}
 
 void CBaseDrive::init(){
   CSystemObject::init();
@@ -32,7 +33,23 @@ void CBaseDrive::init(){
   _modifiedTime=0;
   _duration=0;
   _changedOn=0;
+
+
+
+  #ifdef TTGO || TTGO1
+    ledcSetup(_channel, freq, resolution);   // configure LED PWM functionalitites
+    ledcAttachPin(PIN_SIGNAL, _channel);  // attach the channel to the GPIO to be controlled
+  #endif
   setForever();
+}
+
+void CBaseDrive::sendPWM(int nVal){
+  setPWMSpeed(nVal);
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+    analogWrite(PIN_SIGNAL,nVal);
+  #else
+    ledcWrite(_channel, nVal);  
+  #endif
 }
 
 void CBaseDrive::Speed(float s,unsigned long dur){
@@ -44,14 +61,12 @@ void CBaseDrive::Speed(float s,unsigned long dur){
 
   _mspeed=s;
   
-  //activateDrive(_mspeed);   //For testing  put bacl
-  if (dur>0) _duration=dur;
+  activateDrive(_mspeed);   
+  _duration=dur;
   }
 
   
 
-void CBaseDrive::runOnce(CMsg &m){
-}
 
 
 void CBaseDrive::TestMotor(){
@@ -69,16 +84,17 @@ void CBaseDrive::TestMotor(){
  
 
 void CBaseDrive::loop(){
-    if(_duration<1){
+  if(_duration<1){
+    return;
     }
-    unsigned long ct=getTime();
-    
-    if(ct>_changedOn+_duration){
-      stopActuator();            
+  unsigned long ct=getTime();
+  
+  if(ct>_changedOn+_duration){
+    stopActuator();            
     }
   CMsg m;
   runOnce(m);
-  }
+}
 
 void CBaseDrive::callNewFunction(CMsg &msg){   //Calls a specific function directly
   std::string act=msg.getParameter("ACT");  
@@ -94,5 +110,4 @@ void CBaseDrive::callNewFunction(CMsg &msg){   //Calls a specific function direc
   if (act=="STOP") stopActuator();
   if (act=="SPEED") Speed(speed,duration);
   if (act=="START") Forward(speed,duration);
-
 }

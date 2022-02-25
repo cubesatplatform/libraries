@@ -22,7 +22,7 @@ void CMDrive::config(char addr, TwoWire *twowire,int m){
   setInterval(10);
   pWire=twowire;  
   setDuration(20000);
-  init();  
+
   }
 
 

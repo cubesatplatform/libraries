@@ -20,5 +20,6 @@ public:
   void config(char addr=0x60, TwoWire *twowire=&Wire,int m=0);
   void Address(char c);
   void init();
+  void setup(){init();}
   void activateDrive(float val); 
 };

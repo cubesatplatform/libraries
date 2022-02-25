@@ -8,8 +8,8 @@
 
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
- // #include <mbed.h>
- // #include <PwmOut.h>
+  //#include <mbed.h>
+ //#include <PwmOut.h>
 using namespace mbed;
 #else
 //#include <arduino.h>
@@ -40,20 +40,19 @@ private:
 
 //https://forum.arduino.cc/t/interrupts-using-m7-vs-m4-core/675577
 //need to fix  see this
-   // mbed::InterruptIn _interrupt;
-
     PinName _interrupt;
+    char _axis='X';
 
     unsigned long lastCount=0;
     unsigned long prevT=0;
-    unsigned long lastT=0;
-
-    
+    unsigned long lastT=0;    
     
 public:
     PWMCounter();
+    void axis(char s) {_axis=s;}
+    char axis(){return _axis;}
     
-    void init(PinName pin);
+    void config(PinName pin);
 
     unsigned long read();
 
@@ -68,16 +67,8 @@ private:
 
 // setting PWM properties
   CIMU *_pIMU=NULL;
-  const int freq = 10000;
-  const int resolution = 12;
 
-  PinName PIN_SIGNAL;
-  PinName PIN_DIR;
-  PinName PIN_FG;  //Feedback
 
- 
-  static int channel;
-  int _channel;
 
   double _Setpoint=0.0, _Input=0.0, _Output=0.0,_Output_last=0.0;
   char _axis='X';
@@ -89,22 +80,22 @@ private:
 
   PID myPID;
 
-  
 public:
   CMotorController();
   ~CMotorController();
 
-  void configSpeed(PinName sig, PinName fg,PinName dir);
-  void configRotation(PinName sig, PinName fg,PinName dir,CIMU *pIMU, char axis);
+  void config(PinName sig, PinName fg,PinName dir);
+  void configSpeed();
+  void configRotation(CIMU *pIMU, char axis);
   void init();
   float RPM();
   float RPS();
   unsigned long getCount();
-  void sendPWM(int nVal);
-  void loop();
+  void runOnce(CMsg &m);
   void loopSpeed();
   void loopRotation();
-  void setPoint(double sp){_Setpoint=sp;}
+  void test();
+  void setPoint(double sp){_Setpoint=sp;setMode("SPEED");}
   void setPointRotation(double sp){_Setpoint=sp;setMode("ROTATION");}
   
   void activateDrive(float val);
