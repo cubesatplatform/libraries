@@ -21,13 +21,13 @@ void  CPhone::callCustomFunctions(CMsg &msg){
 
 CPhone::CPhone(){
   Name("PHONE");
-  
-  init();
+  setForever(true);    
+  setInterval(20);
   }
 
 
 void CPhone::init(){
-  setInterval(20);
+
   id = 0;
   transmitted = false;
   transmitting = false;
@@ -45,6 +45,7 @@ void CPhone::init(){
 
 
 void CPhone::setup() {   
+  init();
  // Serial1.begin(115200);
  // Serial1.setTimeout(TIMEOUT);
 
@@ -53,11 +54,7 @@ void CPhone::setup() {
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   Serial1.begin(PHONE_BAUD_RATE);
 #else  
-  //Serial1.begin(PHONE_BAUD_RATE, SERIAL_8N1, PHONE_TX, PHONE_RX);
- // Serial1.begin(115200,SERIAL_8N1,13,14); 
-  //Serial1.begin(115200,SERIAL_8N1,35,15); 
    Serial1.begin(PHONE_BAUD_RATE,SERIAL_8N1, PHONE_TX, PHONE_RX);
-//    Serial1.begin(115200, SERIAL_8N1, 23,4);
 #endif  
   sendSerial("INIT"); //to synchronise Arduino and app  
   setState("PLAY");

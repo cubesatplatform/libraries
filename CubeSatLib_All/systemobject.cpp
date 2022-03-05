@@ -40,8 +40,7 @@ void CSystemObject::init(){
   _procCount=0;
 
   _ostate="";   //"" || "START","PLAY","PAUSE","STOP","ERROR" 
-  _olaststate="";
-  _forever = false;
+  _olaststate="";  
    
   _lastStateTime=0;  
   _lastUse=0;
@@ -276,7 +275,11 @@ if (_ostate == "ERROR") {
 }
 
 bool CSystemObject :: outOfTime() {
-  if (!_forever && ((_currentTime - _createdTime) > _maxTime)&&((_currentTime - _createdTime) > _minTime)) {   //Play ->Out of Time
+  if (_forever)
+    return false;
+  if (((_currentTime - _createdTime) > _maxTime)&&((_currentTime - _createdTime) > _minTime)) {   //Play ->Out of Time
+    writeconsole("Forever: ");
+    writeconsoleln(_forever);
     CMsg m;
     stats(m);
     return true;
@@ -307,6 +310,11 @@ bool CSystemObject::isNextCycle() {
     if(_retryCount>30)return false;
     return true;
   }
+
+  if(getTime()<_startTime){
+    return false;
+  }
+
   if (_currentTime >= _prevTime + _interval) {
     _prevTime = _currentTime;
     return true;

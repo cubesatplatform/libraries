@@ -49,6 +49,7 @@ void CDeployAntennaState::enter() {
 
   
   #endif
+  setState("PLAY");
 
   }
 

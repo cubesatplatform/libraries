@@ -746,8 +746,8 @@ void CSystemMgr::testMotor(const char *s){
 
   CMotorController *pM=(CMotorController *)getSystem(s);
   if(pM!=NULL) pM->test();
-  disableMagsMotors();  
-  disableADCS();
+  //disableMagsMotors();  
+//  disableADCS();
   #endif
 }
 

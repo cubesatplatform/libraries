@@ -376,6 +376,7 @@ void CRadio::receivedLogic(unsigned char *buffer, int len){
   CMsg robj(tmpstr.c_str(), loraR.getRSSI(), loraR.getSNR());
   robj.setParameter("RSSI",lora.getRSSI());
   robj.setParameter("S/N",lora.getSNR());
+  writeconsoleln(robj.serializeout());
   if(robj.getACK()=="1"){// This is an acknowledgement of a requested ACK.  No need to push to reeceived list
     if(nextTransmit>(getTime()+RADIOTXDELAY)){    //No need to wait longer as we got the ack
       nextTransmit=getTime()+RADIOTXDELAY;

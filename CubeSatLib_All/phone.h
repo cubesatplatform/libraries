@@ -65,8 +65,7 @@ class CPhone:public CSystemObject {
 
     
   public:
-    std::queue<CMsg> commandQueue;   //This is the commands that should be sent to phone,filled from the Transmitter
-  // std::list<CMessage> queue;   //This is output data from the Phone to be sent to  Transmitter
+    std::queue<CMsg> commandQueue;   //This is the commands that should be sent to phone,filled from the Transmitter  
     std::queue<CMsg> streamQueue;   //This is output file segment data from the Phone to be sent to  Transmitter
 
     
@@ -83,7 +82,6 @@ class CPhone:public CSystemObject {
     void onPhotoAvailable(int id);
     void onStreamAvailable(int id);
     void ProcessCommandQueue();
-   // void newCMD(CMsg &msg);    
     void TransmitPacket(CMsg &m);
     void SetPhoneReceive();
     void ReceivedPacket();

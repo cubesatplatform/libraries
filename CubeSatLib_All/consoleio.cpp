@@ -22,6 +22,12 @@ void writeOut(){
 }
 
 
+
+void writeconsole(double s){writeconsole((float) s);};
+
+void writeconsoleln(double s){writeconsoleln((float) s);};
+
+
 void writeconsole(const std::string s) {  
   #ifdef  REALTIME
     if(Serial) Serial.print(s.c_str());
@@ -135,7 +141,7 @@ void writeconsoleln(float s){
    writeconsoleln(str);
   }
 
-
+   
 //Encoding formulas
 //y=2x+<seed>
 //x=(y-<seed>)/2

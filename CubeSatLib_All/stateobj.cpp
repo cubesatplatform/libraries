@@ -1,11 +1,26 @@
 #include "stateobj.h"
 
+void CStateObj::start(){
+	if(getTime()>startTime()){
+		setState("PLAY");	
+	}  
+}
+
+
+
 
 void CStateObj::loop() {	
 	_currentTime = getTime();
+	if (State()!="PLAY"){		
+		start();
+	}
+
 	for (auto  psys:subsystems) {
 		if(_currentTime>_lastDebug+2000){
-			if(Name()!="SAT") { writeconsole(psys->Name()); writeconsole("  Errors:"); writeconsole(psys->getRetryCount()); writeconsole("  State:"); writeconsoleln(psys->State());}
+			if(Name()!="SAT") { writeconsole(psys->Name()); writeconsole("  Errors:"); writeconsole(psys->getRetryCount()); writeconsole("  State:"); writeconsole(psys->State()); writeconsole("  Forever:"); writeconsole(psys->getForever());
+			
+			writeconsole("  Start:"); writeconsole(psys->startTime());writeconsole("  Time:"); writeconsoleln(getTime());
+			}
 		}		
 		
 		if((psys->getRetryCount()>=5)||(psys->State()=="STOP")){
@@ -36,10 +51,12 @@ void CStateObj::loop() {
 void CStateObj::enter(){
 	_statecount++;
 	_startTime = getTime();
+	setState("PLAY");
 
 }
 void CStateObj::exit(){
 	_stopTime = getTime();
+	setState("PAUSE");
 }
 
 void CStateObj::Cleanup(){
@@ -63,7 +80,7 @@ void CStateObj::Cleanup(){
 			psys->setState(""); //Reset state for next time
 			addTransmitList(m);
 
-			if(!psys->Forever()) delete psys;	
+			if(!psys->getForever()) delete psys;	
 			it = subsystems.erase(it);   //Check to make sure this works			 
 			break;						//Ends loop on a delete   Will continue on next cycle. Faster than doing all cleanup here
 			}
@@ -182,7 +199,7 @@ void CStateObj::addSystem(CMsg &msg){
 
 
 bool CStateObj :: outOfTime() {
-	if(_forever)  return false;
+	if(getForever())  return false;
 	_currentTime=getTime();
   	if ( ((_currentTime - _createdTime) > _maxTime)&&((_currentTime - _createdTime) > _minTime)) {   //Play ->Out of Time
     	return true;

@@ -20,6 +20,7 @@ public:
 		m.setINFO("Enter LowPower");  
 		writeconsoleln(m.serializeout()) ;
 		addTransmitList(m);
+		setState("PLAY");
 		}
 
   	void exit() { 

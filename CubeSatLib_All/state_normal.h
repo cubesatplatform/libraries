@@ -17,8 +17,8 @@ public:
 	~CNormalState() {};
 
 	void setup() {CStateObj::init();};
-	void enter() { CStateObj::enter();writeconsoleln("Enter Normal"); }
-	void exit() { CStateObj::exit();writeconsoleln("Exit Normal"); }
+	void enter() { CStateObj::enter();writeconsoleln("Enter Normal"); setState("PLAY");}
+	void exit() { CStateObj::exit();writeconsoleln("Exit Normal"); setState("PAUSE");}
 	
 
 };

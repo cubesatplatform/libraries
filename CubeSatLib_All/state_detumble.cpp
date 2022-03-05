@@ -31,7 +31,7 @@ void CDetumbleState::enter() {
     fs.deleteFile();
     fs.writeFile(_detumblecount);    
     #endif
-  
+  setState("PLAY");
   }
   
 void CDetumbleState::exit() { 

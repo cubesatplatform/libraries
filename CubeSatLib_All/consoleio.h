@@ -25,6 +25,8 @@ void writeconsole(char s);
 
 void writeconsole(float s);
 
+void writeconsole(double s);
+
 void writeconsoleln();
 
 void writeconsoleln(const std::string s);
@@ -40,6 +42,8 @@ void writeconsoleln( long s);
 void writeconsoleln( unsigned long s);
 
 void writeconsoleln(float s);
+
+void writeconsoleln(double s);
 
 void writeOut();
 

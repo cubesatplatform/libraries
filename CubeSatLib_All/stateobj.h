@@ -17,6 +17,7 @@ class CStateObj:public CSystemObject {
 	unsigned long _starttimeoffset = 0;
 	unsigned long _lastcleanuptime=0;
 
+
   	
 protected:
 	void processMsg(CMsg &msg);
@@ -44,6 +45,7 @@ public:
 	long stateCount(){return _statecount;};
 	
 	void stats();
+	virtual void start();
 	void Cleanup();  
 	bool outOfTime();
 	void Output(CMsg &msg);

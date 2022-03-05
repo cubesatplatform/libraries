@@ -36,11 +36,11 @@ class CSystemObject {
   unsigned long _lastStateTime=0;  
   unsigned long _lastUse=0;
   int _retryCount=0;
-
+  bool _forever = false;
   std::string _mode;   //This determines what you are doing   Set to IDLE when done and nothing left to do  When u set new mode need to get it out of IDLE
 
 protected:
-  bool _forever = false;
+  
   unsigned long _createdTime=0;
   unsigned long _currentTime=0;
   unsigned long _startTime=0;
@@ -72,8 +72,7 @@ public:
   
   std::string thisSat(){return _sat;}
   bool outOfTime();
-  bool Forever();
-  void Forever(bool tmp){_forever=tmp;};
+ 
   void setup(CMsg &msg) { setup(); };
   void loop(CMsg &msg)  {loop();};
   virtual void init();
