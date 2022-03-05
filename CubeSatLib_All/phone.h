@@ -5,7 +5,7 @@
 #include <queue>
 #include "funcs.h"
 
-#include <arduino.h>
+#include <Arduino.h>
 
 #define BLOCK_LENGTH 200
 #define BUFFER_LENGTH 50

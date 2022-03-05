@@ -1,6 +1,6 @@
 #include "fhmotor.h"
 #include <consoleio.h>
-#include <arduino.h>
+#include <Arduino.h>
 
 volatile unsigned long _countx=0;
 volatile unsigned long _county=0;
@@ -185,12 +185,12 @@ void CMotorController::activateDrive(float val){
   setMSpeed(val);
   int nVal;
   
-  if((val<0)&&(getDir()){
+  if((val<0)&&(getDir())){
     setDir(0);              
     digitalWrite(PIN_DIR,LOW);  
   }
 
-  if((val>=0)&&(!getDir()){  
+  if((val>=0)&&(!getDir())){  
     setDir(1);
     digitalWrite(PIN_DIR,HIGH);
   }

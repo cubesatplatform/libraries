@@ -1,7 +1,7 @@
 #include "defs.h"
 #include "funcs.h"
 #include "consoleio.h"
-#include <arduino.h>
+#include <Arduino.h>
 
 std::list<std::string> qLog;
 

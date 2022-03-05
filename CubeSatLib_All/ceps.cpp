@@ -1,4 +1,4 @@
-#include "arduino.h"
+#include "Arduino.h"
  #include <Wire.h>
 #include "ceps.h"
 
@@ -19,7 +19,7 @@ uint8_t  CEPS::readI2C(uint8_t i2cs_addr, uint8_t reg, uint8_t * data, uint16_t 
   Wire.beginTransmission(i2cs_addr);
   Wire.write(&reg,1);
   Wire.endTransmission();
-  Wire.requestFrom(i2cs_addr, nbyte);    // request 6 bytes from slave device #8
+  Wire.requestFrom(i2cs_addr, (uint8_t) nbyte);    // request 6 bytes from slave device #8
 
   uint16_t k = 0;
   //writeconsole("Available :"); writeconsoleln(Wire.available());
