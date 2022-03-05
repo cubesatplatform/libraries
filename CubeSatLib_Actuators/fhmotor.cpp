@@ -87,18 +87,9 @@ float PWMCounter::RPS(){
   prevT=lastT;
   lastCount=curcount;
 
-  //float fcount=(float) diffcount;
 
-  // writeconsoleln(lcount);
-  //fcount/=6.0;  //6 pings per revolution
-  //writeconsoleln(fcount);
-  //float fsec=(float)lsec;
-  //fsec/=1000.0;
-
-  float ftmp=1000.0*(float)diffcount/(float)diffsec;
-  // writeconsole(ftmp);
+  float ftmp=1000.0*(float)diffcount/(float)diffsec;  
   ftmp=ftmp/6.0;  //Six pings a rev 
-  //writeconsoleln(ftmp);
   return ftmp;   
 };
 
@@ -134,11 +125,19 @@ void CMotorController::config(PinName sig, PinName fg,PinName dir){
 
 void CMotorController::configSpeed(){  
   setMode("SPEED");
-  _Kp=2, _Ki=5, _Kd=1;
+  _Kp=0.8, _Ki=1.0, _Kd=1.0;
   myPID.init(&_Input, &_Output, &_Setpoint, _Kp, _Ki, _Kd, DIRECT);
   myPID.SetMode(AUTOMATIC);
   myPID.SetSampleTime(50);
-  myPID.SetOutputLimits(100, 1255);
+
+
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)     
+    myPID.SetOutputLimits(0, 100);   
+  #else          
+    myPID.SetOutputLimits(0, 254);
+  #endif
+  
+  
 }
 
 void CMotorController::configRotation(CIMU *pIMU,char axis){
@@ -161,7 +160,7 @@ void CMotorController::configRotation(CIMU *pIMU,char axis){
 void CMotorController::init(){
   CBaseDrive::init();
 
-  _Setpoint=0.0;
+  _Setpoint=100.0;
   _Input=0.0;
   _Output=0.0;
   _Output_last=0.0;
@@ -181,30 +180,25 @@ unsigned long CMotorController::getCount(){
   return pwmCounter.getCount();  
 }
 
-void CMotorController::activateDrive(float val){
+void CMotorController::activateDrive(int val){
+
   setMSpeed(val);
   int nVal;
   
-  if((val<0)&&(getDir()){
+  if((val<0)&&(getDir())){
     setDir(0);              
-    digitalWrite(PIN_DIR,LOW);  
+    //digitalWrite(PIN_DIR,LOW);  
   }
 
-  if((val>=0)&&(!getDir()){  
+  if((val>=0)&&(!getDir())){  
     setDir(1);
-    digitalWrite(PIN_DIR,HIGH);
+  //  digitalWrite(PIN_DIR,HIGH);
   }
 
+  nVal=abs(val); 
       
-  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7) 
-    writeconsole("Portenta: CMotorController  ---   ACTIVATE DRIVE !!!!!!!!!!   ");    writeconsoleln(val);
-    nVal=abs(val*1000.0);  
-  #else      
-    writeconsole("TTGO :CMotorController  ---   ACTIVATE DRIVE !!!!!!!!!!");     writeconsoleln(val);
-    nVal=abs(val*250.0);  
-  #endif
         
-
+  writeconsole("           PWM :");     writeconsoleln(val);
   sendPWM(nVal);
 
 }
@@ -213,11 +207,52 @@ void CMotorController::activateDrive(float val){
 
 
 void CMotorController::loopSpeed(){
+  writeconsole("loopSpeed.  Input:  ");
+  writeconsole(RPS());  
+  writeconsole("      Output PWM: ");
+  _Input =RPS();
+   myPID.Compute();  
+   writeconsole((float)_Output);  
+   writeconsoleln("------ End  ");
+   activateDrive((int)_Output);
+  
+}
+
+void CMotorController::loopSpeedSimple(){
+  
+  
   
   _Input =RPS();
-  myPID.Compute();  
-  writeconsole("loopSpeed  "); writeconsoleln((float)_Output);  
-  activateDrive(_Output);
+
+
+
+
+  if(_Setpoint>_Input+3) 
+    _Output+=3;    
+
+  else if(_Setpoint>_Input) 
+    _Output+=1;
+  
+  
+  else if(_Setpoint<_Input-3) 
+    _Output-=3;    
+
+  else if(_Setpoint<_Input) 
+    _Output-=1;
+
+if(_Output<0 ) _Output=0;
+if(_Output>400 ) _Output=400;
+    
+  
+  // myPID.Compute();  
+  writeconsole("Setpoint: ");
+  writeconsole((float)_Setpoint);  
+  writeconsole("    Input: ");
+  writeconsole((float)_Input);
+  writeconsole("    Onput: ");  
+  writeconsole((float)_Output);  
+  writeconsoleln("------ End  ");
+  activateDrive((int)_Output);
   
 }
 
@@ -236,7 +271,7 @@ void CMotorController::loopRotation(){
   if(_Output_last ==_Output)
     return;
 
-  writeconsole(_axis) ;writeconsole("    Input: ");writeconsole((float)_Input);writeconsole("    Output: ");writeconsoleln((float)_Output);
+  writeconsole(_axis) ;writeconsole("    Input: ");writeconsole(_Input);writeconsole("    Output: ");writeconsoleln(_Output);
   if(_Output>=0.0){
     
     if(getDir()) {
@@ -244,7 +279,7 @@ void CMotorController::loopRotation(){
       setDir(true);
       delay(20);
       }    
-    activateDrive(_Output);
+    activateDrive((int)_Output);
     }
 
   if(_Output<0.0){    
@@ -253,33 +288,37 @@ void CMotorController::loopRotation(){
       setDir(false);
       delay(20);
       }    
-    activateDrive(_Output*(-1.0));
+    activateDrive((int)_Output*(-1));
   } 
 } 
 
 void CMotorController::runOnce(CMsg &m){
-  /*
   if(Mode()=="SPEED")
     loopSpeed();
+  if(Mode()=="SPEEDSIMPLE")
+    loopSpeedSimple();
 
-  if(Mode()=="ROTATION")    
+  if(Mode()=="ROTATION")  
     loopRotation();
-    */
+  
 }
 
 
 void CMotorController::test() {
-float sspeed=0.0;  
+int sspeed=0;  
 
 configSpeed();
 
-Speed(.1,3000);
+//Speed(100,10000);
+setMode("SPEED");
+setPoint(84);
 
-for(int count=0; count<100; count++){
+for(int count=0; count<2000; count+=10){
   loop();
-  delay(100);
-  writeconsole(".");
-  
-}
+  //sendPWM(count);   writeconsoleln(count);
+  delay(50);  
+  }
+
+Speed(0,10000);
 
 }

@@ -3,12 +3,12 @@
 
 
 
-class CBaseDrive:public CSystemObject{
-  bool bOn=false;
+class CBaseDrive:public CSystemObject{   //Speed PWM 0-1000
+  bool bOn=false;  
   int _motor=0;
-  float _mspeed=0.0;
+  int _mspeed=0.0;
   int _mdir=1;
-  float _setSpeed=1.0;
+  int _setSpeed=1.0;
   int _PWMSpeed=0;
 
 
@@ -19,7 +19,7 @@ class CBaseDrive:public CSystemObject{
   unsigned long _maxRunTime=10000;
   unsigned long _driveInterval=0;
   unsigned long _modifiedTime=0;
-  unsigned long _duration=0;
+  unsigned long _duration=10000;
   unsigned long _changedOn=0;
 protected: 
   const int freq = 10000;
@@ -36,15 +36,15 @@ public:
 
   void init();
 
-  void Forward(float s=1.0,unsigned long dur=0);
-  void Backward(float s=1.0,unsigned long dur=0);
+  void Forward(int s=1000,unsigned long dur=0);
+  void Backward(int s=1000,unsigned long dur=0);
   void Reverse();
 
   bool isForward();
   
-  virtual void Speed(float s=1.0,unsigned long dur=0);
+  virtual void Speed(int s=1000,unsigned long dur=0);
   
-  virtual void activateDrive(float val){}
+  virtual void activateDrive(int val){}
   virtual void runOnce(CMsg &m){};
   
   void sendPWM(int nVal);
@@ -54,19 +54,21 @@ public:
   void loop();
   void stopActuator();
 
-  float getSetSpeed(){return _setSpeed;}
-  void setSetSpeed(float tmp){_setSpeed=tmp;}
+  int getSetSpeed(){return _setSpeed;}
+  void setSetSpeed(int tmp){_setSpeed=tmp; }
 
   int getPWMSpeed(){return _PWMSpeed;};
-  void setPWMSpeed(float tmp){_PWMSpeed=tmp;};
+  void setPWMSpeed(int tmp){_PWMSpeed=tmp;};
 
   int getMSpeed(){return _mspeed;};
-  void setMSpeed(float tmp){_mspeed=tmp;};
+  void setMSpeed(int tmp){_mspeed=tmp;};
  
 
   unsigned long getDuration(){return _duration;};
   void setDuration(unsigned long tmp){_duration=tmp;}
   
+
+  void changed(){ _changedOn=getTime();}
 
   unsigned long getMaxRunTime(){return _maxRunTime;};
   void setMaxRunTime(unsigned long tmp){_maxRunTime=tmp;}

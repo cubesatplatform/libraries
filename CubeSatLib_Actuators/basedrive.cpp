@@ -8,12 +8,12 @@ int CBaseDrive::channel=0;
 
 CBaseDrive::CBaseDrive(){}
 
-void CBaseDrive::Forward(float s,unsigned long dur){Speed(abs(s),dur);}
-void CBaseDrive::Backward(float s,unsigned long dur){Speed(-1.0*abs(s),dur);}
-void CBaseDrive::Reverse(){Speed(-1.0*_mspeed);}
+void CBaseDrive::Forward(int s,unsigned long dur){Speed(abs(s),dur);}
+void CBaseDrive::Backward(int s,unsigned long dur){Speed(-1*abs(s),dur);}
+void CBaseDrive::Reverse(){Speed(-1*_mspeed);}
 bool CBaseDrive::isForward(){if(_mdir) return true; return false;}
 void CBaseDrive::stopActuator(){
-  Speed(0.0,0); 
+  Speed(0,0); 
   setState("PAUSE");
 }
 
@@ -22,9 +22,9 @@ void CBaseDrive::init(){
 
   bOn=false;  
   _motor=0;
-  _mspeed=0.0;
+  _mspeed=0;
   _mdir=1;
-  _setSpeed=1.0;
+  _setSpeed=1000;
   _PWMSpeed=0;
 
   _driveStartTime=0;
@@ -44,6 +44,12 @@ void CBaseDrive::init(){
 }
 
 void CBaseDrive::sendPWM(int nVal){
+
+  if (nVal==getPWMSpeed()){   //Do nothing if same speed
+    writeconsole("skip ");
+    writeconsoleln(nVal);
+    return;
+  }
   setPWMSpeed(nVal);
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
     analogWrite(PIN_SIGNAL,nVal);
@@ -52,7 +58,7 @@ void CBaseDrive::sendPWM(int nVal){
   #endif
 }
 
-void CBaseDrive::Speed(float s,unsigned long dur){
+void CBaseDrive::Speed(int s,unsigned long dur){
   if(State()!="PLAY")
     setState("PLAY");
 
@@ -74,7 +80,7 @@ void CBaseDrive::TestMotor(){
   //  This walks through all 34 motor positions driving them forward and back.
   //  It uses .setDrive( motorNum, direction, level ) to drive the motors.
 
-    for (float y=0.0;y<1.0; y+=0.05){
+    for (int y=0; y<1000; y+=20){
       Speed(y);
       delay(20);
     }
@@ -84,13 +90,15 @@ void CBaseDrive::TestMotor(){
  
 
 void CBaseDrive::loop(){
-  if(_duration<1){
+  if(_duration==0)
     return;
-    }
   unsigned long ct=getTime();
   
   if(ct>_changedOn+_duration){
     stopActuator();            
+    writeconsoleln("Stoppping Time's up");
+    _duration=0;
+    return;
     }
   CMsg m;
   runOnce(m);
@@ -98,7 +106,7 @@ void CBaseDrive::loop(){
 
 void CBaseDrive::callNewFunction(CMsg &msg){   //Calls a specific function directly
   std::string act=msg.getParameter("ACT");  
-  float speed=msg.getParameter("SPEED",(float)1.0);
+  int speed=msg.getParameter("SPEED",1000);
   unsigned long duration=msg.getParameter("DURATION",0);
 
   writeconsoleln(msg.serializeout());

@@ -21,5 +21,5 @@ public:
   void Address(char c);
   void init();
   void setup(){init();}
-  void activateDrive(float val); 
+  void activateDrive(int val); 
 };

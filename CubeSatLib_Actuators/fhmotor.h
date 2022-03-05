@@ -70,7 +70,7 @@ private:
 
 
 
-  double _Setpoint=0.0, _Input=0.0, _Output=0.0,_Output_last=0.0;
+  double _Setpoint=90.0, _Input=0.0, _Output=0.0,_Output_last=0.0;
   char _axis='X';
   //Specify the links and initial tuning parameters
   //double Kp=2, Ki=5, Kd=1;
@@ -93,11 +93,12 @@ public:
   unsigned long getCount();
   void runOnce(CMsg &m);
   void loopSpeed();
+  void loopSpeedSimple();
   void loopRotation();
   void test();
-  void setPoint(double sp){_Setpoint=sp;setMode("SPEED");}
+  void setPoint(double sp,unsigned long dur=10000000){_Setpoint=sp; changed();setDuration(dur);}
   void setPointRotation(double sp){_Setpoint=sp;setMode("ROTATION");}
   
-  void activateDrive(float val);
+  void activateDrive(int val);
 };
 

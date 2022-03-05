@@ -56,16 +56,16 @@ void CMDrive::Address(char c){_address=c;}
 
  
 
-void CMDrive::activateDrive(float val){
+void CMDrive::activateDrive(int val){   //0-1000
  
   writeconsole(Name());
   writeconsole(val);
   writeconsoleln("   CMDrive ---   ACTIVATE DRIVE !!!!!!!!!!");
-  if (val==0.0){
+  if (val==0){
       myMotorDriver.run(RELEASE);
       return;
   }
-  int nval=abs(val)*255.0;
+  int nval=abs(val)/4.0;  //0-1000 so div by 4
 
   if(val>0.0){
     setDir(true);
