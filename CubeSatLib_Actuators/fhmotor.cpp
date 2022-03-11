@@ -1,6 +1,6 @@
 #include "fhmotor.h"
 #include <consoleio.h>
-#include <arduino.h>
+#include <Arduino.h>
 
 volatile unsigned long _countx=0;
 volatile unsigned long _county=0;

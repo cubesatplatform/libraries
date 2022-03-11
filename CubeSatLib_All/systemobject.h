@@ -10,7 +10,7 @@
  TwoWire *getWire2();
 using namespace mbed;
 #else
-//#include <arduino.h>
+//#include <Arduino.h>
 typedef int PinName; 
 #endif
 

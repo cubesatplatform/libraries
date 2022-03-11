@@ -1,0 +1,6 @@
+# Ignore libraries added using Arduino IDE Library Manager
+RadioLib/
+ArduinoJson/
+
+# Ignore Emacs backup files
+*~

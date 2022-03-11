@@ -7,7 +7,7 @@
 #include <fhmotor.h>
 #include "SparkFun_BNO080_Arduino_Library.h"
 #include <radio.h>
-#include <arduino.h>
+#include <Arduino.h>
 
 #include <string>
 #include <mdrive.h>

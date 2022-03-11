@@ -1,7 +1,7 @@
 #include "defs.h"
 #include "powerup.h"
 
-#include "arduino.h"
+#include "Arduino.h"
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
 
