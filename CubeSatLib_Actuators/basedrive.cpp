@@ -1,5 +1,4 @@
 #include "basedrive.h"
-#include <arduino.h>
 #include "consoleio.h"
 
 int CBaseDrive::channel=0;

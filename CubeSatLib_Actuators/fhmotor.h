@@ -1,18 +1,16 @@
 #pragma once
+
 #include <defs.h>
 #include "basedrive.h"
-#include <arduino.h>
 #include "consoleio.h"
 #include "system_imu.h"
 #include "PID1.h"
 
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-  //#include <mbed.h>
- //#include <PwmOut.h>
-using namespace mbed;
+
+//using namespace mbed;
 #else
-//#include <arduino.h>
 typedef int PinName; 
 #endif
 

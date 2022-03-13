@@ -43,6 +43,14 @@ void CIMU::loop(){
   }
 
 
+void CIMU::test(){ 
+  CMsg m;
+  runOnce(m);
+  Output(m);
+ 
+}
+
+
 void CIMU::runOnce(CMsg &m){
      if((State()!="READY")&&(State()!="PLAY") )setup();
     if((State()!="READY")&&(State()!="PLAY") ) return;

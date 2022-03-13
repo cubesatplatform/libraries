@@ -1,6 +1,6 @@
 #pragma once
-#include <systemobject.h>
 
+#include <systemobject.h>
 
 
 class CBaseDrive:public CSystemObject{   //Speed PWM 0-1000

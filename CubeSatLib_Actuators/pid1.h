@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef PID1_h
 #define PID1_h
 #define LIBRARY_VERSION  1.2.1

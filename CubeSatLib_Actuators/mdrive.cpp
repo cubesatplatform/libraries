@@ -58,7 +58,7 @@ void CMDrive::Address(char c){_address=c;}
 
 void CMDrive::activateDrive(int val){   //0-1000
  
-  writeconsole(Name());
+  writeconsole(Name());writeconsole("  Speed:");
   writeconsole(val);
   writeconsoleln("   CMDrive ---   ACTIVATE DRIVE !!!!!!!!!!");
   if (val==0){
@@ -84,3 +84,16 @@ void CMDrive::activateDrive(int val){   //0-1000
 }
 
 
+void CMDrive::test(){
+  CSystemObject::test();
+  Speed(1.0);
+  
+  delay(5000);
+  
+  Speed(-1.0);
+  
+  delay(5000);
+  
+  
+  Speed(0.0);
+}

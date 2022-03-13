@@ -1,4 +1,5 @@
 #pragma once
+
 #include "defs.h"
 #include "basedrive.h"
 #include <Adafruit_DRV8830.h>
@@ -20,6 +21,7 @@ public:
   void config(char addr=0x60, TwoWire *twowire=&Wire,int m=0);
   void Address(char c);
   void init();
+  void test();
   void setup(){init();}
   void activateDrive(int val); 
 };
