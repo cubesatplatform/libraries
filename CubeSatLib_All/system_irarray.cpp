@@ -27,7 +27,7 @@ void CIRArray::setup()
   init();          
 
   for(int retries=0;retries<5;retries++){
-  if (! mlx.begin(MLX90640_I2CADDR_DEFAULT, _pWire)) {
+  if (! mlx.begin(_address, _pWire)) {
     
     m.setSYS(Name());
     m.setINFO("ERROR");
@@ -80,6 +80,15 @@ void CIRArray::setup()
   }
 
 }
+
+void CIRArray::test(){  
+  CSystemObject::test();
+  CMsg m;
+  runOnce(m);
+  Output(m);
+  
+}
+
 
 void CIRArray::loop(){
   if(subscribers(Name())){

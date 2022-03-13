@@ -1,6 +1,6 @@
+#include "defs.h"
 #include "system_mgr.h"
 #include "messages.h"
-#include "defs.h"
 #include "powerup.h"
 #include "system_imu.h"
 
@@ -19,6 +19,13 @@ m.setParameter("MAG","MAG");
 m.setParameter("MAGX","MAGX");
 m.setParameter("MAGY","MAGY");
 m.setParameter("MAGZ","MAGZ");
+m.setParameter("IR","IR");
+m.setParameter("IRX1","IRX1");
+m.setParameter("IRX2","IRX2");
+m.setParameter("IRY1","IRY1");
+m.setParameter("IRY2","IRY2");
+m.setParameter("IRZ1","IRZ1");
+m.setParameter("IRZ2","IRZ2");
 m.setParameter("PINSON","PINSON");
 m.setParameter("PINSOFF","PINSOFF");
 m.setParameter("PHONEON","PHONEON");
@@ -86,25 +93,31 @@ void CSystemMgr::initPins() {
 #else
 
 void CSystemMgr::initI2CMap(){
+  I2CMap["0_51"]="2> IR X1 - 0x33/51";
+  I2CMap["0_50"]="2> IR X2 - 0x32/50";
+  I2CMap["1_51"]="2> IR Y1 - 0x33/51";
+  I2CMap["1_50"]="2> IR Y2 - 0x32/50";
+  I2CMap["2_51"]="2> IR Z1 - 0x33/51";
+  I2CMap["2_50"]="2> IR Z2 - 0x32/50";
   
   I2CMap["0_74"]="0>Temp_OBC - 0x4A/74";
+  I2CMap["0_75"]="0>Temp_ADCS - 0x4B/75";
 
   I2CMap["0_73"]="2> Temp X1 - 0x49/73";
   I2CMap["0_72"]="2> Temp X - 0x48/72";
-
-  
   I2CMap["1_73"]="2> Temp Y1 - 0x49/73";
   I2CMap["1_72"]="2> Temp Y - 0x48/72";
+  I2CMap["2_73"]="2> Temp Z1 - 0x49/73";
+  I2CMap["2_72"]="2> Temp Z - 0x48/72";
 
-  I2CMap["1_96"]="1> 96";  
-  I2CMap["1_54"]="1> 54";
-  I2CMap["1_8"]=" 1> 8";
+  I2CMap["1_96"]="1> 96 ??";  
+  I2CMap["1_54"]="1> 54 ??";
+  I2CMap["1_8"]=" 1> 8 ??";
   
   I2CMap["2_99"]="2> Mag Z - 0x63/99";
   I2CMap["2_97"]="2> Mag Y - 0x61/97";
   I2CMap["2_96"]="2> Mag X - 0x60/96";
-  I2CMap["2_73"]="2> Temp Z1 - 0x49/73";
-  I2CMap["2_72"]="2> Temp Z - 0x48/72";
+  
 
 };
 
@@ -297,70 +310,6 @@ void CSystemMgr::initPins() {
 #endif
 
 
-void CSystemMgr::setupIMUI2C(TwoWire *wire){  
-  BNO080 myIMU;
-
-  myIMU.enableDebugging();
-  CMsg m;
-  m.setSYS("TESTIMUI2C");
-  for(int count=0; count<5;count++){
-
-    if (myIMU.begin(IMUADDRESS1,*wire) ){  //IMUADDRESS1
-
-      m.setINFO("I2C IMU FOUND");
-      wire->setClock(400000); //Increase I2C data rate to 400kHz
-    
-      myIMU.enableRotationVector(50); //Send data update every 50ms
-    
-      long ct=getTime();
-      while(getTime()<(ct+IMU_WAIT_TIME)){
-         if (myIMU.dataAvailable() == true) {
-          m.setParameter("PITCH",(float)myIMU.getPitch() * 180.0 / PI); // Convert pitch to degrees            
-          m.setParameter("ROLL",(float)myIMU.getRoll() * 180.0 / PI); // Convert roll to degrees
-          m.setParameter("YAW",(float)myIMU.getYaw() * 180.0 / PI); // Convert yaw / heading to degrees          
-         }
-
-        
-      }   
-    }
-    else{
-      m.setERROR("I2C IMU Not Deteced");
-      delay(500);
-       
-    }
-  }  
-  writeconsoleln(m.serializeout());
-  addTransmitList(m);
-  return;
-}
-
-
-void CSystemMgr::setupIMUSPI(){
-  //writeconsoleln("B xxxxxxxxxxxxxxxxxx1");
-#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)  
-  BNO080 myIMU;
-  CMsg m;
-  m.setSYS("TESTIMUSPI");
-for(int retries=0;retries<5;retries++){
-    if(myIMU.beginSPI(IMU_OBC_NSS, IMU_OBC_WAKE, IMU_OBC_INT, IMU_OBC_RST) == false)
-    {
-    m.setERROR("SPI IMU Not Deteced");     
-      //writeconsoleln("C xxxxxxxxxxxxxxxxxx1");
-    }
-    else{ 
-     //  myIMU.enableRotationVector(50); //Send data update every 50ms
-     //   myIMU.enableGyro(50); //Send data update every 50ms
-     myIMU.enableGyroIntegratedRotationVector(50); //Send data update every 50ms
-  
-      //writeconsoleln("D xxxxxxxxxxxxxxxxxx1");
-     m.setINFO("SPI IMU FOUND");     
-    }
-  }
-  writeconsoleln("E xxxxxxxxxxxxxxxxxx1");
-  writeconsoleln(m.serializeout());
-  addTransmitList(m);
-#endif  
-}
 
 void CSystemMgr::pinsOn(){
   CMsg m;
@@ -459,6 +408,14 @@ void CSystemMgr::enableI2C(){
 }
 
 void CSystemMgr::loopWire(TwoWire *wire,const char * s) {
+  if(wire==NULL){
+    CMsg m;
+    m.setSYS("TWOWIRE");
+    m.setINFO("ERROR NULL");
+    writeconsoleln(m.serializeout());
+
+  }
+  
   byte error, address;
   int nDevices=0;
   int naddress;
@@ -475,8 +432,11 @@ void CSystemMgr::loopWire(TwoWire *wire,const char * s) {
     strI+="_";
 
     writeconsole(".");
+    
     wire->beginTransmission(address);
+    
     error = wire->endTransmission();
+    //continue;
     if (error == 0) {      
       //if (address<16)  writeconsole("0");
       
@@ -540,43 +500,43 @@ void CSystemMgr::SendCmd(std::string str) {
   }
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-if  (str == "MOTORX"){
-  testMotor("MOTORX");
+if (   (str == "MOTORX") || (str == "MOTORY") || (str == "MOTORZ") ){
+  testMotor(str.c_str());
   return;
 }
 
-if  (str == "MOTORY"){
-  testMotor("MOTORY");
+if ( (str == "IRX1") || (str == "IRX2") ||
+  (str == "IRY1") || (str == "IRY2") ||
+  (str == "IRZ1") || (str == "IRZ2") ){
+  testIR(str.c_str());
   return;
 }
 
-if  (str == "MOTORZ"){
-  testMotor("MOTORZ");
+
+if (   (str == "MAGX") || (str == "MAGY") || (str == "MAGZ") ){
+  testMAG(str.c_str());
   return;
 }
 
-if  (str == "MAGX"){
-  testMAG(MAG_ADDRESS_X);
+
+if (   (str == "TEMPX1") || (str == "TEMPX2") || 
+(str == "TEMPY1") || (str == "TEMPY2") || 
+(str == "TEMPZ1") || (str == "TEMPZ2") || 
+(str == "TEMPOBC") || (str == "TEMPADCS") 
+
+ ){
+  testTemp(str.c_str());
   return;
 }
+
 
 if  (str == "MAGDX"){
   testMAGDrive(MAG_ADDRESS_X);
   return;
 }
 
-if  (str == "MAGY"){
-  testMAG(MAG_ADDRESS_Y);
-  return;
-}
-
 if  (str == "MAGDY"){
   testMAGDrive(MAG_ADDRESS_Y);
-  return;
-}
-
-if  (str == "MAGZ"){
-  testMAG(MAG_ADDRESS_Z);
   return;
 }
 
@@ -634,35 +594,15 @@ if  (str == "ADCSOFF"){
 
   if (str == "IMUSPI") {
     //writeconsoleln("A xxxxxxxxxxxxxxxxxx1");
-    setupIMUSPI();
+    testIMUSPI();
     return;
   }
   
-  if (str == "IMU0") {
-    writeconsoleln("IMU0");
-    Wire.begin();
-    delay(10);
-    setupIMUI2C(&Wire);
+  if (str == "IMU") {    
+    testIMUI2C();
     return;
   }
   
-  if (str == "IMU1") {
-    writeconsoleln("IMU1");
-    Wire1.begin();
-    delay(10);
-    setupIMUI2C(&Wire1);
-    return;
-  }
-
-#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)  
-  if (str == "IMU2") {
-    writeconsoleln("IMU2");
-    
-    delay(10);
-    setupIMUI2C(getWire2());
-    return;
-  }
-  #endif
 
 
   if (str == "I2C0") {
@@ -737,6 +677,31 @@ if  (str == "ADCSOFF"){
 }
 
 
+void CSystemMgr::testIMUI2C(){  
+  CIMU *pTest=(CIMU *)getSystem("IMUI2C");
+  if(pTest!=NULL) {
+    pTest->setup();
+    pTest->test();
+  }
+ 
+  return;
+}
+
+
+void CSystemMgr::testIMUSPI(){
+  
+#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)  
+  CIMU *pTest=(CIMU *)getSystem("IMUSPI");
+  if(pTest!=NULL) {
+    pTest->setup();
+    pTest->test();
+  }
+ 
+#endif  
+}
+
+
+
 void CSystemMgr::testMotor(const char *s){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   writeconsoleln("ENTER void CSystemMgr::testMotor(char axis)");  
@@ -744,40 +709,27 @@ void CSystemMgr::testMotor(const char *s){
   enableMagsMotors();        
   enableADCS();
 
-  CMotorController *pM=(CMotorController *)getSystem(s);
-  if(pM!=NULL) pM->test();
+  CMotorController *pTest=(CMotorController *)getSystem(s);
+  if(pTest!=NULL) {
+    pTest->setup();
+    pTest->test();
+  }
   //disableMagsMotors();  
 //  disableADCS();
   #endif
 }
 
-void CSystemMgr::testMAGDrive(char addr){
+void CSystemMgr::testMAG(const char *s){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   writeconsoleln("ENTER void CSystemMgr::testMAGDrive(char addr)");  
   enableSensors();  
   enableMagsMotors();  
 
-
-  CMDrive MAG;
-  delay(10);
-  
-  MAG.Name("TestMag");
-  
-  MAG.config(addr,getWire2());
-  
-  MAG.setup();
-  
-  MAG.Speed(1.0);
-  
-
-  delay(5000);
-  
-  MAG.Speed(-1.0);
-  
-  delay(5000);
-  
-  
-  MAG.Speed(0.0);
+  CMDrive *pTest=(CMDrive *)getSystem(s);
+  if(pTest!=NULL) {
+    pTest->setup();
+    pTest->test();
+  }
   
   disableMagsMotors();
   
@@ -785,7 +737,41 @@ void CSystemMgr::testMAGDrive(char addr){
   #endif
 }
 
-void CSystemMgr::testMAG(char addr){
+
+
+void CSystemMgr::testIR(const char *s){
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+  writeconsoleln("ENTER void CSystemMgr::testIR(char addr)");  
+  enableSensors();  
+  CIRArray *pTest=(CIRArray *)getSystem(s);
+  if(pTest!=NULL) {
+    pTest->setup();
+    pTest->test();
+  }
+  
+  writeconsoleln("EXIT void CSystemMgr::testIR(char addr)");
+  #endif
+}
+
+void CSystemMgr::testTemp(const char *s){
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+  writeconsoleln("ENTER void CSystemMgr::testTemp(const char *s)");  
+  enableSensors();  
+  CTemperatureObject *pTest=(CTemperatureObject *)getSystem(s);
+  
+  if(pTest!=NULL) {
+    pTest->setup();
+    pTest->test();
+  }
+  
+  writeconsoleln("EXIT void CSystemMgr::testTemp(const char *s)");  
+  #endif
+}
+
+
+
+
+void CSystemMgr::testMAGDrive(char addr){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   Adafruit_DRV8830 drv;
 

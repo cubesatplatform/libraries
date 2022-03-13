@@ -1,6 +1,5 @@
 #pragma once
 
-#include "defs.h"
 void enablePhone();
 void disablePhone();
 

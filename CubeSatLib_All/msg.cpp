@@ -1,6 +1,5 @@
 #include "msg.h"
 #include "consoleio.h"
-#include <arduino.h>
 
 int CMsg::_ID = 0;
 

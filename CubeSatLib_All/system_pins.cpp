@@ -1,5 +1,5 @@
 #include "system_pins.h"
-#include <arduino.h>
+
 
 void CSatPins::loop() {
 }

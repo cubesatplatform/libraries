@@ -1,6 +1,3 @@
-#include <Arduino.h>
-#include <SPI.h>
-#include <Wire.h>
 #include <boards.h>
 
 #undef HAS_SDCARD

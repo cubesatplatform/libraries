@@ -1,5 +1,5 @@
 #include "funcs.h"
-#include "arduino.h"
+#include <Arduino.h>
 
 long getTime() {
   return millis();

@@ -1,3 +1,4 @@
+#pragma once
 /**
  * @file eps.h
  * @author IRQdesign d.o.o. 

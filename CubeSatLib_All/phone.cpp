@@ -56,7 +56,7 @@ void CPhone::setup() {
 #else  
    Serial1.begin(PHONE_BAUD_RATE,SERIAL_8N1, PHONE_TX, PHONE_RX);
 #endif  
-  sendSerial("INIT"); //to synchronise Arduino and app  
+  sendSerial("INIT"); //to synchronise  
   setState("PLAY");
 }
 

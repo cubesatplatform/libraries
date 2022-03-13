@@ -1,4 +1,5 @@
 #pragma once
+
 #include <map>
 #include "defs.h"
 #include "systemobject.h"

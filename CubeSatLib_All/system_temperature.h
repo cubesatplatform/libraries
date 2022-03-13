@@ -1,4 +1,5 @@
-#include <Wire.h>
+#pragma once
+
 #include <systemobject.h>
 #include <SparkFun_TMP117.h>
 
@@ -19,6 +20,7 @@ public:
   void setup();
   void loop();
   void init();
+  void test();
   void runOnce(CMsg &m);
 };
 

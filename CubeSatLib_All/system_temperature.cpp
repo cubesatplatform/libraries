@@ -33,6 +33,19 @@ void CTemperatureObject::loop(){
   }
 }
 
+void CTemperatureObject::test(){
+  CSystemObject::test();  
+  CMsg m;
+  runOnce(m);
+
+  m.setSYS(Name());
+  m.setParameter("TEMP",_temp);
+  m.setParameter("TIME",_time);
+
+  addTransmitList(m);
+
+}
+
 
 void CTemperatureObject::config(char addr, TwoWire *pWire){  
   setInterval(60000);

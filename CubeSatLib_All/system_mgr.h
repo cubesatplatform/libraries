@@ -1,13 +1,15 @@
 #pragma once
+
 #include <msg.h>
 #include <funcs.h>
 
 #include <list>
 #include <systemobject.h>
 #include <fhmotor.h>
+#include <system_irarray.h>
+#include <system_temperature.h>
 #include "SparkFun_BNO080_Arduino_Library.h"
 #include <radio.h>
-#include <arduino.h>
 
 #include <string>
 #include <mdrive.h>
@@ -89,15 +91,19 @@ public:
   void phone();
   void pinsOn();
   void pinsOff();
-  void setupIMUSPI();
-  void setupIMUI2C(TwoWire *wire);
+  
   
   void initPins();
   void initI2CMap();
   void controlPlan();
-  void testMAG(char addr=MAG_ADDRESS_Z);
+  
+  void testIMUSPI();
+  void testIMUI2C();
   void testMAGDrive(char addr=MAG_ADDRESS_Z);
+  void testMAG(const char* s);
   void testMotor(const char* s);
+  void testTemp(const char* s);
+  void testIR(const char* s);
   
   void Output(CMsg &msg);
   void sendSerial(const char* cmd);

@@ -1,6 +1,6 @@
 #pragma once
-#include "stateobj.h"
 
+#include "stateobj.h"
 
 
 class CCoreState : public CStateObj {

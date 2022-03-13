@@ -1,4 +1,5 @@
 #pragma once
+
 #include "defs.h"
 
 #include "systemobject.h"
@@ -25,6 +26,7 @@ public:
   void setup();
   void loop();
   void init();
+  void test();
   void fillPixel();
   void fillGrey();
   void fillAscii();

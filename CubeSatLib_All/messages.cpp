@@ -1,9 +1,5 @@
 #include "messages.h"
 #include "consoleio.h"
-#include <arduino.h>
-
-
-
 
 void CMessages::moveReceived() {
   

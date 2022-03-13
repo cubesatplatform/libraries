@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 long getTime();
 std::string getTimeString();

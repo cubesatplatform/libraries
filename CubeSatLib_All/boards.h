@@ -1,5 +1,6 @@
+#pragma once
+
 #include <defs.h>
-#include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
 

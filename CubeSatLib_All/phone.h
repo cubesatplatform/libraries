@@ -1,11 +1,11 @@
 #pragma once
+
 #include "defs.h"
 #include "systemobject.h"
 #include <list>
 #include <queue>
 #include "funcs.h"
 
-#include <arduino.h>
 
 #define BLOCK_LENGTH 200
 #define BUFFER_LENGTH 50

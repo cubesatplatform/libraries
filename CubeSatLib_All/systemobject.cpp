@@ -1,7 +1,7 @@
 
 #include "systemobject.h"
 #include "messages.h"
-#include <arduino.h>
+
 //stateNone->switchOn()->stateOn|StateError
 //stateOn->setup()->->stateReady|StateError
 //stateReady->switchPlay()->statePlay|StateError

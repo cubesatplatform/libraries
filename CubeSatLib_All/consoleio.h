@@ -1,10 +1,8 @@
 #pragma once
+
 #include "msg.h"
 #include <iostream>
 #include <list>
-
-#include <Arduino.h>
-
 
 
 void writeconsole(CMsg &m);

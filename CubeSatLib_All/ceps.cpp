@@ -1,5 +1,4 @@
-#include "arduino.h"
- #include <Wire.h>
+#include <Wire.h>
 #include "ceps.h"
 
 

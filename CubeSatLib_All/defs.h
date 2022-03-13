@@ -3,6 +3,9 @@
 #if !defined(_DEFS_H)
 #define _DEFS_H
 
+#include <Arduino.h>
+
+
 #define MAXLISTSIZE 50
 #define MAXDATALEN 170
 #define RADIOTXDELAY 100
@@ -94,12 +97,12 @@
 #define P_SPI1_MISO PC_2 
 #define P_SPI1_SCK PI_1 
 
-#define P_I2C0  PH_7 
-#define P_I2C0  PH_8 
-#define P_I2C1  PB_6 
-#define P_I2C1  PB_7 
-#define P_I2C2  PH_11  
-#define P_I2C2  PH_12  
+#define P_I2C0_SCL  PH_7 
+#define P_I2C0_SDA  PH_8 
+#define P_I2C1_SCL  PB_6 
+#define P_I2C1_SDA  PB_7 
+#define P_I2C2_SCL  PH_11  
+#define P_I2C2_SDA  PH_12  
   
 #define P_UART0_TX  PA_0
 #define P_UART0_RX  PI_9
@@ -217,11 +220,11 @@
 #define IMUADDRESS2  0x4A
 
 #define IRARRAY_ADDRESS_X1  0x33    //NEVER EVER USER 34 ON TBEAM!!!!@#!@#!@#!@
-#define IRARRAY_ADDRESS_X2  0x33
+#define IRARRAY_ADDRESS_X2  0x32
 #define IRARRAY_ADDRESS_Y1  0x33
-#define IRARRAY_ADDRESS_Y2  0x33
+#define IRARRAY_ADDRESS_Y2  0x32
 #define IRARRAY_ADDRESS_Z1  0x33
-#define IRARRAY_ADDRESS_Z2  0x33
+#define IRARRAY_ADDRESS_Z2  0x32
 #define TEMP_X1 0x48
 #define TEMP_X2 0x49
 #define TEMP_Y1 0x48
@@ -246,7 +249,7 @@
 #define CODING_RATE               7       // 4/7 coding
 #define SYNC_WORD                 0x12    // private network
 #define OUTPUT_POWER              22      // +14 dBm
-#define CURRENT_LIMIT             120.0    // mA  was 60
+#define CURRENT_LIMIT             140.0    // mA  was 60,  120
 #define PREAMBLE_LENGTH           8       // symbols
 #define TCXO_VOLTAGE              1.6     // V
 

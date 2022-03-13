@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef MYESP32
 #include <esp_task_wdt.h>
 #endif

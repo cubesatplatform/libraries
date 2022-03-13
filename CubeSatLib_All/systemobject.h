@@ -1,16 +1,16 @@
 #pragma once
+
 #include <vector>
 #include "msg.h"
 
-
 #include "consoleio.h"
-#include "Wire.h"
+
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+ #include "Wire.h"
  TwoWire *getWire2();
 using namespace mbed;
 #else
-//#include <arduino.h>
 typedef int PinName; 
 #endif
 
@@ -59,6 +59,7 @@ public:
 
   virtual void setup() {setState("PLAY");};
   virtual void loop()  {setState("PAUSE");};
+  virtual void test()  {writeconsole("Test routine: ");writeconsoleln(Name());};
   virtual void runOnce(CMsg &msg)  {};
   virtual void config(CMsg &msg)  {};
           
