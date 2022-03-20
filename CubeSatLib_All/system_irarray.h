@@ -26,7 +26,7 @@ public:
   void setup();
   void loop();
   void init();
-  void test();
+  void test(CMsg &msg);
   void fillPixel();
   void fillGrey();
   void fillAscii();

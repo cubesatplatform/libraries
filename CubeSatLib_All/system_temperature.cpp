@@ -33,8 +33,8 @@ void CTemperatureObject::loop(){
   }
 }
 
-void CTemperatureObject::test(){
-  CSystemObject::test();  
+void CTemperatureObject::test(CMsg &msg){
+  CSystemObject::test(msg);  
   CMsg m;
   runOnce(m);
 

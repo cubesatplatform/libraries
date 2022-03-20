@@ -393,7 +393,7 @@ void CSystemMgr::burn(){
 
 void CSystemMgr::enableI2C(){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
- 
+  enableADCS();
   enableSensors();  
   enableMagsMotors();  
 
@@ -606,29 +606,29 @@ if  (str == "ADCSOFF"){
 
 
   if (str == "I2C0") {
-    enableI2C();
+    enableI2C();    
     writeconsoleln("I2C0");
     Wire.begin();
-    delay(10);
+    delay(100);
     loopWire(&Wire, "0");
     return;
   }
 
   if (str == "I2C1") {
-    enableI2C();
+    enableI2C();    
     writeconsoleln("I2C1");
     Wire1.begin();
-    delay(10);
+    delay(100);
     loopWire(&Wire1,"1");
     return;
   }
 
   if (str == "I2C2") {
-    enableI2C();
+    enableI2C();    
     writeconsoleln("I2C2");
 
     #ifndef TTGO
-    
+    delay(100);
     loopWire(getWire2(),"2");
     #endif
     return;
@@ -680,8 +680,9 @@ if  (str == "ADCSOFF"){
 void CSystemMgr::testIMUI2C(){  
   CIMU *pTest=(CIMU *)getSystem("IMUI2C");
   if(pTest!=NULL) {
+    CMsg m;
     pTest->setup();
-    pTest->test();
+    pTest->test(m);
   }
  
   return;
@@ -693,8 +694,9 @@ void CSystemMgr::testIMUSPI(){
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)  
   CIMU *pTest=(CIMU *)getSystem("IMUSPI");
   if(pTest!=NULL) {
+    CMsg m;
     pTest->setup();
-    pTest->test();
+    pTest->test(m);
   }
  
 #endif  
@@ -711,11 +713,12 @@ void CSystemMgr::testMotor(const char *s){
 
   CMotorController *pTest=(CMotorController *)getSystem(s);
   if(pTest!=NULL) {
+    CMsg m;
     pTest->setup();
-    pTest->test();
+    pTest->test(m);
   }
-  //disableMagsMotors();  
-//  disableADCS();
+  disableMagsMotors();  
+  disableADCS();
   #endif
 }
 
@@ -727,8 +730,9 @@ void CSystemMgr::testMAG(const char *s){
 
   CMDrive *pTest=(CMDrive *)getSystem(s);
   if(pTest!=NULL) {
+    CMsg m;
     pTest->setup();
-    pTest->test();
+    pTest->test(m);
   }
   
   disableMagsMotors();
@@ -745,8 +749,9 @@ void CSystemMgr::testIR(const char *s){
   enableSensors();  
   CIRArray *pTest=(CIRArray *)getSystem(s);
   if(pTest!=NULL) {
+    CMsg m;
     pTest->setup();
-    pTest->test();
+    pTest->test(m);
   }
   
   writeconsoleln("EXIT void CSystemMgr::testIR(char addr)");
@@ -760,8 +765,9 @@ void CSystemMgr::testTemp(const char *s){
   CTemperatureObject *pTest=(CTemperatureObject *)getSystem(s);
   
   if(pTest!=NULL) {
+    CMsg m;
     pTest->setup();
-    pTest->test();
+    pTest->test(m);
   }
   
   writeconsoleln("EXIT void CSystemMgr::testTemp(const char *s)");  

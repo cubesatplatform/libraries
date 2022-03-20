@@ -59,7 +59,7 @@ public:
 
   virtual void setup() {setState("PLAY");};
   virtual void loop()  {setState("PAUSE");};
-  virtual void test()  {writeconsole("Test routine: ");writeconsoleln(Name());};
+  virtual void test(CMsg &msg)  {writeconsole("Test routine: ");writeconsoleln(Name());};
   virtual void runOnce(CMsg &msg)  {};
   virtual void config(CMsg &msg)  {};
           

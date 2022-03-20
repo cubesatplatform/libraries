@@ -81,8 +81,8 @@ void CIRArray::setup()
 
 }
 
-void CIRArray::test(){  
-  CSystemObject::test();
+void CIRArray::test(CMsg &msg){  
+  CSystemObject::test(msg);
   CMsg m;
   runOnce(m);
   Output(m);
