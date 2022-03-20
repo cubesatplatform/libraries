@@ -45,9 +45,9 @@ void CBaseDrive::init(){
 void CBaseDrive::sendPWM(int nVal){
 
   if (nVal==getPWMSpeed()){   //Do nothing if same speed
-    writeconsole("skip ");
+    writeconsole("same  but NOT skip ");
     writeconsoleln(nVal);
-    return;
+   // return;
   }
   setPWMSpeed(nVal);
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)

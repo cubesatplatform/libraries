@@ -4,13 +4,16 @@
 #include "basedrive.h"
 #include "consoleio.h"
 #include "system_imu.h"
-#include "PID1.h"
+#include <ArduPID.h>
+
+
 
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
 
 //using namespace mbed;
 #else
+#include <analogWrite.h>
 typedef int PinName; 
 #endif
 
@@ -40,6 +43,7 @@ private:
 //need to fix  see this
     PinName _interrupt;
     char _axis='X';
+    float _rps=0.0;
 
     unsigned long lastCount=0;
     unsigned long prevT=0;
@@ -76,7 +80,7 @@ private:
 
   PWMCounter pwmCounter;
 
-  PID myPID;
+  ArduPID myPID;
 
 public:
   CMotorController();
@@ -93,7 +97,7 @@ public:
   void loopSpeed();
   void loopSpeedSimple();
   void loopRotation();
-  void test();
+  void test(CMsg &msg);
   void setPoint(double sp,unsigned long dur=10000000){_Setpoint=sp; changed();setDuration(dur);}
   void setPointRotation(double sp){_Setpoint=sp;setMode("ROTATION");}
   

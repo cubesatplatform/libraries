@@ -139,7 +139,7 @@ class CIMU:public CSystemObject{
     void setupI2C();
     void setupSPI();
     void loop();
-    void test();
+    void test(CMsg &msg);
     void runOnce(CMsg &m);
 
     void Output(CMsg &msg);

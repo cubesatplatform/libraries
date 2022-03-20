@@ -84,8 +84,8 @@ void CMDrive::activateDrive(int val){   //0-1000
 }
 
 
-void CMDrive::test(){
-  CSystemObject::test();
+void CMDrive::test(CMsg &msg){
+  CSystemObject::test(msg);
   Speed(1.0);
   
   delay(5000);

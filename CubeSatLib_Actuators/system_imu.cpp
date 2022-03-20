@@ -43,7 +43,7 @@ void CIMU::loop(){
   }
 
 
-void CIMU::test(){ 
+void CIMU::test(CMsg &msg){ 
   CMsg m;
   runOnce(m);
   Output(m);
