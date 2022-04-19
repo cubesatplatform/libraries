@@ -8,25 +8,18 @@
  
     
 class CMagTorquer:public CSystemObject{
-  private:
-    long _timeStart=0;
-    long _timeEnd=0;
-    long _timeLast=0;    
-    long _lastMag=0;
-    unsigned long _prevTime=0;
-    
-    float _difx=0.0;
-    float _dify=0.0;
-    float _difz=0.0;
-        
-    float _lastx=0.0;
-    float _lasty=0.0;
-    float _lastz=0.0;
-    
-    CMDrive *pMAGX=NULL;
-    CMDrive *pMAGY=NULL;
-    CMDrive *pMAGZ=NULL;
+  private:    
+    CMDrive *_pMagX=NULL;
+    CMDrive *_pMagY=NULL;
+    CMDrive *_pMagZ=NULL;
     CIMU *_pIMU=NULL; 
+    float _gyroX=0.0;
+    float _gyroY=0.0;
+    float _gyroZ=0.0;
+
+    float _magX=0.0;
+    float _magY=0.0;
+    float _magZ=0.0;
     
   public:
     CMagTorquer();    
@@ -36,9 +29,10 @@ class CMagTorquer:public CSystemObject{
     void loop();
     void init();
     bool isIdle();
-    void Detumble();        
-    bool calcDiffs();
-    bool activateMag(CMsg &msg) ;
-    bool activateMag(char axis,float val) ;
-    
+    void activate(CMDrive *pMag, float gyro, float mag);
+    void newCMD(CMsg &msg);
+    void deactivate();    
+    void getGyroData();
+    void getMagData();
+    void loopDetumble();            
 };

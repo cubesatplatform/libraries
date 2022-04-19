@@ -7,6 +7,7 @@
 
 #include "funcs.h"
 #include "consoleio.h"
+#include "powerup.h"
 #include <algorithm>
 #include "systemobject.h"
 
@@ -50,6 +51,7 @@ public:
 	void Cleanup();  
 	bool outOfTime();
 	void Output(CMsg &msg);
+	void resetSubSystems();
 	CSystemObject* FindNameInSubsystems(std::string str);
 	CSystemObject* FindCIDInSubsystems(std::string str);
 };

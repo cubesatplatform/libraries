@@ -3,6 +3,7 @@
 
 CADCSState::CADCSState() {
   Name("ADCS");
+  setMaxTime(3*TIMEORBIT);
   //add some items to the map
   availablesystems["MT"] = true;
   availablesystems["MAGX"] = true;
@@ -15,7 +16,7 @@ CADCSState::CADCSState() {
 
 CADCSState::~CADCSState() {};
 
-void CADCSState::setup() {CStateObj::init();};
+void CADCSState::setup() {CStateObj::init();setMaxTime(3*TIMEORBIT);};
 void CADCSState::stateMsg(CMsg &msg){_statemsg=msg;};
 void CADCSState::enter() {  
     enableMagsMotors();
@@ -30,7 +31,7 @@ void CADCSState::enter() {
    }
 
 void CADCSState::exit() { 
-  disableMagsMotors();
+  //   Don't disable.  Need to keep stuff spinning   disableMagsMotors
   CMsg m;
   m.setTABLE("LOG");
   m.setINFO("Exit ADCS");  

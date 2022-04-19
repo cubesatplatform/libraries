@@ -5,6 +5,7 @@
 
 CDetumbleState::CDetumbleState() {
   Name("DETUMBLE");
+  setMaxTime(3*TIMEORBIT);
 
 };
 
@@ -16,6 +17,7 @@ void CDetumbleState::stateMsg(CMsg &msg){_statemsg=msg;};
 
 void CDetumbleState::enter() {
   enableMagsMotors();
+  resetSubSystems();
   _detumblecount++;
   CStateObj::enter();
   CMsg m;
@@ -32,6 +34,8 @@ void CDetumbleState::enter() {
     fs.writeFile(_detumblecount);    
     #endif
   setState("PLAY");
+  CSystemObject *pMT=getSystem("MT");
+  if (pMT!=NULL) pMT->setState("");  //Reset MT and gets it restarting detumbling
   }
   
 void CDetumbleState::exit() { 

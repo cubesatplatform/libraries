@@ -27,7 +27,7 @@ void CSystemObject::init(){
   _currentTime=getTime();
   _prevTime=0;
   
-  _maxTime=500000;
+  _maxTime=TIMEORBIT;
   _minTime=1000;
 
   _startTime=_createdTime;
@@ -243,7 +243,7 @@ void CSystemObject::nextState() {
 
   if (_currentTime<_startTime) return;   //Do nothing as it shouldnt be activated yet
 //timeSinceStateChange()  // Can use this to progress states
-if (_ostate == "ERROR") {  
+if (_ostate == "ERROR") {  //if ERROR, have it ertry a few times
     if(_interval<570) {
          _interval+=5;
       } 
@@ -375,6 +375,10 @@ void CSystemObject::State(CMsg &m) {
   }  
 }
 
+unsigned long CSystemObject::getReceivedTimestamp(){
+  CMessages* pM = getMessages();return pM->getReceivedTimestamp();
+  }
+
 
 void CSystemObject::subscribe(std::string str){
   CMessages* pM = getMessages();  
@@ -418,5 +422,6 @@ int CSystemObject::subscribers(std::string str){
   void CSystemObject::addReceivedList(CMsg &m ){
     CMessages* pM = getMessages();  
     pM->addReceivedList(m);
+    pM->setReceivedTimestamp();
 
   }

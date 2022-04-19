@@ -13,8 +13,13 @@ public:
 	};
 	~CLowPowerState() {};
 
-	void setup() {CStateObj::init();};
+	void setup() {CStateObj::init();setForever();};
 	void enter() { 
+		disableMagsMotors();
+		disableBurnWire();
+		disableSensors();
+		disablePhone();
+
 		CStateObj::enter();
 		CMsg m;
 		m.setTABLE("LOG");

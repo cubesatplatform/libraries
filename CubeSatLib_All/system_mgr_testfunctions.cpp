@@ -1,4 +1,7 @@
 #include "defs.h"
+#ifdef TTGO || TTGO1
+#include <analogWrite.h>
+#endif
 #include "system_mgr.h"
 #include "messages.h"
 #include "powerup.h"
@@ -316,6 +319,7 @@ void CSystemMgr::pinsOn(){
   m.setSYS("Pins ON");
   for (auto x:Pins){
     writeconsoleln(x.first.c_str());     
+    //pinMode(x.second, OUTPUT); ///Set is to output mode  if you need lots of current
     digitalWrite(x.second, HIGH);    
     delay(250);
   }
@@ -328,7 +332,7 @@ void CSystemMgr::pinsOff(){
   m.setSYS("Pins OFF");
   for (auto x:Pins){
     writeconsoleln(x.first.c_str());
-     
+    //pinMode(x.second, OUTPUT); ///Set is to output mode  if you need lots of current
     digitalWrite(x.second, LOW);    
     delay(250);
   }  
@@ -375,7 +379,7 @@ void CSystemMgr::sendSerial(const char* cmd) {    //Send to Phone
 
 void CSystemMgr::burn(){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-  // pinMode(PI_10, OUTPUT);
+  
   enableBurnWire();
   delay(10000);
   disableBurnWire();
@@ -425,6 +429,7 @@ void CSystemMgr::loopWire(TwoWire *wire,const char * s) {
   CMsg m;
   m.setSYS("LoopWire");
   m.setINFO("Scanning");
+  wire->begin();
   for(byte address = 1; address < 127; address++ ) {
     std::string strI;
     std::string strIM;
@@ -474,7 +479,8 @@ void CSystemMgr::loopWire(TwoWire *wire,const char * s) {
 
 
 
-void CSystemMgr::SendCmd(std::string str) {
+void CSystemMgr::SendCmd(CMsg &msg) {
+  std::string str=msg.getACT(); 
   PinName  n = Pins[str];
   char action = 'H';
   
@@ -492,7 +498,7 @@ void CSystemMgr::SendCmd(std::string str) {
     CMsg m;
     m.setSYS("Radio");
     m.setINFO("setup");
-    CRadio *pradio=(CRadio *)getSystem("RADIO");
+    CRadio *pradio=(CRadio *)getSystem("RADIO", "Radio");
     if(pradio!=NULL) pradio->setup();
     writeconsoleln(m.serializeout());
     addTransmitList(m);
@@ -501,20 +507,20 @@ void CSystemMgr::SendCmd(std::string str) {
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
 if (   (str == "MOTORX") || (str == "MOTORY") || (str == "MOTORZ") ){
-  testMotor(str.c_str());
+  testMotor(msg);
   return;
 }
 
 if ( (str == "IRX1") || (str == "IRX2") ||
   (str == "IRY1") || (str == "IRY2") ||
   (str == "IRZ1") || (str == "IRZ2") ){
-  testIR(str.c_str());
+  testIR(msg);
   return;
 }
 
 
 if (   (str == "MAGX") || (str == "MAGY") || (str == "MAGZ") ){
-  testMAG(str.c_str());
+  testMAG(msg);
   return;
 }
 
@@ -525,7 +531,7 @@ if (   (str == "TEMPX1") || (str == "TEMPX2") ||
 (str == "TEMPOBC") || (str == "TEMPADCS") 
 
  ){
-  testTemp(str.c_str());
+  testTemp(msg);
   return;
 }
 
@@ -565,7 +571,6 @@ if  (str == "ADCSOFF"){
   }
 
 
-
   if (str == "PINSON") {
     pinsOn();
     return;
@@ -590,16 +595,11 @@ if  (str == "ADCSOFF"){
     burn();
     return;
   }
-
-
-  if (str == "IMUSPI") {
-    //writeconsoleln("A xxxxxxxxxxxxxxxxxx1");
-    testIMUSPI();
-    return;
-  }
   
-  if (str == "IMU") {    
-    testIMUI2C();
+  
+  if ((str == "IMUI2C") || (str == "IMUSPI")) {
+    
+    testIMU(msg);
     return;
   }
   
@@ -636,7 +636,7 @@ if  (str == "ADCSOFF"){
 
   if (action == 'H') {
     writeconsoleln("High");
-    pinMode(n, OUTPUT); ///Set is to output mode   
+    //pinMode(n, OUTPUT); ///Set is to output mode  if you need lots of current
     delay(10);
     digitalWrite(n, HIGH);
     return;
@@ -644,7 +644,7 @@ if  (str == "ADCSOFF"){
 
   if (action == 'L') {
     writeconsoleln("Low");
-    pinMode(n, OUTPUT);   ///Set is to output mode
+    //pinMode(n, OUTPUT); ///Set is to output mode  if you need lots of current
     delay(10);
     digitalWrite(n, LOW);
     return;
@@ -654,21 +654,17 @@ if  (str == "ADCSOFF"){
     writeconsoleln("PWM");
     if (pwmPins.find(str) != pwmPins.end()) {
       writeconsole(" Found");
-      #ifdef TTGO
-        ledcSetup(_channel, freq, resolution);   // configure LED PWM functionalitites
-        ledcAttachPin(n, _channel);  // attach the channel to the GPIO to be controlled
-        delay(50);
-        ledcWrite(_channel, (int) 130); 
     
-      #else
-        analogWriteResolution(12);   
+        #ifdef TTGO || TTGO1
+        analogWriteResolution(n,PIN_RESOLUTION);   
+        #endif
         for (int count=0;count<4000;count+=100){
           analogWrite(n,count);
           writeconsole("PWM: ");
           writeconsole(count);
           delay(200);
         }
-      #endif
+    
     }
   
     return;    
@@ -677,62 +673,62 @@ if  (str == "ADCSOFF"){
 }
 
 
-void CSystemMgr::testIMUI2C(){  
-  CIMU *pTest=(CIMU *)getSystem("IMUI2C");
+void CSystemMgr::testIMU(CMsg &msg){  
+  std::string s=msg.getACT(); 
+  CIMU *pTest=(CIMU *)getSystem(s.c_str(),"Test IMU");
+ // enableMagsMotors();        
+  enableADCS();
+
   if(pTest!=NULL) {
-    CMsg m;
+    writeconsoleln(s);  
+
+    //m.setParameter("MODE","SIMPLE");
     pTest->setup();
-    pTest->test(m);
+    pTest->test(msg);
   }
- 
+  else
+    writeconsoleln(s);  
+
+ // disableMagsMotors();  
+  disableADCS();
+
   return;
 }
 
 
-void CSystemMgr::testIMUSPI(){
-  
-#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)  
-  CIMU *pTest=(CIMU *)getSystem("IMUSPI");
-  if(pTest!=NULL) {
-    CMsg m;
-    pTest->setup();
-    pTest->test(m);
-  }
- 
-#endif  
-}
 
 
-
-void CSystemMgr::testMotor(const char *s){
+void CSystemMgr::testMotor(CMsg &msg){
+  std::string s=msg.getACT(); 
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-  writeconsoleln("ENTER void CSystemMgr::testMotor(char axis)");  
+  writeconsole("ENTER void CSystemMgr::testMotor(char axis): ");  
+  writeconsoleln(s);
   
   enableMagsMotors();        
   enableADCS();
 
-  CMotorController *pTest=(CMotorController *)getSystem(s);
+  CMotorController *pTest=(CMotorController *)getSystem(s.c_str(),"Test Motor");
   if(pTest!=NULL) {
-    CMsg m;
-    pTest->setup();
-    pTest->test(m);
+    writeconsoleln("Testing Motor");
+    //pTest->setup();
+    pTest->test(msg);
   }
   disableMagsMotors();  
   disableADCS();
   #endif
 }
 
-void CSystemMgr::testMAG(const char *s){
+void CSystemMgr::testMAG(CMsg &msg){
+  std::string s=msg.getACT(); 
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   writeconsoleln("ENTER void CSystemMgr::testMAGDrive(char addr)");  
   enableSensors();  
   enableMagsMotors();  
 
-  CMDrive *pTest=(CMDrive *)getSystem(s);
+  CMDrive *pTest=(CMDrive *)getSystem(s.c_str(),"Test Mag");
   if(pTest!=NULL) {
-    CMsg m;
     pTest->setup();
-    pTest->test(m);
+    pTest->test(msg);
   }
   
   disableMagsMotors();
@@ -743,31 +739,31 @@ void CSystemMgr::testMAG(const char *s){
 
 
 
-void CSystemMgr::testIR(const char *s){
+void CSystemMgr::testIR(CMsg &msg){
+  std::string s=msg.getACT(); 
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   writeconsoleln("ENTER void CSystemMgr::testIR(char addr)");  
   enableSensors();  
-  CIRArray *pTest=(CIRArray *)getSystem(s);
+  CIRArray *pTest=(CIRArray *)getSystem(s.c_str(),"Test IR");
   if(pTest!=NULL) {
-    CMsg m;
     pTest->setup();
-    pTest->test(m);
+    pTest->test(msg);
   }
   
   writeconsoleln("EXIT void CSystemMgr::testIR(char addr)");
   #endif
 }
 
-void CSystemMgr::testTemp(const char *s){
+void CSystemMgr::testTemp(CMsg &msg){
+  std::string s=msg.getACT(); 
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   writeconsoleln("ENTER void CSystemMgr::testTemp(const char *s)");  
   enableSensors();  
-  CTemperatureObject *pTest=(CTemperatureObject *)getSystem(s);
+  CTemperatureObject *pTest=(CTemperatureObject *)getSystem(s.c_str(),"Test Temp");
   
   if(pTest!=NULL) {
-    CMsg m;
     pTest->setup();
-    pTest->test(m);
+    pTest->test(msg);
   }
   
   writeconsoleln("EXIT void CSystemMgr::testTemp(const char *s)");  
@@ -796,16 +792,16 @@ void CSystemMgr::testMAGDrive(char addr){
    writeconsoleln("Forward");
   drv.run(FORWARD);
   drv.setSpeed(255);
-  delay(5000);
+  delay(15000);
 
   writeconsoleln("Release");
   drv.run(RELEASE);
-  delay(500);
+  delay(5000);
 
   writeconsoleln("Backward");
   drv.run(BACKWARD);
   drv.setSpeed(255);
-  delay(5000);
+  delay(15000);
 
   drv.run(RELEASE);
   writeconsoleln("Mag test Done");

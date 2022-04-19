@@ -26,7 +26,8 @@ void CSystemMgr::init(){
 
   
 
-void CSystemMgr::SendCmdToScheduler(std::string str){
+void CSystemMgr::SendCmdToScheduler(CMsg &msg){
+  std::string str=msg.getACT(); 
   CMsg m;
   m.setSYS(Name());
   m.setINFO("SendCmdToScheduler: ");
@@ -174,7 +175,7 @@ void CSystemMgr::controlPlan(){
  }
 
  void CSystemMgr::callCustomFunctions(CMsg &msg){
- std::string act=msg.getACT(); 
+  std::string act=msg.getACT(); 
   writeconsoleln("");
   writeconsole(" CallCustomFunctions :  ");
   writeconsoleln(act);
@@ -199,7 +200,7 @@ void CSystemMgr::controlPlan(){
   if(act=="SHOWCOMMANDS") showCommands();
   if(act=="SHOWSCHEDULER") showScheduler();
 
-  SendCmd(act);
-  SendCmdToScheduler(act);
+  SendCmd(msg);
+  SendCmdToScheduler(msg);
   writeconsoleln("");
 }

@@ -25,12 +25,14 @@ public:
   CMsg find(std::string str);
   CMsg findwRemove(std::string str);
   void clear();
-    void prune();
+  void prune();
 
 };
 
 class CMessages {
   void _addTransmit(CMsg &m);
+
+  unsigned long _receivedTimestamp=0;
 public:  
   CMessageList ReceivedList;     //Received via Radio.  Put inbound received msgs here  ---Need to add acks for these as well
   CMessageList MessageList;     //Moved from Radio to here.  These are pumped out
@@ -67,6 +69,9 @@ public:
 
   std::list<CMsg> splitMsg(CMsg &m);
   std::list<CMsg> splitMsgData(CMsg &m);  
+
+  void setReceivedTimestamp(){_receivedTimestamp=getTime();}
+  unsigned long getReceivedTimestamp(){return _receivedTimestamp;}
   
   void prune();
   void displayList(int option);  

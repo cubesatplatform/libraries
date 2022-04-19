@@ -10,10 +10,11 @@ public:
   Name("PHONESTATE");
     //add some items to the map    
     //availablesystems["IMU"] = true;
+    setMaxTime(2*TIMEORBIT);
   };
   ~CPhoneState() {};
   void stateMsg(CMsg &msg){_statemsg=msg;};
-  void setup() {CStateObj::init();};
+  void setup() {CStateObj::init();setMaxTime(2*TIMEORBIT);};
 
   void enter();
   void exit();

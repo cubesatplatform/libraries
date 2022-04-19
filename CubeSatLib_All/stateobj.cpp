@@ -50,13 +50,23 @@ void CStateObj::loop() {
 
 void CStateObj::enter(){
 	_statecount++;
-	_startTime = getTime();
+	_startTime = getTime();	
 	setState("PLAY");
-
 }
 void CStateObj::exit(){
 	_stopTime = getTime();
 	setState("PAUSE");
+}
+
+
+void CStateObj::resetSubSystems(){
+	
+	for (auto it = subsystems.begin(); it != subsystems.end(); it++) {
+	CSystemObject* psys;
+	psys = *it;	
+	psys->setState("");	
+	}
+
 }
 
 void CStateObj::Cleanup(){
@@ -201,7 +211,7 @@ void CStateObj::addSystem(CMsg &msg){
 bool CStateObj :: outOfTime() {
 	if(getForever())  return false;
 	_currentTime=getTime();
-  	if ( ((_currentTime - _createdTime) > _maxTime)&&((_currentTime - _createdTime) > _minTime)) {   //Play ->Out of Time
+  	if ( ((_currentTime - _startTime) > _maxTime)&&((_currentTime - _startTime) > _minTime)) {   //Play ->Out of Time
     	return true;
   	}
   return false;
@@ -252,15 +262,7 @@ for (auto  psys:subsystems) {
 	_exit_time=0;
 	_starttimeoffset = 0;	
 	_lastcleanuptime=0;
-	//_createdTime = getTime();
-	//_startTime = getTime();
-	//_stopTime = getTime();
-	
-	//_timestamp = getTime();
-	//_currentTime = getTime();
-	//_maxTime = 500000;
-	//_minTime = 0;
-  	//_lcount=0;
+
 	
 	
   	

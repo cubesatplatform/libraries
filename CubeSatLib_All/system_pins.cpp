@@ -1,5 +1,8 @@
 #include "system_pins.h"
 
+#if  defined(TTGO) || defined(TTGO1)
+#include <analogWrite.h>
+#endif
 
 void CSatPins::loop() {
 }
@@ -25,8 +28,8 @@ void CSatPins::high(CMsg &msg){
 
 	std::string strpin=msg.getParameter("PIN","");
 	PinName n=Pins[strpin];
-   #if defined(TTGO1) || defined(TTGO)
-  pinMode(n, GPIO_MODE_INPUT_OUTPUT); ///Set is to output mode   
+  #if defined(TTGO1) || defined(TTGO)
+    pinMode(n, GPIO_MODE_INPUT_OUTPUT); ///Set is to output mode   
   #else
     pinMode(n, GPIO_MODE_INPUT);
   #endif
@@ -92,26 +95,20 @@ void CSatPins::pwm(CMsg &msg){
 	std::string strpin=msg.getParameter("PIN","");
 	PinName n=Pins[strpin];
 
-	int freq =msg.getParameter("FREQUENCY",10000);
-	int resolution =msg.getParameter("RESOLUTION",12); 
-  int _channel=0;
+	int freq =msg.getParameter("FREQUENCY",PIN_FREQUENCY);
+	int resolution =msg.getParameter("RESOLUTION",PIN_RESOLUTION); 
+  int _channel=0; 
 
- 
-  #if defined(TTGO1) || defined(TTGO) 
-    ledcSetup(_channel, freq, resolution);   // configure LED PWM functionalitites
-    ledcAttachPin(n, _channel);  // attach the channel to the GPIO to be controlled
-    delay(50);
-    ledcWrite(_channel, n); 
-
-  #else
-    analogWriteResolution(12);   
-    for (int count=0;count<4000;count+=100){
-      analogWrite(n,count);
-      writeconsole("PWM: ");
-      writeconsole(count);
-      delay(200);
-    }
+  #ifdef TTGO || TTGO1
+   analogWriteResolution(n,PIN_RESOLUTION);   
   #endif
+
+  for (int count=0;count<4000;count+=100){
+    analogWrite(n,count);
+    writeconsole("PWM: ");
+    writeconsole(count);
+    delay(200);
+  }
 
 
   return;    

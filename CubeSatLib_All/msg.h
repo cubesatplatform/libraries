@@ -33,6 +33,7 @@ public:
   
   std::string serialize();
   std::string serializeout();
+  void writetoconsole();
   void deserialize();
   int serialSize(){std::string s=serialize();return(s.size());}
   

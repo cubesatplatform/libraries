@@ -9,102 +9,52 @@
 
 CRW::CRW():CSystemObject(){
   init();
-   Name("RW");
+  Name("RW");
    
 }
 
 
+CMotorController *CRW::getMotorAxis(char axis){
+  if(axis=='X') return _pMotorX;
+  if(axis=='Y') return _pMotorY;
+  if(axis=='Z') return _pMotorZ;
+  return NULL;
 
-void CRW::setSpeed(CMsg &msg){
-  double ss;
-           
-  ss=msg.getParameter("MOTORX",(double)-99.9);      
-  if(ss!=-99.9)
-    if(pMotorX!=NULL) pMotorX->setSetSpeed(ss);
-
-  ss=msg.getParameter("MOTORY",(double)-99.9);      
-  if(ss!=-99.9)
-    if(pMotorY!=NULL) pMotorY->setSetSpeed(ss);  
-
-  ss=msg.getParameter("MOTORZ",(double)-99.9);      
-  if(ss!=-99.9)
-    if(pMotorZ!=NULL) pMotorZ->setSetSpeed(ss);
 }
 
-void CRW::setTmpSpeed(CMsg &msg){
-  _tmpSpeed=msg;
-  unsigned long ct=getTime();
+void CRW::newCMD(CMsg &msg){
+  setMode(msg.getParameter("MODE",Mode()));
+  std::string xMode=msg.getParameter("XMODE","");
+  float xsetpoint=msg.getParameter("XSETPOINT",0.0);
+  int xduration=msg.getParameter("XDURATION",10000);
 
-  unsigned long ltimeX1=msg.getParameter("STARTTIMEX1",0);    
-  unsigned long ltimeY1=msg.getParameter("STARTTIMEY1",0);    
-  unsigned long ltimeZ1=msg.getParameter("STARTTIMEZ1",0);    
+  std::string yMode=msg.getParameter("YMODE","");
+  float ysetpoint=msg.getParameter("YSETPOINT",0.0);
+  int yduration=msg.getParameter("YDURATION",10000);
 
-  unsigned long ldurationX1=msg.getParameter("DURATIONX1",1000);    
-  unsigned long ldurationY1=msg.getParameter("DURATIONY1",1000);    
-  unsigned long ldurationZ1=msg.getParameter("DURATIONZ1",1000);   
-
-
-  _tmpSpeed.setParameter("MOTORX1",msg.getParameter("MOTORX1",0.0));
-  _tmpSpeed.setParameter("MOTORY1",msg.getParameter("MOTORY1",0.0));
-  _tmpSpeed.setParameter("MOTORZ1",msg.getParameter("MOTORZ1",0.0));
-  _tmpSpeed.setParameter("STARTTIMEX1",ltimeX1+ct);    
-  _tmpSpeed.setParameter("STARTTIMEY1",ltimeY1+ct);    
-  _tmpSpeed.setParameter("STARTTIMEZ1",ltimeZ1+ct);    
-
-  _tmpSpeed.setParameter("ENDTIMEX1",ltimeX1+ct+ldurationX1);    
-  _tmpSpeed.setParameter("ENDTIMEY1",ltimeY1+ct+ldurationY1);    
-  _tmpSpeed.setParameter("ENDTIMEZ1",ltimeZ1+ct+ldurationZ1);    
-
-  _tmpSpeed.setParameter("STATE","ON");
+  std::string zMode=msg.getParameter("ZMODE","");
+  float zsetpoint=msg.getParameter("ZSETPOINT",0.0);
+  int zduration=msg.getParameter("ZDURATION",10000);
 
   
-}
-
-void CRW::adjustSpeed(){
-  unsigned long ct=getTime();
-
-  unsigned long tX=_tmpSpeed.getParameter("ENDTIMEX1",0);    
-  unsigned long tY=_tmpSpeed.getParameter("ENDTIMEY1",0);    
-  unsigned long tZ=_tmpSpeed.getParameter("ENDTIMEZ1",0);    
-
-  if (!tX&&!tY&&!tZ) _tmpSpeed.Parameters.clear();
-
-  if(ct>tX){
-    if(pMotorX!=NULL) pMotorX->setSetSpeed(_cmsg.getParameter("MOTORX",0)); 
-    _tmpSpeed.setParameter("ENDTIMEX1",0);    
+  if(xMode.size()){
+    if(_pMotorX!=NULL) {
+     _pMotorX->setMode(xMode);
+     _pMotorX->setPoint(xsetpoint,xduration);
+    }
   }
-
-  if(ct>tY){
-    if(pMotorY!=NULL) pMotorY->setSetSpeed(_cmsg.getParameter("MOTORY",0)); 
-    _tmpSpeed.setParameter("ENDTIMEY1",0);        
+  if(yMode.size()){
+    if(_pMotorY!=NULL) {
+     _pMotorY->setMode(yMode);
+     _pMotorY->setPoint(ysetpoint,yduration);
+    }
   }
-
-  
-  if(ct>tZ){
-    if(pMotorZ!=NULL) pMotorZ->setSetSpeed(_cmsg.getParameter("MOTORZ",0)); 
-    _tmpSpeed.setParameter("ENDTIMEZ1",0);    
-  }  
-
-  tX=_tmpSpeed.getParameter("STARTTIMEX1",0);    
-  tY=_tmpSpeed.getParameter("STARTTIMEY1",0);    
-  tZ=_tmpSpeed.getParameter("STARTTIMEZ1",0);    
-
-  if(tX&&(ct>tX)){
-    if(pMotorX!=NULL) pMotorX->setSetSpeed(_cmsg.getParameter("MOTORX",0)); 
-    _tmpSpeed.setParameter("STARTTIMEX1",0);    
-  }
-
-  if(tY&&(ct>tY)){
-    if(pMotorY!=NULL) pMotorY->setSetSpeed(_cmsg.getParameter("MOTORY",0)); 
-    _tmpSpeed.setParameter("STARTTIMEY1",0);        
-  }
-
-  
-  if(tZ&&(ct>tZ)){
-    if(pMotorZ!=NULL) pMotorZ->setSetSpeed(_cmsg.getParameter("MOTORZ",0)); 
-    _tmpSpeed.setParameter("STARTTIMEZ1",0);    
-  }
-
+  if(zMode.size()){
+    if(_pMotorZ!=NULL) {
+     _pMotorZ->setMode(zMode);
+     _pMotorZ->setPoint(zsetpoint,zduration);
+    }
+  }   
 }
 
 
@@ -125,46 +75,33 @@ void CRW::setup()
     return;
   }   
 
-  pMotorX=(CMotorController *)getSystem("MOTORX");
-  pMotorY=(CMotorController *)getSystem("MOTORY");
-  pMotorZ=(CMotorController *)getSystem("MOTORZ");
+ _pMotorX=(CMotorController *)getSystem("MOTORX");
+ _pMotorY=(CMotorController *)getSystem("MOTORY");
+ _pMotorZ=(CMotorController *)getSystem("MOTORZ");
+
+  if(_pMotorX!=NULL) {_pMotorX->setIMU(_pIMU); _pMotorX->Speed(0,10000);}
+  if(_pMotorY!=NULL) {_pMotorY->setIMU(_pIMU); _pMotorY->Speed(0,10000);}
+  if(_pMotorZ!=NULL) {_pMotorZ->setIMU(_pIMU); _pMotorZ->Speed(0,10000);}
+  
   
   setForever();
   setInterval(20);
-  setSpeed(_cmsg);
+  setMode("");
+
   setState("PLAY");
 }
 
 
-
-  
 void  CRW::callCustomFunctions(CMsg &msg){
   std::string act=msg.getACT();
 
-  if(act=="RWSETSPEED") setSpeed(msg);
-  if(act=="RWTMPSPEED") setTmpSpeed(msg);
-    
-  
-  /*
-  CMsg m;
-  m.Parameters["MOTORX"]=1.0;
-  m.Parameters["DURATION"]=50;
-  m.Parameters["CALLBACK"]="MT";
-  addMessageList(m);
-  */
+  if(act=="CMD") newCMD(msg);  
 }
 
 void CRW::loop(){ 
-  if(_pIMU->State()=="ERROR"){
-      CMsg m;
-      m.setSYS(Name());
-      m.setCOMMENT("RW - IMU Error  Loop leaving...");  
-      m.setINFO("ERROR RW");
-      addTransmitList(m);
-      writeconsoleln(m.serializeout());
-      return; 
+  if (Mode()==""){   //Do some control
+    if(_pMotorX!=NULL)_pMotorX->loop();
+    if(_pMotorY!=NULL)_pMotorY->loop();
+    if(_pMotorZ!=NULL)_pMotorZ->loop();
   }
-  if(_tmpSpeed.Parameters.size())
-    adjustSpeed();
-
 }

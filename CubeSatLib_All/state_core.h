@@ -6,7 +6,7 @@
 class CCoreState : public CStateObj {
   public:
   
-  CCoreState() { Name("CORE"); };
+  CCoreState() { Name("CORE"); setForever();};
   ~CCoreState() {};
 
 

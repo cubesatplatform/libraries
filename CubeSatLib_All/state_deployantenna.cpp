@@ -13,7 +13,7 @@ CDeployAntennaState::CDeployAntennaState() {
 void CDeployAntennaState::enter() { 
    
   CStateObj::enter();
-
+  resetSubSystems();
 
   _burncount++;
 

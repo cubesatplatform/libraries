@@ -26,20 +26,15 @@ NSS & BUSY Necessary to initialize, other two are not
 
 class CRadio: public CSystemObject{
 #if defined(TTGO)
-  #define LORACHIP "TTGO  SX1278"
-  SX1278 radio = new Module(TTGO_SS, TTGO_DIO0, TTGO_RST, TTGO_DIO1);
-  SX1278 radio2 = new Module(TTGO_SS, TTGO_DIO0, TTGO_RST, TTGO_DIO1);
-  SX1278& lora=radio;
-  SX1278& loraT=radio;
-  SX1278& loraR=radio;
+  #define LORACHIP "TTGO  SX1278"                                              //TBeam us TTGO
+  SX1278 radio1 = new Module(TTGO_SS, TTGO_DIO0, TTGO_RST, TTGO_DIO1);  
+  SX1278 * plora=&radio1;
+
   
 #elif defined(TTGO1)
   #define LORACHIP "TTGO  SX1262"
-  SX1262 radio =  new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
-  SX1262 radio2 =  new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
-  SX1262& lora=radio;
-  SX1262& loraT=radio;
-  SX1262& loraR=radio;
+  SX1262 radio1 =  new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);  
+  SX1262 * plora=&radio1;
 
 /*
 #elif defined(ESP32_GATEWAY)
@@ -50,20 +45,7 @@ class CRadio: public CSystemObject{
   RFM96& loraR=lora;
  // SX1280 lora = new Module(25, 27, 23, 19);
 
-#elif defined(PORTENTA_E22_900M30S)
 
-  //SX1262 radio = new Module(NSS, DIO1, NRST, BUSY);
-  //SX1262 lora = new Module(RADIO1_NSS, RADIO1_DIO1, RADIO1_RST, RADIO1_BUSY);
-  #define NSS PinNameToIndex(PI_4) //7
-  #define NRST PinNameToIndex(PH_14) //3
-  #define BUSY PinNameToIndex(PH_10) //4
-  #define DIO1 PinNameToIndex(PI_5) //5
-
-  SX1262 radio = new Module(NSS, DIO1, NRST, BUSY);
-  SX1262 radio2 = new Module(NSS, DIO1, NRST, BUSY);
-  SX1262& lora=radio;
-  SX1262& loraT=radio;
-  SX1262& loraR=radio;
 */
 
 
@@ -102,18 +84,13 @@ class CRadio: public CSystemObject{
 #define NRST_2 PinNameToIndex(PH_14) //3
 #define BUSY_2 PinNameToIndex(PH_10) //4
 #define DIO1_2 PinNameToIndex(PI_5) //5
-SX1268 radio_1 = new Module(NSS_1, DIO1_1, NRST_1, BUSY_1);
-SX1268 radio_2 = new Module(NSS_2, DIO1_2, NRST_2, BUSY_2);
-SX1268& lora=radio_1;
-SX1268& loraT=radio_1;
-SX1268& loraR=radio_1;
+SX1268 radio1 = new Module(NSS_1, DIO1_1, NRST_1, BUSY_1);
+SX1268 radio2 = new Module(NSS_2, DIO1_2, NRST_2, BUSY_2);
+
+SX1268 *plora=&radio1;
+
   
 #endif
-
-
-//SX1268 lora = new Module(NSS, DIO1, NRST, BUSY);
-//SX1268& loraT=lora;
-//SX1268& loraR=lora;
 
   std::list<unsigned long> transmitLog;
   int transmissionState = RADIOLIB_ERR_NONE;  // save transmission state between loops
@@ -127,6 +104,9 @@ SX1268& loraR=radio_1;
   bool _waitForACK=false;
   unsigned long _delayTransmit=RADIOTXDELAY;
   CMessages *pMsgs;
+  bool volatile  *_pbFlag;
+  bool volatile  *_penableInterrupt;
+  bool _bTransmitter=true;
 
 public:
 
@@ -151,13 +131,14 @@ public:
   void SendAck(CMsg &m);
   bool isAck(){if (mACK.Parameters.size()) return true; return false;}
   bool readyToTransmit();
-  void checkMode();
+  void checkModeTX();
+  void checkModeRX();
   void setACK(bool tmp){_sendACK=tmp;}
+  void setTransmitter(bool tmp){_bTransmitter=tmp;}
+  bool getTransmitter(){return _bTransmitter;}
+
   void resetAck(){mACK.clear();};
   void Update(CMsg &msg); 
-  void callNewFunction(CMsg &msg){   //Calls a specific function directly
-    std::string act=msg.getParameter("ACT");
-    if (act=="TRANSMITPACKET") TransmitPacket(msg);      
-  }
-
+  void callCustomFunctions(CMsg &msg);   
+  
 };

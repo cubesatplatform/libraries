@@ -83,8 +83,8 @@ public:
   void showCommands();
   void showTests();
   
-  void SendCmd(std::string str);
-  void SendCmdToScheduler(std::string str);
+  void SendCmd(CMsg &msg);
+  void SendCmdToScheduler(CMsg &msg);
   void loopWire(TwoWire *wire, const char* s);
   void enableI2C();
   void burn();
@@ -97,13 +97,13 @@ public:
   void initI2CMap();
   void controlPlan();
   
-  void testIMUSPI();
-  void testIMUI2C();
+  
+  void testIMU(CMsg &msg);
   void testMAGDrive(char addr=MAG_ADDRESS_Z);
-  void testMAG(const char* s);
-  void testMotor(const char* s);
-  void testTemp(const char* s);
-  void testIR(const char* s);
+  void testMAG(CMsg &msg);
+  void testMotor(CMsg &msg);
+  void testTemp(CMsg &msg);
+  void testIR(CMsg &msg);
   
   void Output(CMsg &msg);
   void sendSerial(const char* cmd);

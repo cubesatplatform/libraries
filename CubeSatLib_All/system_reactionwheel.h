@@ -8,13 +8,12 @@
  
     
 class CRW:public CSystemObject{
-  private:    
-     CMsg _tmpSpeed;
+  private:         
      CIMU *_pIMU=NULL; //Open I2C ADR jumper - goes to address 0x4B
 
-     CMotorController *pMotorX=NULL;
-     CMotorController *pMotorY=NULL;
-     CMotorController *pMotorZ=NULL;
+     CMotorController *_pMotorX=NULL;
+     CMotorController *_pMotorY=NULL;
+     CMotorController *_pMotorZ=NULL;
 
   public:
     CRW();
@@ -22,8 +21,8 @@ class CRW:public CSystemObject{
     ~CRW(){}
     void setup();
     void loop();    
-    void setSpeed(CMsg &msg);
-    void setTmpSpeed(CMsg &msg);
-    void adjustSpeed();
+    void newCMD(CMsg &msg);
+
     void callCustomFunctions(CMsg &msg);
+    CMotorController *getMotorAxis(char axis);
 };

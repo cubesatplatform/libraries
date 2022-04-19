@@ -3,6 +3,10 @@
 
 int CMsg::_ID = 0;
 
+void CMsg::writetoconsole(){
+  writeconsoleln(serializeout());
+  }
+
 std::string CMsg::getParameter(std::string str,std::string val){
   std::string res=getParameter(str);
   if (res.size()==0) res=val;

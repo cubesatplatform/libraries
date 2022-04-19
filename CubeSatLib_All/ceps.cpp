@@ -48,6 +48,21 @@ void CEPS::setup(){
 
 void CEPS::loop(){
   output();
+  std::string satState=getSatState();
+  if(satState!="LOWPOWER"){
+    if(readBatteryVoltage()<VOLTMIN)  goLowPowerState();
+    if(readMCUTemp()>MCUTEMPMAX) goLowPowerState();
+  }
+
+  if(satState=="LOWPOWER"){
+    if(readBatteryVoltage()>VOLTCHARGED) goNormalState();
+  }
+  
+  if(getTime()>getReceivedTimestamp()+RECEIVEDMESSAGEWAITTIME){
+    //Switch radios
+  }
+  
+  
 }
 void CEPS::output(){   //FIX THIS  JUST FOR TESTING
   /*
@@ -154,8 +169,8 @@ void CEPS::init(){
   Name("EPS");
   CSystemObject::init();
   setForever();
-  setInterval(10000);
-  //begin(addr,readI2C,writeI2C);
+  setInterval(30000);
+  
   setState("PLAY");
 }
 

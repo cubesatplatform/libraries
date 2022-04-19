@@ -9,7 +9,7 @@ public:
 	CDeployAntennaState();
 	~CDeployAntennaState() {};
 	void stateMsg(CMsg &msg){_statemsg=msg;};
-	void setup() {CStateObj::init();};
+	void setup() {CStateObj::init();setMaxTime(20000);};
 
 	void enter(); 
 	void exit();

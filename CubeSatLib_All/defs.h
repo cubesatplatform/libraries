@@ -1,11 +1,11 @@
 #pragma once
 
-#if !defined(_DEFS_H)
-#define _DEFS_H
-
 #include <Arduino.h>
 
-
+#define PIN_RESOLUTION 12
+#define SPEED_MAX 4000
+#define PWM_MAX SPEED_MAX
+#define PIN_FREQUENCY 10000
 #define MAXLISTSIZE 50
 #define MAXDATALEN 170
 #define RADIOTXDELAY 100
@@ -13,6 +13,19 @@
 #define RADIOWAITFORCOMPLETE 15000
 #define WATCHDOG_LOOP_COUNT 100000
 #define ANDROID_POWERUP_DELAY 1000
+#define TIMEORBIT 91*60*1000
+#define VOLTMIN 5.0
+#define MCUTEMPMAX 40.0
+#define VOLTCHARGED 6.0
+#define RECEIVEDMESSAGEWAITTIME 2*24*60*60*1000  //2 days
+
+#define GYROLIMIT 0.1
+#define MAGLIMIT 0.1
+#define GYROPERIOD 50
+#define MAGPERIOD 50
+#define GYROWAIT 50
+#define MAGWAIT 50
+
 
 #define SATNAME "ADR1"
 
@@ -22,8 +35,6 @@
 #endif
 //#define MYESP32
 //#define ESP32_GATEWAY
-
-
 
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
@@ -153,17 +164,18 @@
 #define IMU_OBC_WAKE PinNameToIndex(PJ_9)
 */
 
-#define MOTOR_X_FG PJ_10
-#define MOTOR_X_SPEED PA_8
-#define MOTOR_X_DIR PC_6
+#define MOTOR_Z_FG PJ_10
+#define MOTOR_Z_SPEED PA_8
+#define MOTOR_Z_DIR PC_6
 
 #define MOTOR_Y_FG PI_7
 #define MOTOR_Y_SPEED PC_7
 #define MOTOR_Y_DIR PJ_7
 
-#define MOTOR_Z_FG PI_6
-#define MOTOR_Z_SPEED PH_6
-#define MOTOR_Z_DIR PK_1
+//#define MOTOR_X_FG PI_6
+#define MOTOR_X_FG PJ_11
+#define MOTOR_X_SPEED PH_6
+#define MOTOR_X_DIR PK_1
 
 #define CAN1_TX PH_13
 #define CAN1_RX PB_8
@@ -242,13 +254,16 @@
 #define PING_INTERVAL             2       // seconds, how much time to wait between PINGs sent from this node
 //#define FREQUENCY_900M30S         915.0   // MHz carrier, for E22-900M30S
 #define LORAFREQUENCY             443.0   //FREQUENCY_900M30S
+#define RADIOLORAFREQUENCY        443.0   //FREQUENCY_900M30S
+#define RADIO2LORAFREQUENCY       445.0   //FREQUENCY_900M30S
 #define FREQUENCY_400M30S         443.0   // MHz carrier, for E22-400M30S
 #define FREQUENCY_GATEWAY         443.0   // MHz carrier, for ESP32 single-channel gateway
-#define BANDWIDTH                 250  //125.0   // kHz dual-sideband
+#define BANDWIDTH                 125  //125.0   // kHz dual-sideband
 #define SPREADING_FACTOR          9       // 2^9 chips
 #define CODING_RATE               7       // 4/7 coding
 #define SYNC_WORD                 0x12    // private network
-#define OUTPUT_POWER              22      // +14 dBm
+#define OUTPUT_POWER              12      // +14 dBm
+#define OUTPUT_POWER_TTGO         16
 #define CURRENT_LIMIT             140.0    // mA  was 60,  120
 #define PREAMBLE_LENGTH           8       // symbols
 #define TCXO_VOLTAGE              1.6     // V
@@ -357,4 +372,4 @@
 #define RS_FILE "rscount.txt"
 
 
-#endif
+

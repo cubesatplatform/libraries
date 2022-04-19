@@ -37,6 +37,7 @@ class CSystemObject {
   unsigned long _lastUse=0;
   int _retryCount=0;
   bool _forever = false;
+  int _step=0;
   std::string _mode;   //This determines what you are doing   Set to IDLE when done and nothing left to do  When u set new mode need to get it out of IDLE
 
 protected:
@@ -84,6 +85,13 @@ public:
   void setForever(bool tmp=true){  _forever=tmp;}
   bool getForever(){ return _forever;}
 
+  void setStep(int tmp=0){  _step=tmp;}
+  bool getStep(){ return _step;}
+  bool incStep(){ _step++;}
+
+  void setMaxTime(unsigned long tmp){_maxTime=tmp;}
+  unsigned long getMaxTime(){return(_maxTime);}
+
   void setInterval(unsigned long tmp){_interval=tmp;}
   unsigned long getInterval(){return _interval;}
 
@@ -130,6 +138,19 @@ public:
   //void statusUpdate(CMsg &m);
   void fillMetaMSG(CMsg *m);
 
+  void goLowPowerState(){
+    CMsg m;
+    m.setSYS("SAT");
+    m.setACT("LOWPOWER");
+    addMessageList(m);
+  }
+
+   void goNormalState(){
+    CMsg m;
+    m.setSYS("SAT");
+    m.setACT("NORMAL");
+    addMessageList(m);
+  }
 
   int getRetryCount(){return _retryCount; }
   void clearRetryCount(){_retryCount=0; }
@@ -137,6 +158,7 @@ public:
   unsigned long getModifiedTime(){return _modifiedTime=0;}
   unsigned long getCurrentTime() {return _currentTime;}
   unsigned long getPrevTime(){return _prevTime;}
+  void setModifiedTime(unsigned long tmp){_modifiedTime=tmp;}
   
   unsigned long StartTime(){return _startTime=0;}
   unsigned long StopTime(){return _stopTime=0;}
@@ -158,12 +180,15 @@ public:
   void subscribe(std::string str);
   void unsubscribe(std::string str);
   int subscribers(std::string str);
+  unsigned long getReceivedTimestamp();
 };
 
 extern std::map<std::string,CSystemObject *> SysMap;
 extern std::map<std::string, PinName> Pins;
 extern std::map<std::string, PinName> pwmPins;
 extern std::map<std::string, std::string> I2CMap;
+std::string getSatState();
+void switchRadios();
 
 CSystemObject *getSystem(const char *sys, const char *comment="");
 CSystemObject *getIMU(const char *sys="IMU");
