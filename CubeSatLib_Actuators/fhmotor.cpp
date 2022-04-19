@@ -101,7 +101,7 @@ float PWMCounter::RPM(){
 
   
 CMotorController::CMotorController():CBaseDrive(){
-  Name("MOTOR");
+  //Name("MOTOR");
   _channel=channel;
   channel++;
 };
@@ -113,64 +113,23 @@ CMotorController::~CMotorController(){
 
 void CMotorController::config(PinName sig, PinName fg,PinName dir){
   init();
-  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)  
-    analogWriteResolution(12);
-  #else  
-    analogWriteResolution(12);
-  #endif
+  
+  
   
   PIN_SIGNAL=sig;
   PIN_DIR=dir;
   PIN_FG=fg;  
-  
+ 
+  #ifdef TTGO || TTGO1
+    analogWriteResolution(sig, PIN_RESOLUTION);
+  #else
+    analogWriteResolution(PIN_RESOLUTION);
+  #endif
   pinMode(PIN_DIR, OUTPUT);
   pwmCounter.config(PIN_FG);  
 }
 
 
-
-void CMotorController::configSpeed(){    
-  setMode("SPEED");
-  _Kp=150.0, _Ki=14.0, _Kd=3.0;
-  myPID.begin(&_Input, &_Output, &_Setpoint, _Kp, _Ki, _Kd);
-  myPID.setBias(4000.0 / 2.0);
-  myPID.setWindUpLimits(-10, 10); // Groth bounds for the integral term to prevent integral wind-up
-  
-  //myPID.SetSampleTime(50); //commented out in code
-  
-  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)     
-    myPID.setOutputLimits(150, 4000);   
-  #else          
-    myPID.setOutputLimits(150, 4000);
-  #endif
-  myPID.start();
-  
-}
-
-
-void CMotorController::configRotation(CIMU *pIMU,char axis){  
-  setMode("ROTATION");
-  _pIMU=pIMU;
-  _axis=axis;
-  
-  //Kp=2, Ki=5, Kd=1;
-  _pIMU->myIMU.enableGyro(50);
-  _Setpoint=0.0;
-  _Kp=5.0; _Ki=45.0; _Kd=5.0;
-   _Kp=150.0, _Ki=14.0, _Kd=3.0;
-  myPID.begin(&_Input, &_Output, &_Setpoint, _Kp, _Ki, _Kd);
-  myPID.setBias(4000.0 / 2.0);
-  myPID.setWindUpLimits(-10, 10); // Groth bounds for the integral term to prevent integral wind-up
-
-  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)     
-    myPID.setOutputLimits(150, 4000);   
-  #else          
-    myPID.setOutputLimits(150, 4000);
-  #endif
-  myPID.start();
-  
-
-}
 
 
 
@@ -183,6 +142,8 @@ void CMotorController::init(){
   _Output_last=0.0;
 
   setState("PLAY");
+  setMode("");
+  Speed(0,10000);
 }
   
 float CMotorController::RPM(){
@@ -197,51 +158,74 @@ unsigned long CMotorController::getCount(){
   return pwmCounter.getCount();  
 }
 
+
+
 void CMotorController::activateDrive(int val){
 
-  setMSpeed(val);
+  if(!setMSpeed(val)) {  //Check if same speed as last time
+    writeStats();
+    return;
+  }
+  writeStats();
   int nVal;
   
   if((val<0)&&(getDir())){
     setDir(0);              
-    //digitalWrite(PIN_DIR,LOW);  
+    digitalWrite(PIN_DIR,LOW);  
   }
 
   if((val>=0)&&(!getDir())){  
     setDir(1);
-  //  digitalWrite(PIN_DIR,HIGH);
+    digitalWrite(PIN_DIR,HIGH);
   }
 
   nVal=abs(val); 
+
+  if(nVal<0 ) nVal=0;
+  if(nVal>4000) nVal=4000;
+
+  writeconsole("      nVal: ");
+  writeconsoleln(nVal);
+    
       
-        
-  //writeconsole("           PWM :");     writeconsoleln(val);
   sendPWM(nVal);
 
 }
 
+void CMotorController::writeStats(){
+  writeconsole(PIN_SIGNAL);
+  writeconsole(Name());  writeconsole(" ");
+  writeconsole(Mode());  writeconsole(" ");
+  writeconsole("   Setpoint: ");
+  writeconsole((float)_Setpoint);  
+  writeconsole("Input:  ");      
+  writeconsole(_Input);  
+  writeconsole("      Output: ");
+  writeconsoleln((float)_Output);
+
+  
+  
+}
+
+void CMotorController::loopPWM(){  
+  RPS();
+  activateDrive((int)_Setpoint);    
+}
 
 
 
 void CMotorController::loopSpeed(){
 
-   _Input =RPS();
-   myPID.compute();
-   
-    writeconsole("Setpoint: ");
-    writeconsole((float)_Setpoint);  
-    writeconsole("Input:  ");      
-    writeconsole(_Input);  
-    writeconsole("      Output PWM: ");
-    writeconsole((float)_Output);  
-    float ftmp=(float)_Output;
+  _Input =RPS();
+  myPID.compute();
+  if(_Output<20 ) _Output=20;
+  if(_Output>4000) _Output=4000;
+    
 
-    // ftmp=(ftmp/120.0)*4000.0;
-    // ftmp+=getMSpeed();
-    writeconsoleln("------ End  ");
-    //activateDrive((int)_Output);
-    activateDrive((int)ftmp);
-
+  if((_Output<10)&&(_Output>0))
+    _Output=5;
+  
+  activateDrive((int)_Output);    
 }
 
 
@@ -295,88 +279,36 @@ else if(diff<-40)
     _Output-=400;    
 
 
-if(_Output<100 ) _Output=100;
-if(_Output>4000 ) _Output=4000;
-    
-  writeconsole("Simple Setpoint: ");
-  writeconsole((float)_Setpoint);  
-  writeconsole("    Input: ");
-  writeconsole((float)_Input);
-  writeconsole("    Onput: ");  
-  writeconsole((float)_Output);  
-  writeconsoleln("------ End  ");
-  activateDrive((int)_Output);
+ activateDrive((int)_Output);
   
 }
 
 void CMotorController::loopRotation(){
-  CMsg m;
+
   if(_pIMU==NULL) {writeconsoleln("NO IMU!!!!!!!!!!!!!!!!!!!!!");return;}
+  CMsg m;
+
   _pIMU->runOnce(m);
-  if(_axis=='X')    _Input=_pIMU->Gyro.X;
-  if(_axis=='Y')    _Input=_pIMU->Gyro.Y;    
-  if(_axis=='Z')    _Input=_pIMU->Gyro.Z;
-  if(_axis=='R')    _Input=_pIMU->Gyro.R;
-  //_Input =RPS();
+  if(_axis=='X')    _Input=*_pIMU->Gyro.pZ;
+  if(_axis=='Y')    _Input=*_pIMU->Gyro.pY;    
+  if(_axis=='Z')    _Input=*_pIMU->Gyro.pX;
+  if(_axis=='R')    _Input=*_pIMU->Gyro.pR;
+  
   _Output_last=_Output;
   myPID.compute();
-  writeconsole("loopRotation  "); writeconsoleln((float)_Output);  
-  if(_Output_last ==_Output)
-    return;
-
-  writeconsole(_axis) ;writeconsole("    Input: ");writeconsole(_Input);writeconsole("    Output: ");writeconsoleln(_Output);
-  if(_Output>=0.0){
-    
-    if(getDir()) {
-      digitalWrite(PIN_DIR,HIGH);
-      setDir(true);
-      delay(20);
-      }    
-    activateDrive((int)_Output);
-    }
-
-  if(_Output<0.0){    
-    if(getDir()) {
-      digitalWrite(PIN_DIR,LOW);
-      setDir(false);
-      delay(20);
-      }    
-    activateDrive((int)_Output*(-1));
-  } 
+ 
+  activateDrive((int)_Output);  
 } 
 
-void CMotorController::runOnce(CMsg &m){
-  if(Mode()=="SPEED")
-    loopSpeed();
-  if(Mode()=="SPEEDSIMPLE")
-    loopSpeedSimple();
 
-  if(Mode()=="ROTATION")  
-    loopRotation();
+void CMotorController::loopRamp(){
+  if(_Setpoint>4000) _Setpoint=0;
+  _Setpoint+=20;
+  activateDrive(_Setpoint);  
+    
   
-}
 
-
-void CMotorController::test(CMsg &msg) {
-int sspeed=0;  
-
-configSpeed();
-
-setMode("SPEED");
-
-float f=msg.getParameter("SETPOINT",101.0);
-setPoint(f);
-
-unsigned long tt=getTime()+50000;
 /*
-
-for (int count=0;count<4000;count++){
-  activateDrive(count);
-  delay(200);
-  RPM();
-  delay(100);
-  writeconsole(count);writeconsole(",");writeconsoleln(RPM());
-}
 writeconsoleln(1500);
 activateDrive(1500);
 delay(2000);
@@ -386,15 +318,134 @@ delay(2000);
 writeconsoleln(1);
 activateDrive(1);
 delay(1000);
-*/
+
 //digitalWrite(PIN_DIR,HIGH);
+activateDrive(4000);
+delay(2000);
+int val=2000;
+activateDrive(val);
+float ftmp;
+while(getTime()<tt){
+ //loop(); 
+  ftmp=RPS();
+  flist.push_back(ftmp);
+  delay(10);
+  }
+
+writeconsole("Value: ");writeconsoleln(val);
+ for(auto x:flist) {
+   writeconsoleln(x);
+ }
+ */
+}
+
+void CMotorController::runOnce(CMsg &m){
+  writeconsoleln(Mode());
+  if(Mode()=="SPEED")
+    loopSpeed();
+  if(Mode()=="SIMPLE")
+    loopSpeedSimple();
+  if(Mode()=="ROTATION")  
+    loopRotation();  
+  if(Mode()=="RAMP")  
+    loopRamp();  
+  if(Mode()=="PWM")  
+    loopPWM();  
+}
+
+
+void CMotorController::configRotation(CIMU *pIMU){  
+  setIMU(pIMU);
+  std::string str=Name();
+  if(str.size()){
+    char c=str[str.size()-1];
+    _axis=c;
+  }
+  else _axis='Z';
+  
+  _Kp=3332.0, _Ki=10.10, _Kd=0.0;
+  myPID.begin(&_Input, &_Output, &_Setpoint, _Kp, _Ki, _Kd);
+
+  // myController.reverse()               // Uncomment if controller output is "reversed"
+  // myController.setSampleTime(10);      // OPTIONAL - will ensure at least 10ms have past between successful compute() calls
+  
+  myPID.setBias(4000.0 / 2.0);  // was 2.0
+  myPID.setWindUpLimits(-10000000000, 1000000000); // Groth bounds for the integral term to prevent integral wind-up
+  
+  //myPID.SetSampleTime(50); //commented out in code
+  
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)     
+    myPID.setOutputLimits(10, 4000);   
+  #else          
+    myPID.setOutputLimits(10, 4000);
+  #endif
+  myPID.start();
+  Speed(0,10000);
+
+
+}
+
+void CMotorController::configSpeed(){      
+  _Kp=32.0, _Ki=0.10, _Kd=0.0;
+  myPID.begin(&_Input, &_Output, &_Setpoint, _Kp, _Ki, _Kd);
+
+  // myController.reverse()               // Uncomment if controller output is "reversed"
+  // myController.setSampleTime(10);      // OPTIONAL - will ensure at least 10ms have past between successful compute() calls
+  
+  myPID.setBias(4000.0 / 2.0);  // was 2.0
+  myPID.setWindUpLimits(-10000000000, 1000000000); // Groth bounds for the integral term to prevent integral wind-up
+  
+  //myPID.SetSampleTime(50); //commented out in code
+  
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)     
+    myPID.setOutputLimits(10, 4000);   
+  #else          
+    myPID.setOutputLimits(10, 4000);
+  #endif
+  myPID.start();
+  Speed(0,10000);
+
+  // myController.reset();               // Used for resetting the I and D terms - only use this if you know what you're doing
+  // myController.stop();                // Turn off the PID controller (compute() will not do anything until start() is called)
+  
+}
+
+
+void CMotorController::test(CMsg &msg) {
+std::list<float> flist; 
+int sspeed=0;  
+
+std::string testMode=msg.getParameter("MODE","PWM");
+setMode(testMode);  
+
+float setpt=msg.getParameter("SETPOINT",1787.0);
+int duration=msg.getParameter("DURATION",10000);
+
+if(testMode=="ROTATION"){
+  CIMU *pIMU=(CIMU *)getSystem("IMUSPI");
+  if(pIMU!=NULL) {    
+   // pIMU->setup();
+    pIMU->test(msg);
+  }
+
+  configRotation(pIMU);
+  
+  setPoint(setpt,duration);
+}
+else{
+  configSpeed();
+  setPoint(setpt,duration);
+}
+
+
+unsigned long tt=getTime()+duration;
 
 while(getTime()<tt){
- loop(); 
+  loop();   
   delay(30);
   }
 
 
-Speed(10,10000);
+Speed(0,10000);
 
 }

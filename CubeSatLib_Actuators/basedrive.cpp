@@ -1,4 +1,7 @@
 #include "basedrive.h"
+#if  defined(TTGO) || defined(TTGO1)
+#include <analogWrite.h>
+#endif
 #include "consoleio.h"
 
 int CBaseDrive::channel=0;
@@ -34,10 +37,8 @@ void CBaseDrive::init(){
   _changedOn=0;
 
 
-
   #ifdef TTGO || TTGO1
-    ledcSetup(_channel, freq, resolution);   // configure LED PWM functionalitites
-    ledcAttachPin(PIN_SIGNAL, _channel);  // attach the channel to the GPIO to be controlled
+  analogWriteResolution(PIN_SIGNAL,PIN_RESOLUTION);   
   #endif
   setForever();
 }
@@ -50,11 +51,9 @@ void CBaseDrive::sendPWM(int nVal){
    // return;
   }
   setPWMSpeed(nVal);
-  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-    analogWrite(PIN_SIGNAL,nVal);
-  #else
-    ledcWrite(_channel, nVal);  
-  #endif
+  
+  analogWrite(PIN_SIGNAL,nVal);
+  
 }
 
 void CBaseDrive::Speed(int s,unsigned long dur){

@@ -66,15 +66,10 @@ public:
 
 class CMotorController:public CBaseDrive{
 private:
-
-// setting PWM properties
   CIMU *_pIMU=NULL;
 
-
-
-  double _Setpoint=90.0, _Input=0.0, _Output=0.0,_Output_last=0.0;
+  double _Setpoint=0.0, _Input=0.0, _Output=0.0,_Output_last=0.0;
   char _axis='X';
-  //Specify the links and initial tuning parameters
   //double Kp=2, Ki=5, Kd=1;
   double _Kp=2.0, _Ki=5.0, _Kd=1.0;
 
@@ -88,18 +83,22 @@ public:
 
   void config(PinName sig, PinName fg,PinName dir);
   void configSpeed();
-  void configRotation(CIMU *pIMU, char axis);
+  void configRotation(CIMU *pIMU);
   void init();
   float RPM();
   float RPS();
   unsigned long getCount();
+  void setIMU(CIMU *pIMU){_pIMU=pIMU;}
   void runOnce(CMsg &m);
   void loopSpeed();
   void loopSpeedSimple();
   void loopRotation();
+  void loopRamp();
+  void loopPWM();
+  void writeStats();
+  void Speed(int s=10,unsigned long dur=0){activateDrive(s);}
   void test(CMsg &msg);
   void setPoint(double sp,unsigned long dur=10000000){_Setpoint=sp; changed();setDuration(dur);}
-  void setPointRotation(double sp){_Setpoint=sp;setMode("ROTATION");}
   
   void activateDrive(int val);
 };

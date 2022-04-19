@@ -20,28 +20,43 @@
 
 
 struct CIData{
-  unsigned long prevTime=0;
-  unsigned long changedOn=0;
+    float _fX=0.0;
+    float _fY=0.0;
+    float _fZ=0.0;
+    float _fR=0.0;
 
-  float prevX=0.0;
-  float prevY=0.0;
-  float prevZ=0.0;
-  float prevR=0.0;
-  float prevAcc=0.0;
+    float _lastX=0.0;
+    float _lastY=0.0;
+    float _lastZ=0.0;
+    float _lastR=0.0;
+    byte _lastAcc=0;
+
+  unsigned long _lastTime=0;
+  unsigned long _changedOn=0;
+
+  float lastAcc=0.0;
+  float *plastX=&_lastX;
+  float *plastY=&_lastY;
+  float *plastZ=&_lastZ;
+  float *plastR=&_lastR;
   
-  float X=0.0;
-  float Y=0.0;
-  float Z=0.0;
-  float R=0.0;
-  float Acc=0.0;
+  float *pX=&_fX;
+  float *pY=&_fY;
+  float *pZ=&_fZ;
+  float *pR=&_fR;
+  byte Acc=0;
 
-  float &Pitch=X;
-  float &Roll=Y;
-  float &Yaw=Z;
+  float &X=_fX;
+  float &Y=_fY;
+  float &Z=_fZ;
 
-  float &I=X;
-  float &J=Y;
-  float &K=Z;
+  float *pPitch=&_fX;
+  float *pRoll=&_fY;
+  float *pYaw=&_fZ;
+
+  float *pI=&_fX;
+  float *pJ=&_fY;
+  float *pK=&_fZ;
 
   SimpleKalmanFilter kfR;
   SimpleKalmanFilter kfX;
@@ -51,22 +66,23 @@ struct CIData{
   void init();
   
   void archiveData(){
-    prevR=R;
-    prevX=X;
-    prevY=Y;
-    prevZ=Z;
-    prevAcc=Acc;
-    prevTime=changedOn;
+    _lastR=*pR;
+    _lastX=*pX;
+    _lastY=*pY;
+    _lastZ=*pZ;
+    lastAcc=Acc;
+    _lastTime=_changedOn;
+  
   }
 
-  unsigned long lastChanged(){return (changedOn-prevTime);}
+  unsigned long lastChanged(){return (_changedOn-_lastTime);}
 
   bool anythingNew(){
     const float hf=.02;   //Bandpass filter
     const float lf=.02;
     if(
-      (abs(prevR)<=abs(R)+hf) &&     (abs(prevX)<=abs(X)+hf) &&     (abs(prevY)<=abs(Y)+hf) &&     (abs(prevZ)<=abs(Z)+hf)
-      && (abs(prevR)>=abs(R)-lf) &&     (abs(prevX)>=abs(X)-lf) &&     (abs(prevY)>=abs(Y)-lf) &&     (abs(prevZ)>=abs(Z)-lf)    
+      (abs(_lastR)<=abs(_fR)+hf) &&     (abs(_lastX)<=abs(_fX)+hf) &&     (abs(_lastY)<=abs(_fY)+hf) &&     (abs(_lastZ)<=abs(_fZ)+hf)
+      && (abs(_lastR)>=abs(_fR)-lf) &&     (abs(_lastX)>=abs(_fX)-lf) &&     (abs(_lastY)>=abs(_fY)-lf) &&     (abs(_lastZ)>=abs(_fZ)-lf)    
     ) 
     
     
@@ -78,12 +94,12 @@ struct CIData{
     CMsg m;
     std::string param;
     
-    param=str; param+="_R";m.Parameters[param]=tostring(R);
-    param=str; param+="_X";m.Parameters[param]=tostring(X);
-    param=str; param+="_Y";m.Parameters[param]=tostring(Y);
-    param=str; param+="_Z";m.Parameters[param]=tostring(Z);
-    param=str; param+="_T";m.Parameters[param]=tostring(changedOn);    
-    //writeconsole("Start makeMessage");     writeconsoleln(m.serialize());    
+    param=str; param+="_R";m.Parameters[param]=tostring(*pR);
+    param=str; param+="_X";m.Parameters[param]=tostring(*pX);
+    param=str; param+="_Y";m.Parameters[param]=tostring(*pY);
+    param=str; param+="_Z";m.Parameters[param]=tostring(*pZ);
+    param=str; param+="_T";m.Parameters[param]=tostring(_changedOn);    
+
     return m;
     };
 
@@ -101,19 +117,22 @@ struct CIData{
       if (sfirst[n-2]!='_')
         continue;
 
-      if (sfirst[n-1]=='R') R=ftmp;
-      if (sfirst[n-1]=='X') X=ftmp;
-      if (sfirst[n-1]=='Y') Y=ftmp;
-      if (sfirst[n-1]=='Z') Z=ftmp;
-      if (sfirst[n-1]=='T') changedOn=std::atol(ssecond.c_str());              
+      if (sfirst[n-1]=='R') *pR=ftmp;
+      if (sfirst[n-1]=='X') *pX=ftmp;
+      if (sfirst[n-1]=='Y') *pY=ftmp;
+      if (sfirst[n-1]=='Z') *pZ=ftmp;
+      if (sfirst[n-1]=='T') _changedOn=std::atol(ssecond.c_str());              
     }
   //writeconsoleln("End Desearialize");
   }
     
-    float K_R(){return kfR.updateEstimate(R);}
-    float K_X(){return kfX.updateEstimate(X);}
-    float K_Y(){return kfY.updateEstimate(Y);}
-    float K_Z(){return kfZ.updateEstimate(Z);}
+    float K_R(){return kfR.updateEstimate(*pR);}
+    float K_X(){return kfX.updateEstimate(*pX);}
+    float K_Y(){return kfY.updateEstimate(*pY);}
+    float K_Z(){return kfZ.updateEstimate(*pZ);}
+
+
+    void remap(float * pnewX, float *pnewY, float *pnewZ);    
 };
 
 class CIMU:public CSystemObject{
@@ -136,7 +155,7 @@ class CIMU:public CSystemObject{
    
     void init();
     void setup();
-    void setupI2C();
+    void setupI2C(char address=IMUADDRESS1);
     void setupSPI();
     void loop();
     void test(CMsg &msg);
@@ -144,7 +163,7 @@ class CIMU:public CSystemObject{
 
     void Output(CMsg &msg);
     void GetData();
-    void config(std::string option, int period=50);
+    void config(const char * option, int period=50);
     CMsg fillData(){
       CMsg m;
       return m;
@@ -152,10 +171,13 @@ class CIMU:public CSystemObject{
     void switchPlay(){};      //This needs to be set manually by some other function using the IMU to have it start getting data  Other systems will advance automatically
     long UpdatedOn(){return _dataUpdatedOn;}
     void callCustomFunctions(CMsg &msg){writeconsoleln("---------------------------------------------- callCustomFunctions(msg)  ------------------------------------------------------------");};
-
-/*
-    float K_GyroX(){tic();return simpleKalmanFilterGyroX.updateEstimate(gyrox);}
-    float K_GyroY(){tic();return simpleKalmanFilterGyroY.updateEstimate(gyroy);}
-  */  
     
+    void remap(){
+      Gyro.remap(&Gyro._fZ,&Gyro._fX,&Gyro._fY);  
+      Mag.remap(&Mag._fZ,&Mag._fX,&Mag._fY);  
+      Lin.remap(&Lin._fZ,&Lin._fX,&Lin._fY);  
+      Quat.remap(&Quat._fZ,&Quat._fX,&Quat._fY);  
+      PRY.remap(&PRY._fZ,&PRY._fX,&PRY._fY);        
+    }
+  
 };    

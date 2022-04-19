@@ -1,4 +1,7 @@
 #include "pwmpin.h"
+#if  defined(TTGO) || defined(TTGO1)
+#include <analogWrite.h>
+#endif
 
 int CPWMController::channel=0;  
 
@@ -33,8 +36,7 @@ void CPWMController::config( PinName sig){
 
       
   #ifdef TTGO
-    ledcSetup(_channel, freq, resolution);   // configure LED PWM functionalitites
-    ledcAttachPin(PIN_SIGNAL, _channel);  // attach the channel to the GPIO to be controlled
+      analogWriteResolution(PIN_SIGNAL,PIN_RESOLUTION);   
   #endif
 
  
@@ -48,10 +50,8 @@ void CPWMController::activateDrive(float val){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
     pMotor->write(val);
   #else
-      float fval=255.0*abs(val);
-      //fval=255.0;
      
-      ledcWrite(_channel, (int) fval); 
+      analogWrite(PIN_SIGNAL, (int) val); 
  
   #endif
 }

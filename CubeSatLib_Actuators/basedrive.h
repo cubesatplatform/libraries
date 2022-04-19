@@ -22,9 +22,7 @@ class CBaseDrive:public CSystemObject{   //Speed PWM 0-1000
   unsigned long _duration=10000;
   unsigned long _changedOn=0;
 protected: 
-  const int freq = 10000;
-  const int resolution = 12;
-
+  
   PinName PIN_SIGNAL;
   PinName PIN_DIR;
   PinName PIN_FG;  //Feedback
@@ -61,7 +59,7 @@ public:
   void setPWMSpeed(int tmp){_PWMSpeed=tmp;};
 
   int getMSpeed(){return _mspeed;};
-  void setMSpeed(int tmp){_mspeed=tmp;};
+  bool setMSpeed(int tmp){if (tmp==_mspeed) return false; _mspeed=tmp;return true;};
  
 
   unsigned long getDuration(){return _duration;};

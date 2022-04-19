@@ -18,36 +18,53 @@
 
 
 void CIData::init(){
- prevTime=0;
- changedOn=0;
+ _lastTime=0;
+ _changedOn=0;
 
- prevX=0.0;
- prevY=0.0;
- prevZ=0.0;
- prevR=0.0;
- prevAcc=0.0;
+ _lastX=0.0;
+ _lastY=0.0;
+ _lastZ=0.0;
+ _lastR=0.0;
+ _lastAcc=0.0;
   
- X=0.0;
- Y=0.0;
- Z=0.0;
- R=0.0;
+ _fX=0.0;
+ _fY=0.0;
+ _fZ=0.0;
+ _fR=0.0;
  Acc=0.0;
+}
 
-  }
+
+void CIData::remap(float * pnewX, float *pnewY, float *pnewZ){
+
+  pX=pnewX;
+  pY=pnewY;
+  pZ=pnewZ;
+
+}
+
 
 void CIMU::loop(){
   if(subscribers(Name())){
-  CMsg m;
-  runOnce(m);
+    CMsg m;
+    runOnce(m);
     }
   }
 
 
 void CIMU::test(CMsg &msg){ 
   CMsg m;
-  runOnce(m);
-  Output(m);
- 
+
+  unsigned long tt=getTime()+5000;
+  
+  while(getTime()<tt){    
+    runOnce(m);    
+    m=Gyro.makeMessage("GYRO");
+  
+    m.writetoconsole();      
+    delay(100);    
+  }
+  
 }
 
 
@@ -56,7 +73,7 @@ void CIMU::runOnce(CMsg &m){
     if((State()!="READY")&&(State()!="PLAY") ) return;
     if (myIMU.dataAvailable() == true) {
       GetData();      
-      //return true;
+      writeconsoleln("New IMU Data");
       }
     else {
       if(getTime()>(_dataUpdatedOn+IMU_WAIT_TIME)){  //Check if nothing for 100s
@@ -78,41 +95,47 @@ void CIMU::GetData(){
       Gyro.archiveData();
       Mag.archiveData();
       
-      PRY.Pitch=(myIMU.getPitch()) * 180.0 / PI; // Convert pitch to degrees
-      PRY.Roll=(myIMU.getRoll()) * 180.0 / PI; // Convert roll to degrees
-      PRY.Yaw=(myIMU.getYaw()) * 180.0 / PI; // Convert yaw / heading to degrees
+      *PRY.pPitch=(myIMU.getPitch()) * 180.0 / PI; // Convert pitch to degrees
+      *PRY.pRoll=(myIMU.getRoll()) * 180.0 / PI; // Convert roll to degrees
+      *PRY.pYaw=(myIMU.getYaw()) * 180.0 / PI; // Convert yaw / heading to degrees
 
-      Quat.I=myIMU.getQuatI();
+      //Quat.I=myIMU.getQuatI();       
+      //Quat.J = myIMU.getQuatJ();
+      //Quat.K = myIMU.getQuatK();
+      //Quat.R = myIMU.getQuatReal();
+      //Quat.Acc = myIMU.getQuatRadianAccuracy();
+
+      float quatRadianAccuracy;
+
        
-      Quat.J = myIMU.getQuatJ();
-      Quat.K = myIMU.getQuatK();
-      Quat.R = myIMU.getQuatReal();
-      Quat.Acc = myIMU.getQuatRadianAccuracy();
 
-      Lin.X = myIMU.getLinAccelX();
-      Lin.Y = myIMU.getLinAccelY();
-      Lin.Z = myIMU.getLinAccelZ();
-      Lin.Acc = myIMU.getLinAccelAccuracy();
+      //Lin.X = myIMU.getLinAccelX();
+      //Lin.Y = myIMU.getLinAccelY();
+      //Lin.Z = myIMU.getLinAccelZ();
+      //Lin.Acc = myIMU.getLinAccelAccuracy();
 
-
+      myIMU.getLinAccel(Lin._fX , Lin._fY, Lin._fZ, Lin.Acc);
+      myIMU.getGyro(Gyro._fX , Gyro._fY, Gyro._fZ, Gyro.Acc);
+      myIMU.getMag(Mag._fX , Mag._fY, Mag._fZ, Mag.Acc);
+      myIMU.getQuat(Quat._fX, Quat._fY, Quat._fZ, Quat._fR, quatRadianAccuracy, Quat.Acc);
 
   //  gyrox = myIMU.getGyroX();
   //  gyroy = myIMU.getGyroY();
   //  Gyro.z = myIMU.getGyroZ();
-      Gyro.X = myIMU.getFastGyroX();
-      Gyro.Y = myIMU.getFastGyroY();
-      Gyro.Z = myIMU.getFastGyroZ();
+    //  Gyro.X = myIMU.getFastGyroX();
+    //  Gyro.Y = myIMU.getFastGyroY();
+    //  Gyro.Z = myIMU.getFastGyroZ();
 
-      Mag.X = myIMU.getMagX();
-      Mag.Y = myIMU.getMagY();
-      Mag.Z = myIMU.getMagZ();
-      Mag.Acc = myIMU.getMagAccuracy();
+    //  Mag.X = myIMU.getMagX();
+    //  Mag.Y = myIMU.getMagY();
+    //  Mag.Z = myIMU.getMagZ();
+    //  Mag.Acc = myIMU.getMagAccuracy();
 
-      Mag.changedOn=getTime();
-      Quat.changedOn=getTime();
-      Lin.changedOn=getTime();
-      PRY.changedOn=getTime();
-      Gyro.changedOn=getTime();
+      Mag._changedOn=getTime();
+      Quat._changedOn=getTime();
+      Lin._changedOn=getTime();
+      PRY._changedOn=getTime();
+      Gyro._changedOn=getTime();
 
       CMsg mGyro,mLin,mMag,mPRY;
 
@@ -167,10 +190,17 @@ void CIMU::setup(){
   if(Name()=="IMUI2C") setupI2C();
 }
 
-void CIMU::config(std::string option, int period){
-  if(option=="ROT") myIMU.enableRotationVector(period); //Send data update every 50ms
-  if(option=="GYRO") myIMU.enableGyro(period); //Send data update every 50ms
-  if(option=="GYROROT") myIMU.enableGyroIntegratedRotationVector(period); //Send data update every 50ms
+void CIMU::config(const char * option, int period){              //IMPORTANT
+  /*
+  myIMU.enableLinearAccelerometer(50);  // m/s^2 no gravity
+  myIMU.enableRotationVector(50);  // quat
+  myIMU.enableGyro(50);  // rad/s
+  //myIMU.enableMagnetometer(50);  // cannot be enabled at the same time as RotationVector (will not produce data)
+  */
+
+  if(option=="ROT") myIMU.enableRotationVector(period); //Quaternion Send data update every 50ms
+  if(option=="GYRO") myIMU.enableGyro(period); // rad/s
+  if(option=="GYROROT") myIMU.enableGyroIntegratedRotationVector(period); //Quaternion Send data update every 50ms
   if(option=="MAG") myIMU.enableMagnetometer(period);
   if(option=="ACCEL") myIMU.enableAccelerometer(period);
   if(option=="LINACCEL") myIMU.enableLinearAccelerometer(period);
@@ -191,11 +221,8 @@ for(int retries=0;retries<5;retries++){
      
     }
     else{ 
-     //  myIMU.enableRotationVector(50); //Send data update every 50ms
-     //   myIMU.enableGyro(50); //Send data update every 50ms
-     myIMU.enableGyroIntegratedRotationVector(50); //Send data update every 50ms
-  
-  
+     config("GYRO");
+      
      setState("PLAY");
      writeconsole("IMU Ready");
      return;
@@ -205,14 +232,14 @@ for(int retries=0;retries<5;retries++){
 }
 
 
-void CIMU::setupI2C(){
+void CIMU::setupI2C(char imuaddress){
   Name("IMU");
   delay(100);
   Wire.flush();
 
 for(int retries=0;retries<5;retries++){
   
-  if (myIMU.begin(IMUADDRESS1) == false) {   //IMUADDRESS2
+  if (myIMU.begin(imuaddress) == false) {   //IMUADDRESS2
      unsigned int counter=10000;
      while(Wire.available()&&counter) {  Wire.read();counter--;}   //Flushes wire.  Then try again    Wire.flush() should do the same thing
      delay(100);              
@@ -222,10 +249,9 @@ for(int retries=0;retries<5;retries++){
   else{  
     Wire.setClock(400000);
     //  myIMU.enableRotationVector(50); //Send data update every 50ms
-    //  myIMU.enableGyro(50); //Send data update every 50ms
-    myIMU.enableGyroIntegratedRotationVector(50); //Send data update every 50ms
     
-    
+    config("GYRO");
+    myIMU.enableGyro(50); //Send data update every 50ms
     setState("PLAY");
     writeconsoleln("IMU Ready...............................");
     
