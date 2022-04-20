@@ -107,6 +107,7 @@ SX1268 *plora=&radio1;
   bool volatile  *_pbFlag;
   bool volatile  *_penableInterrupt;
   bool _bTransmitter=true;
+  unsigned long _sleepTime=0;
 
 public:
 
@@ -139,6 +140,9 @@ public:
 
   void resetAck(){mACK.clear();};
   void Update(CMsg &msg); 
+  void sleep(bool tmp){plora->sleep();_sleepTime=getTime();} 
+  bool chkSleep(){if(_sleepTime){if (getTime()>_sleepTime+SLEEPTIME)  clearSleep();}return((bool) _sleepTime);}
+  void clearSleep(){_sleepTime=0;SetRadioReceive();}
   void callCustomFunctions(CMsg &msg);   
   
 };

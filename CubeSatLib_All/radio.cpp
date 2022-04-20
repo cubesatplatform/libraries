@@ -64,13 +64,15 @@ void CRadio::init(){
     _penableInterrupt=&enableInterrupt;
     plora=&radio1;
   }
-  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
+  
   else{
     _pbFlag=&bFlag2;
     _penableInterrupt=&enableInterrupt2;
+    #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
     plora=&radio2;
+    #endif
   }
-#endif
+
 }
 
 // function to set RF mode to transmit or receive
@@ -175,10 +177,10 @@ void CRadio::setup() {
   if (Name()!="RADIO")
      freq= RADIO2LORAFREQUENCY;
 
-  
+
 
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
-  writeconsole("Initializing Radio on Portenta... ");
+  writeconsole(Name());writeconsole("   Initializing Radio on Portenta... Freq:");writeconsoleln(freq);
 
   #else    
     writeconsoleln("Initializing Radio on new TTGO ... ");
@@ -197,8 +199,6 @@ void CRadio::setup() {
     #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
  
     writeconsole("CUBESAT ... "); writeconsoleln(LORACHIP);
-    //     int16_t begin(float freq = 443.0, float bw = 125.0,   uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = SX126X_SYNC_WORD_PRIVATE, int8_t power = 10, uint16_t preambleLength = 8, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);
-    //state =  plora->begin(LORAFREQUENCY);//      (LORAFREQUENCY,        BANDWIDTH, SPREADING_FACTOR,    CODING_RATE,                                   SYNC_WORD,      OUTPUT_POWER,             PREAMBLE_LENGTH,            TCXO_VOLTAGE);
     //state =  plora->begin(float freq = 434.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX126X_SYNC_WORD_PRIVATE, int8_t power = 10, uint16_t preambleLength = 8, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);
 
     state =  plora->begin(freq, BANDWIDTH,  SPREADING_FACTOR,  CODING_RATE,  RADIOLIB_SX127X_SYNC_WORD  , OUTPUT_POWER,  PREAMBLE_LENGTH,  2.4,  false);   //RADIOLIB_SX126X_SYNC_WORD_PRIVATE
@@ -211,26 +211,15 @@ void CRadio::setup() {
     #elif defined(TTGO)  
     
     writeconsole("TTGO ... "); writeconsoleln(LORACHIP);
-    //state = plora->begin(LORAFREQUENCY, BANDWIDTH, SPREADING_FACTOR);// , CODING_RATE, SYNC_WORD, OUTPUT_POWER, CURRENT_LIMIT, PREAMBLE_LENGTH);
-    //state = plora->begin(443.0);
-    //state =  plora->begin(LORAFREQUENCY);//state =  plora->begin      (LORAFREQUENCY,        BANDWIDTH, SPREADING_FACTOR,    CODING_RATE,                                   SYNC_WORD,      14,             PREAMBLE_LENGTH);
 
-        //SX1268 state =  plora->begin(float freq = 434.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX126X_SYNC_WORD_PRIVATE, int8_t power = 10, uint16_t preambleLength = 8, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);
-        //SX1268 state = begin(float freq = 434.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX127X_SYNC_WORD,         int8_t power = 10, uint16_t preambleLength = 8, uint8_t gain = 0);
-
-
-    state =  plora->begin(RADIOLORAFREQUENCY, BANDWIDTH,  SPREADING_FACTOR,  CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, OUTPUT_POWER_TTGO,  PREAMBLE_LENGTH);
+    state =  plora->begin(freq, BANDWIDTH,  SPREADING_FACTOR,  CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, OUTPUT_POWER_TTGO,  PREAMBLE_LENGTH);
 
     #elif  defined(TTGO1)
     writeconsole("TTGO1 ... "); writeconsoleln(LORACHIP);
-    //state = plora->begin(LORAFREQUENCY, BANDWIDTH, SPREADING_FACTOR);// , CODING_RATE, SYNC_WORD, OUTPUT_POWER, CURRENT_LIMIT, PREAMBLE_LENGTH);
-    //state = plora->begin(443.0);
-    //state =  plora->begin(LORAFREQUENCY);//state =  plora->begin      (LORAFREQUENCY,        BANDWIDTH, SPREADING_FACTOR,    CODING_RATE,                                   SYNC_WORD,      OUTPUT_POWER,             PREAMBLE_LENGTH);
-    state =  plora->begin(RADIOLORAFREQUENCY, BANDWIDTH,  SPREADING_FACTOR,  CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, OUTPUT_POWER_TTGO,  PREAMBLE_LENGTH);
+    state =  plora->begin(freq, BANDWIDTH,  SPREADING_FACTOR,  CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, OUTPUT_POWER_TTGO,  PREAMBLE_LENGTH);
       
     #elif defined(ESP32_GATEWAY)
-    writeconsole("GATEWAY ... "); writeconsoleln(LORACHIP);
-    //state =  plora->begin(LORAFREQUENCY); //state = plora->begin(LORAFREQUENCY, BANDWIDTH, SPREADING_FACTOR, CODING_RATE, SYNC_WORD, OUTPUT_POWER, CURRENT_LIMIT, PREAMBLE_LENGTH);      
+    writeconsole("GATEWAY ... "); writeconsoleln(LORACHIP);    
     state =  plora->begin(434.0, BANDWIDTH,  SPREADING_FACTOR,  CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, OUTPUT_POWER_TTGO,  PREAMBLE_LENGTH);
     #endif
 
@@ -264,8 +253,7 @@ void CRadio::setup() {
       setState("PLAY");
       writeconsoleln("Radio success!   success!   success!   success!   success!   success!   success!   success!    success!   success!   success!");
       delay(3000);
-      SetRadioReceive();      
-      
+      SetRadioReceive();          
      return;
       } else {
         writeconsole("Start radio failed, code ");        writeconsoleln(state);
@@ -321,6 +309,8 @@ void CRadio::TransmitPacket(std::string str, bool bAck){
 
 void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
   unsigned char buffer[300];
+
+  writeconsole("Radio Transmitting :  ");writeconsoleln(Name());
 
   if(len>255) {
     writeconsole("ERROR ERROR Sending   Packet too big! :");    writeconsoleln(len);    
@@ -534,5 +524,8 @@ void CRadio::loopRadio(){
 }
 
 void CRadio::loop() {  
+  if (chkSleep())
+    return;
+  writeconsoleln(Name());
   loopRadio();  
 }

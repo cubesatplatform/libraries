@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stateobj.h"
+#include "radio.h"
 
 //delay will put Portenta in lower power mode, down .15W
 class CLowPowerState : public CStateObj {
@@ -21,6 +22,15 @@ public:
 		disablePhone();
 
 		CStateObj::enter();
+
+		CRadio *psys=(CRadio *)getSystem("RADIO","RADIO");
+		if(psys!=NULL){
+			psys->sleep(true);			
+		}
+		psys=(CRadio *)getSystem("RADIO2","RADIO2");
+		if(psys!=NULL){
+			psys->sleep(true);			
+		}
 		CMsg m;
 		m.setTABLE("LOG");
 		m.setINFO("Enter LowPower");  

@@ -18,6 +18,7 @@
 #define MCUTEMPMAX 40.0
 #define VOLTCHARGED 6.0
 #define RECEIVEDMESSAGEWAITTIME 2*24*60*60*1000  //2 days
+#define SLEEPTIME 15*1000    //1 Orbit  90*60*1000 Min
 
 #define GYROLIMIT 0.1
 #define MAGLIMIT 0.1
