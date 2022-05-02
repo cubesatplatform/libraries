@@ -10,7 +10,7 @@
 
 
 
-#if defined(TTGO1) || defined(TTGO)
+#if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
     #include <axp20x.h>
     #define UNUSE_PIN                   (0)    
 

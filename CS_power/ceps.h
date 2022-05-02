@@ -217,8 +217,8 @@ class CEPS:public CSystemObject
     float readMCUTemp(void);
     
     uint16_t readInputConditions(void);
-    uint16_t readOutputCOnditions(void);
-    uint16_t readOutputCOnditions2(void);
+    uint16_t readOutputConditions(void);
+    uint16_t readOutputConditions2(void);
     uint16_t readPowerONCycles(void);
     uint16_t readVUnderVoltage(void);
     uint16_t readVShortCircuit(void);

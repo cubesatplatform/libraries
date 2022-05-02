@@ -1,6 +1,7 @@
 #include "pwmpin.h"
-#if  defined(TTGO) || defined(TTGO1)
-#include <analogWrite.h>
+#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+#else
+  #include <analogWrite.h>
 #endif
 
 int CPWMController::channel=0;  
@@ -35,7 +36,7 @@ void CPWMController::config( PinName sig){
     #endif
 
       
-  #ifdef TTGO
+  #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
       analogWriteResolution(PIN_SIGNAL,PIN_RESOLUTION);   
   #endif
 

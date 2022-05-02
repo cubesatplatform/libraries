@@ -1,6 +1,11 @@
 #include "mgr_defs.h"
-#ifdef TTGO || TTGO1
+#if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
 #include <analogWrite.h>
+
+
+#define PHONE_TX 23
+#define PHONE_RX 4
+
 #endif
 #include "system_mgr.h"
 #include <messages.h>
@@ -10,9 +15,6 @@
 
 #define PHONE_BAUD_RATE 115200
 
-#define MAG_ADDRESS_X  0x60
-#define MAG_ADDRESS_Y  0x61
-#define MAG_ADDRESS_Z  0x63
 
 
 void CSystemMgr::showTests() {
@@ -63,7 +65,7 @@ addTransmitList(m);
 
 
 
-#ifdef TTGO
+#if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
 void CSystemMgr::initPins() {
 
   Pins["36"] = 36;
@@ -487,159 +489,6 @@ void CSystemMgr::resetWire(TwoWire *wire,const char * s) {
 
 
 
-
-
-void CSystemMgr::SendCmd(CMsg &msg) {
-  std::string str=msg.getACT(); 
-  PinName  n = Pins[str];
-  char action = 'H';
-  
-  if ((str[0] == 'H') || (str[0] == 'L') || (str[0] == 'W')) {
-    action = str[0];
-    str.erase(0, 1);
-    writeconsole(">");
-  }
-
-  n = Pins[str];
-
-
-
-  if (str == "RADIO") {
-    CMsg m;
-    m.setSYS("Radio");
-    m.setINFO("setup");
-    CRadio *pradio=(CRadio *)getSystem("RADIO", "Radio");
-    if(pradio!=NULL) pradio->setup();
-    writeconsoleln(m.serializeout());
-    addTransmitList(m);
-  return;
-  }
-
-#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-if (str == "PHONEON") {    phone();    return;  }
-
-if (str == "PHONEOFF") {    disablePhone();    return;  }
-
-if (str == "BURN") {    burn();    return;  }
-
-if (   (str == "MOTORX") || (str == "MOTORY") || (str == "MOTORZ") ){  testMotor(msg);  return;}
-
-if ( (str == "IRX1") || (str == "IRX2") ||  (str == "IRY1") || (str == "IRY2") ||  (str == "IRZ1") || (str == "IRZ2") ){  testIR(msg);  return;}
-
-if (   (str == "MAGX") || (str == "MAGY") || (str == "MAGZ") ){testMAG(msg);return;}
-
-if (   (str == "TEMPX1") || (str == "TEMPX2") || (str == "TEMPY1") || (str == "TEMPY2") || (str == "TEMPZ1") || (str == "TEMPZ2") || (str == "TEMPOBC") || (str == "TEMPADCS")  ){
-  testTemp(msg);
-  return;
-}
-
-if  (str == "MAGDX"){  testMAGDrive(MAG_ADDRESS_X);  return;}
-if  (str == "MAGDY"){  testMAGDrive(MAG_ADDRESS_Y);  return;}
-if  (str == "MAGDZ"){  testMAGDrive(MAG_ADDRESS_Z);  return;}
-
-if  (str == "ADCSON"){  enableADCS();  return;}
-if  (str == "ADCSOFF"){  disableADCS();  return;}
-
-if  (str == "SENSORSON"){  enableSensors();    return;}
-if  (str == "SENSORSOFF"){  disableSensors();    return;}
-
-if  (str == "MAGSMOTORSON"){  enableMagsMotors();    return;}
-if  (str == "MAGSMOTORSOFF"){  disableMagsMotors();    return;}
-
-CMessages* pMSG= getMessages();
-
-if(str=="TRANSMITDATA") {pMSG->movetoTransmitList(msg);return;}
-if(str=="DATALISTCLEAR") {pMSG->DataList.clear();return;}
-if(str=="MESSAGESLISTCLEAR") {pMSG->MessageList.clear();return;}
-if(str=="TRANSMITLISTCLEAR") {pMSG->TransmitList.clear();return;}
-if(str=="TRANSMITTEDLISTCLEAR") {pMSG->TransmittedList.clear();return;}
-if(str=="SENDDATA") {pMSG->sendData(msg);return;}
-if(str=="SUBSCRIBE") {pMSG->subscribe(msg.getDATA());return;}
-if(str=="UNSUBSCRIBE") {pMSG->unsubscribe(msg.getDATA());return;}
-
-#endif
-
-  if (str == "?") {    showTests();    return;  }
-
-  if (str == "PINSON") {    pinsOn();    return;  }
-  if (str == "PINSOFF") {    pinsOff();    return;  }
-  
-  if ((str == "IMUI2C") || (str == "IMUSPI")) {    testIMU(msg);    return;  }
-  
-  if (str == "I2C0") {   loopWire(&Wire, "0");   return; }
-  if (str == "I2C1") {   loopWire(&Wire1,"1");   return; }
-  if (str == "I2C2") {   loopWire(&Wire2,"2");   return; }
-
-
-
-
-  if (str == "RESETI2C0") {
-    enableI2C();    
-    writeconsoleln("RESET I2C0");    
-    resetWire(&Wire, "0");
-    return;
-  }
-
-  if (str == "RESETI2C1") {
-    enableI2C();    
-    writeconsoleln("RESET I2C1");
-    
-    delay(100);
-    resetWire(&Wire1,"1");
-    return;
-  }
-
-  if (str == "RESETI2C2") {
-    enableI2C();    
-    writeconsoleln("RESET I2C2");
-
-    #ifndef TTGO
-    delay(100);
-    resetWire(&Wire2,"2");
-    #endif
-    return;
-  }
-
-
-  if (action == 'H') {
-    writeconsoleln("High");
-    //pinMode(n, OUTPUT); ///Set is to output mode  if you need lots of current
-    delay(10);
-    digitalWrite(n, HIGH);
-    return;
-  }
-
-  if (action == 'L') {
-    writeconsoleln("Low");
-    //pinMode(n, OUTPUT); ///Set is to output mode  if you need lots of current
-    delay(10);
-    digitalWrite(n, LOW);
-    return;
-  }
-
-  if (action == 'W'){
-    writeconsoleln("PWM");
-    if (pwmPins.find(str) != pwmPins.end()) {
-      writeconsole(" Found");
-    
-        #ifdef TTGO || TTGO1
-        analogWriteResolution(n,PIN_RESOLUTION);   
-        #endif
-        for (int count=0;count<4000;count+=100){
-          analogWrite(n,count);
-          writeconsole("PWM: ");
-          writeconsole(count);
-          delay(200);
-        }
-    
-    }
-  
-    return;    
-  }
- writeconsoleln("");
-}
-
-
 void CSystemMgr::testIMU(CMsg &msg){  
   std::string s=msg.getACT(); 
   CIMU *pTest=(CIMU *)getSystem(s.c_str(),"Test IMU");
@@ -879,3 +728,10 @@ void CSystemMgr::loopWire(TwoWire *wire,const char * s) {
   disableMagsMotors();  
   delay(150);          
 }
+
+
+
+
+
+
+

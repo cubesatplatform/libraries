@@ -31,8 +31,7 @@
     #define IMU_OBC_INT PinNameToIndex(PI_15)
     #define IMU_OBC_WAKE PinNameToIndex(PJ_9)
 
-#else
-    #define TTGO
+#else    
     typedef int PinName; 
 #endif
 
@@ -65,6 +64,7 @@ public:
   void chkRadio(CMsg &msg);
   void chkBattery(CMsg &msg);
   void chkRotation(CMsg &msg);
+  void chkMagField(CMsg &msg);
   void chkMessages(CMsg &msg);
 
   void sendBeacon(CMsg &msg);  
@@ -73,6 +73,7 @@ public:
   void newState(const char *str="LOWPOWER");
   
   void addSchedule(CMsg &msg);
+  void deleteSchedule(CMsg &msg);
   void showScheduler(CMsg &msg);
   void showCommands();
   void showTests();

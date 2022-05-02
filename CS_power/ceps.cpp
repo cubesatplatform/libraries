@@ -87,23 +87,8 @@ void CEPS::loop(){
   
 }
 void CEPS::output(){   //FIX THIS  JUST FOR TESTING
-  /*
-  CMsg msg;
-  if(rand() % 5==1){
-    
-    msg.setSTATE("LOWPOWER");
-    addMessageList(msg);
-  }
-  else{
-      if(rand() % 2==1){
-       msg.setSYS("SYSTEMMGR");
-       msg.setACT("POWERLEVEL");
-       msg.setParameter("LEVEL",69.5);
-       addMessageList(msg);
-      }
-    
-  }
-  */
+
+  
   return;
   
   writeconsoleln("HELLO POWER");
@@ -123,23 +108,23 @@ void CEPS::output(){   //FIX THIS  JUST FOR TESTING
   delay(300);
 */
 
-  m.setParameter("BatteryVoltage",readBatteryVoltage());  
-  m.setParameter("BatteryCurrent",readBatteryCurrent());  
-  m.setParameter("BCRVoltage",readBCRVoltage());
-  m.setParameter("BCRCurrent",readBCRCurrent());   
-  m.setParameter("3V3Current",read3V3Current());
-  m.setParameter("5VCurrent",read5VCurrent());
+  m.setParameter("BatteryVolt",readBatteryVoltage());  
+  m.setParameter("BatteryCrnt",readBatteryCurrent());  
+  m.setParameter("BCRVolt",readBCRVoltage());
+  m.setParameter("BCRCrnt",readBCRCurrent());   
+  m.setParameter("3V3Crnt",read3V3Current());
+  m.setParameter("5VCrnt",read5VCurrent());
   m.setParameter("LUP3V3",readLUP3V3());
   m.setParameter("LUP5V",readLUP5V());
   m.setParameter("MCUTemp",readMCUTemp());    
   m.setParameter("InputConditions",readInputConditions());
-  m.setParameter("OutputCOnditions",readOutputCOnditions());
-  m.setParameter("OutputCOnditions2",readOutputCOnditions2());
+  m.setParameter("OutputConditions",readOutputConditions());
+  m.setParameter("OutputConditions2",readOutputConditions2());
   m.setParameter("PowerONCycles",readPowerONCycles());
-  m.setParameter("VUnderVoltage",readVUnderVoltage());
+  m.setParameter("VUnderVolt",readVUnderVoltage());
   m.setParameter("VShortCircuit",readVShortCircuit());
-  m.setParameter("VOverTemperature",readVOverTemperature());
-  m.setParameter("SoftwareVersion",readSoftwareVersion());
+  m.setParameter("VOverTemp",readVOverTemperature());
+  m.setParameter("Ver",readSoftwareVersion());
   m.setParameter("Defaults1",readDefaults1());
   m.setParameter("Defaults12",readDefaults12());
   m.setParameter("ChargeCycles",readChargeCycles());
@@ -169,19 +154,19 @@ void CEPS::output(){   //FIX THIS  JUST FOR TESTING
   m.setParameter("TSTemp4",tBatt.readTemp4());
     
   AXIS_INFO axis=readXAxisInfo();
-  m.setParameter("XVoltage",axis.readVoltage());
-  m.setParameter("XCurrentM",axis.readCurrentM());
-  m.setParameter("XCurrentP",axis.readCurrentP());
+  m.setParameter("XVolt",axis.readVoltage());
+  m.setParameter("XCrntM",axis.readCurrentM());
+  m.setParameter("XCrntP",axis.readCurrentP());
 
   axis=readYAxisInfo();
-  m.setParameter("YVoltage",axis.readVoltage());
-  m.setParameter("YCurrentM",axis.readCurrentM());
-  m.setParameter("YCurrentP",axis.readCurrentP());
+  m.setParameter("YVolt",axis.readVoltage());
+  m.setParameter("YCrntM",axis.readCurrentM());
+  m.setParameter("YCrntP",axis.readCurrentP());
 
   axis=readZAxisInfo();
-  m.setParameter("ZVoltage",axis.readVoltage());
-  m.setParameter("ZCurrentM",axis.readCurrentM());
-  m.setParameter("ZCurrentP",axis.readCurrentP());
+  m.setParameter("ZVolt",axis.readVoltage());
+  m.setParameter("ZCrntM",axis.readCurrentM());
+  m.setParameter("ZCrntP",axis.readCurrentP());
 
   //addDataList(m);
 }
@@ -464,7 +449,7 @@ uint16_t CEPS::readInputConditions(void)
  *
  * \return Return output conditions 
  */
-uint16_t CEPS::readOutputCOnditions(void)
+uint16_t CEPS::readOutputConditions(void)
 {
   uint8_t data[2]; 
   readI2C(EPS_RCMD_OUTPUTS_CONDITIONS,data,2);
@@ -479,7 +464,7 @@ uint16_t CEPS::readOutputCOnditions(void)
  *
  * \return Return output conditions 
  */
-uint16_t CEPS::readOutputCOnditions2(void)
+uint16_t CEPS::readOutputConditions2(void)
 {
   uint8_t data[2]; 
   readI2C(EPS_RCMD_OUTPUTS_CONDITIONS2,data,2);

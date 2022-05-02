@@ -22,7 +22,7 @@ class CMagTorquer:public CSystemObject{
     
   public:
     CMagTorquer();    
-    ~CMagTorquer(){}
+    ~CMagTorquer();
 
     void setup();      
     void loop();

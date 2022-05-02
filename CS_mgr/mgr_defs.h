@@ -4,8 +4,7 @@
 
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-#else
-    #define TTGO  //TTGO1
+#else    
     #define TTGO_I2C_SDA         21
     #define TTGO_I2C_SCL         22
 

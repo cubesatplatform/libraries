@@ -1,19 +1,20 @@
 #include "system_pins.h"
 
+
 #define PIN_RESOLUTION 12
 #define PIN_FREQUENCY 10000
 
-#if  defined(TTGO) || defined(TTGO1)
-#include <analogWrite.h>
+#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+#else
+  #include <analogWrite.h>
 #endif
-
 void CSatPins::loop() {
 }
 
 
 int CSatPins::digitalReadOutputPin(PinName pin)
 {
-  #if defined(TTGO1) || defined(TTGO)
+  #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
   uint8_t bit = digitalPinToBitMask(pin);
   uint8_t port = digitalPinToPort(pin);
   if (port == NOT_A_PIN) 
@@ -31,7 +32,7 @@ void CSatPins::high(CMsg &msg){
 
 	std::string strpin=msg.getParameter("PIN","");
 	PinName n=Pins[strpin];
-  #if defined(TTGO1) || defined(TTGO)
+  #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
     pinMode(n, GPIO_MODE_INPUT_OUTPUT); ///Set is to output mode   
   #else
     pinMode(n, GPIO_MODE_INPUT);
@@ -102,7 +103,7 @@ void CSatPins::pwm(CMsg &msg){
 	int resolution =msg.getParameter("RESOLUTION",PIN_RESOLUTION); 
   int _channel=0; 
 
-  #ifdef TTGO || TTGO1
+  #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
    analogWriteResolution(n,PIN_RESOLUTION);   
   #endif
 

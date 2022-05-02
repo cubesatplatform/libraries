@@ -128,7 +128,7 @@ void CMotorController::config(PinName sig, PinName fg,PinName dir){
   PIN_DIR=dir;
   PIN_FG=fg;  
  
-  #ifdef TTGO || TTGO1
+  #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
     analogWriteResolution(sig, PIN_RESOLUTION);
   #else
     analogWriteResolution(PIN_RESOLUTION);

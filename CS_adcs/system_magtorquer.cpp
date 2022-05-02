@@ -11,6 +11,8 @@ CMagTorquer::CMagTorquer():CSystemObject(){
   setInterval(40);
 }
 
+CMagTorquer::~CMagTorquer(){}
+
 void CMagTorquer::init()  {
   CSystemObject::init();
 }

@@ -3,7 +3,7 @@
 #include <messages.h>
 #include "mgr_defs.h"
 #include <powerup.h>
-#include <ceps.h>
+
 #include <radio.h>
 #include <system_imu.h>
 
@@ -114,6 +114,18 @@ void CSystemMgr::addSchedule(CMsg &msg){
     Scheduler.push_back(m);
   };
 
+  
+void CSystemMgr::deleteSchedule(CMsg &msg){
+  for (auto m = Scheduler.begin(); m != Scheduler.end(); m++) {
+    if((m->getACT()==msg.getACT())&&(1)) {   //nEED SOME OTHER QUALIFIER
+      m = Scheduler.erase(m);   //Check to make sure this works			 
+      break;
+    }
+  }
+
+
+};
+
 void CSystemMgr::newState(const char *str){
     CMsg msg;
     msg.setSYS("SAT");
@@ -121,6 +133,60 @@ void CSystemMgr::newState(const char *str){
     addMessageList(msg);
   }
   
+
+  
+
+
+void CSystemMgr::SendCmd(CMsg &msg) {
+  std::string str=msg.getACT(); 
+  PinName  n = Pins[str];
+  char action = 'H';
+  
+  if ((str[0] == 'H') || (str[0] == 'L') || (str[0] == 'W')) {
+    action = str[0];
+    str.erase(0, 1);
+    writeconsole(">");
+  }
+
+  n = Pins[str];
+
+
+
+  if (str == "RADIO") {
+    CMsg m;
+    m.setSYS("Radio");
+    m.setINFO("setup");
+    CRadio *pradio=(CRadio *)getSystem("RADIO", "Radio");
+    if(pradio!=NULL) pradio->setup();
+    writeconsoleln(m.serializeout());
+    addTransmitList(m);
+  return;
+  }
+
+
+  if (action == 'H') {   digitalWrite(n, HIGH);    return;  }
+  if (action == 'L') {   digitalWrite(n, LOW);    return;  }
+
+  if (action == 'W'){
+    writeconsoleln("PWM");
+    if (pwmPins.find(str) != pwmPins.end()) {
+    
+      #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
+        analogWriteResolution(n,PIN_RESOLUTION);   
+      #endif
+      for (int count=0;count<4000;count+=100){
+        analogWrite(n,count);
+        writeconsole("PWM: ");
+        writeconsole(count);
+        delay(200);
+      }
+
+    }  
+    return;    
+  }
+ writeconsoleln("");
+}
+
 
 
 void CSystemMgr::controlPlan(){
@@ -150,92 +216,3 @@ void CSystemMgr::controlPlan(){
          */
 }
 
-
- void CSystemMgr::callCustomFunctions(CMsg &msg){
-  std::string act=msg.getACT(); 
-  writeconsoleln("");
-  writeconsole(" CallCustomFunctions :  ");
-  writeconsoleln(act);  
-  if(act=="CHKRADIO") chkRadio(msg);
-  if(act=="CHKTEMPERATURE") chkTemperature(msg);
-  if(act=="CHKBATTERY") chkBattery(msg);
-  if(act=="CHKROTATION") chkRotation(msg);
-  if(act=="CHKMESSAGES") chkMessages(msg);
-  
-  if(act=="SENDBEACON") sendBeacon(msg);
-  if(act=="ADD")  addSchedule(msg);
-  
-  if(act=="ENABLEI2C") enableI2C();
-  
-  if(act=="SHOWTESTS") showTests();
-  if(act=="SHOWCOMMANDS") showCommands();
-  if(act=="SHOWSCHEDULER") showScheduler(msg);
-
-  SendCmd(msg);
-  SendCmdToScheduler(msg);
-  writeconsoleln("");
-}
-
-
-void CSystemMgr::chkBattery(CMsg &msg){
-  CEPS *pEPS=(CEPS *)getSystem("EPS");
-  
-  if(pEPS==NULL)
-    return;
-  CMsg m=pEPS->m;
-  addTransmitList(m);  
-}
-
-void CSystemMgr::chkRadio(CMsg &msg){
-  CMsg m;
-  CRadio *pRadio=(CRadio *)getSystem("RADIO");
-  CRadio *pRadio2=(CRadio *)getSystem("RADIO2");
-  
-
-  if(pRadio!=NULL){
-    m.setParameter("RADIO_STATE",pRadio->State());
-    m.setParameter("RADIO_INSTATE",pRadio->getRadioState());
-    m.setParameter("RADIO_LASTTX",pRadio->getLastTransmit());
-    m.setParameter("RADIO_LASTRX",pRadio->getLastReceive());    
-    }
-
-  if(pRadio2!=NULL){
-    m.setParameter("RADIO2_STATE",pRadio2->State());
-    m.setParameter("RADIO2_INSTATE",pRadio2->getRadioState());
-    m.setParameter("RADIO2_LASTTX",pRadio2->getLastTransmit());
-    m.setParameter("RADIO2_LASTRX",pRadio2->getLastReceive());    
-    }    
-  addTransmitList(m);  
-
-}
-
-
-void CSystemMgr::chkMessages(CMsg &msg){
-  CMessages* pM=getMessages();
-  CMsg m;
-
-  m.setParameter("lastReceived",pM->getLastReceived());
-  m.setParameter("lastMessage",pM->getLastMessage());
-  m.setParameter("lastData",pM->getLastData());
-  m.setParameter("lastTransmit",pM->getLastTransmit());
-
-  addTransmitList(m);  
-}
-
-
-
-void CSystemMgr::chkRotation(CMsg &msg){
-  CIMU *pIMU=(CIMU *)getIMU();
-  if(pIMU!=NULL){
-    CMsg m;
-    pIMU->test(m);
-    m=pIMU->Gyro.makeMessage("GYRO");
-    addTransmitList(m);
-  }
-
-}
-
-
-void CSystemMgr::sendBeacon(CMsg &msg){//Have the Satelite send this out  so this just messages it
-
-}
