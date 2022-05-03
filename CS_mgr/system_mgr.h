@@ -58,14 +58,16 @@ public:
   void setup();
   void loop();
 
-  void callCustomFunctions(CMsg &msg);
-  
   void chkTemperature(CMsg &msg);
   void chkRadio(CMsg &msg);
   void chkBattery(CMsg &msg);
   void chkRotation(CMsg &msg);
   void chkMagField(CMsg &msg);
   void chkMessages(CMsg &msg);
+
+  void pinHigh(CMsg &msg);
+  void pinLow(CMsg &msg);
+  void pinPWM(CMsg &msg);
 
   void sendBeacon(CMsg &msg);  
   void sendError(std::string str){};
@@ -78,8 +80,7 @@ public:
   void showCommands();
   void showTests();
   
-  void SendCmd(CMsg &msg);
-  void SendCmdToScheduler(CMsg &msg);
+  
   void loopWire(TwoWire *wire, const char* s);
   void resetWire(TwoWire *wire, const char* s);
   void enableI2C();
@@ -94,7 +95,6 @@ public:
   void initI2CMap();
   void controlPlan();
   
-
   void testIMU(CMsg &msg);
   void testMAGDrive(char addr);
   void testMAG(CMsg &msg);
@@ -104,6 +104,8 @@ public:
   
   void Output(CMsg &msg);
   void sendSerial(const char* cmd);
+  void callCustomFunctions(CMsg &msg);
+  void SendCmdToScheduler(CMsg &msg);
 };
 
 

@@ -175,7 +175,7 @@ class CIMU:public CSystemObject{
     };
     void switchPlay(){};      //This needs to be set manually by some other function using the IMU to have it start getting data  Other systems will advance automatically
     long UpdatedOn(){return _dataUpdatedOn;}
-    void callCustomFunctions(CMsg &msg){writeconsoleln("---------------------------------------------- callCustomFunctions(msg)  ------------------------------------------------------------");};
+    void callCustomFunctions(CMsg &msg){};
     
     void remap(){
       Gyro.remap(&Gyro._fZ,&Gyro._fX,&Gyro._fY);  

@@ -475,9 +475,8 @@ void CSystemMgr::disableI2C(){
 void CSystemMgr::resetWire(TwoWire *wire,const char * s) {
     if(wire==NULL)
       return;
-    #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-      wire->end();
-    #endif
+
+    enableI2C();     
     wire->begin();
     CMsg m;
     m.setSYS("TWOWIRE RESET");

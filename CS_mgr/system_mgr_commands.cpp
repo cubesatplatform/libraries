@@ -162,15 +162,14 @@ void CSystemMgr::showCommands(){
   if((act== "IRX1") || (act== "IRX2") ||  (act== "IRY1") || (act== "IRY2") ||  (act== "IRZ1") || (act== "IRZ2") ){  testIR(msg);  return;}
   if((act== "MAGX") || (act== "MAGY") || (act== "MAGZ") ){testMAG(msg);return;}
   if((act== "TEMPX1") || (act== "TEMPX2") || (act== "TEMPY1") || (act== "TEMPY2") || (act== "TEMPZ1") || (act== "TEMPZ2") || (act== "TEMPOBC") || (act== "TEMPADCS")  ){    testTemp(msg);    return;  }
-  if(act == "RESETI2C2") {    enableI2C();    resetWire(&Wire2,"2");    return;  }
+  if(act == "RESETI2C2") { resetWire(&Wire2,"2");    return;  }
 #endif
 
-  if(act == "RESETI2C0") {    enableI2C();    resetWire(&Wire, "0");    return;  }
-  if(act == "RESETI2C1") {    enableI2C();    resetWire(&Wire1,"1");    return;  }
+  if(act == "RESETI2C0") { resetWire(&Wire, "0");    return;  }
+  if(act == "RESETI2C1") { resetWire(&Wire1,"1");    return;  }
   
   if(act=="SCHEDULE") {SendCmdToScheduler(msg);return;}
 
-  SendCmd(msg);
     
 }
 

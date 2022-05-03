@@ -177,7 +177,7 @@ void CSystemObject::newMsg(CMsg &msg){
             
   if(act=="STATE") {State(msg);return;}
   if(act=="UPDATE") {Update(msg);return;}
-  //if(act=="STATUSUPDATE") {statusUpdate(msg);return;}
+
   if(act=="ADDDATALIST") {addDataList(msg);return;}
   if(act=="ADDTRANSMITLIST") {addTransmitList(msg);return;}
 

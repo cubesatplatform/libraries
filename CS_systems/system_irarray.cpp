@@ -284,9 +284,3 @@ void CIRArray::Output(CMsg &msg){  //Easier to send as long   convert to decimal
   addDataList(m); 
 }
 
-
-void  CIRArray::callCustomFunctions(CMsg &msg){
-  std::string act=msg.getACT();
-    
-  if(act=="IRRUN") runOnce(msg);
-}

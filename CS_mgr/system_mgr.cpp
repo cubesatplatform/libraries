@@ -136,56 +136,36 @@ void CSystemMgr::newState(const char *str){
 
   
 
-
-void CSystemMgr::SendCmd(CMsg &msg) {
-  std::string str=msg.getACT(); 
+void CSystemMgr::pinHigh(CMsg &msg) {
+  std::string str=msg.getParameter("PIN",""); 
   PinName  n = Pins[str];
-  char action = 'H';
-  
-  if ((str[0] == 'H') || (str[0] == 'L') || (str[0] == 'W')) {
-    action = str[0];
-    str.erase(0, 1);
-    writeconsole(">");
-  }
-
-  n = Pins[str];
-
-
-
-  if (str == "RADIO") {
-    CMsg m;
-    m.setSYS("Radio");
-    m.setINFO("setup");
-    CRadio *pradio=(CRadio *)getSystem("RADIO", "Radio");
-    if(pradio!=NULL) pradio->setup();
-    writeconsoleln(m.serializeout());
-    addTransmitList(m);
-  return;
-  }
-
-
-  if (action == 'H') {   digitalWrite(n, HIGH);    return;  }
-  if (action == 'L') {   digitalWrite(n, LOW);    return;  }
-
-  if (action == 'W'){
-    writeconsoleln("PWM");
-    if (pwmPins.find(str) != pwmPins.end()) {
-    
-      #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
-        analogWriteResolution(n,PIN_RESOLUTION);   
-      #endif
-      for (int count=0;count<4000;count+=100){
-        analogWrite(n,count);
-        writeconsole("PWM: ");
-        writeconsole(count);
-        delay(200);
-      }
-
-    }  
-    return;    
-  }
- writeconsoleln("");
+  digitalWrite(n, HIGH);
 }
+
+void CSystemMgr::pinLow(CMsg &msg) {
+  std::string str=msg.getParameter("PIN",""); 
+  PinName  n = Pins[str];
+  digitalWrite(n, LOW);
+}
+
+void CSystemMgr::pinPWM(CMsg &msg) {
+  std::string str=msg.getParameter("PIN",""); 
+  int val=msg.getParameter("VALUE",0); 
+  PinName  n = Pins[str];
+
+  
+  if (pwmPins.find(str) != pwmPins.end()) {
+  
+    #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
+      analogWriteResolution(n,PIN_RESOLUTION);   
+    #endif
+    
+      analogWrite(n,val);
+      writeconsole("PWM: ");
+      writeconsoleln(val);    
+    }
+
+  }  
 
 
 
