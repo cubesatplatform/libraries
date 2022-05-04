@@ -25,23 +25,6 @@ void CSystemMgr::init(){
 }
    
 
-void CSystemMgr::SendCmdToScheduler(CMsg &msg){
-  std::string str=msg.getACT(); 
-  CMsg m;
-  m.setSYS(Name());
-  m.setINFO("SendCmdToScheduler: ");
-  m.setCOMMENT(str);
-  writeconsoleln(m.serializeout());
-  std::list<CMsg> ml=Commands[str];
-  for(auto m:ml){
-    if(m.Parameters.size()){
-      
-      writeconsoleln(m.serializeout());
-      Scheduler.push_back(m);
-    }
-  }
-}
-
 void CSystemMgr::setup(){
   init(); 
   setState("PLAY");
@@ -67,36 +50,43 @@ void CSystemMgr::Output(CMsg &msg){
 }
 
 void CSystemMgr::loop(){
-
-  //writeconsoleln("");  writeconsoleln("System Manager.   Scheduler Loop--------------------------------------------------------------------------------");
-  for (auto m = Scheduler.begin(); m != Scheduler.end(); m++) {
+  for (auto m = Scheduler.begin(); m != Scheduler.end(); m++) {    
     unsigned long start=0;
     unsigned long stop=0;  //Default to 0 so means run 1 time
     unsigned long last=0;
     unsigned long interval=10000;
     unsigned long currentTime=getTime();  
-        
-    start=m->getParameter("_START",start);
-    stop=m->getParameter("_STOP",stop);
-    interval=m->getParameter("_INTERVAL",interval);
-    last=m->getParameter("_LAST",last);
+    int tmpPause=m->getParameter("PAUSE",0);
+
     
-    writeconsoleln(m->serialize());
+    if(tmpPause)
+      continue;
+        
+    start=m->getParameter("START",start);
+    stop=m->getParameter("STOP",stop);
+    interval=m->getParameter("INTERVAL",interval);
+    last=m->getParameter("LAST",last);
+    
+    
     if(last==0){
       start=start+currentTime;
       stop=start+stop;     
-      m->setParameter("_START",start);     
-      m->setParameter("_STOP",stop);           
+      m->setParameter("START",start);     
+      m->setParameter("STOP",stop);           
       }
      
 
     if(currentTime>(last+interval)){      
       last=currentTime;
-      m->setParameter("_LAST",last);      
+      m->setParameter("LAST",last);      
+      m->writetoconsole();
+      //writeconsoleln(m->serializeout());
       addMessageList(*m);
     }
 
     if((currentTime>stop)||(start==stop)) {
+      writeconsoleln("----------------Erasing   Scheduler Loop--------------------------------------------------------------------------------");
+      m->writetoconsole();
       m = Scheduler.erase(m);   //Check to make sure this works			 
       continue;
     }
@@ -104,27 +94,87 @@ void CSystemMgr::loop(){
   }
 
 
-void CSystemMgr::addSchedule(CMsg &msg){
+
+
+
+
+void CSystemMgr::addTask(CMsg &msg){
     CMsg m;
     m=msg;
     writeconsoleln("");
-    writeconsoleln("System Manager.  Adding to Scheduler");
+    writeconsoleln("--------------------System Manager.  Adding to Scheduler---------------------------");
     m.setSYS(msg.getParameter("_SYS"));
     m.setACT(msg.getParameter("_ACT"));
+    m.setREFID();
     Scheduler.push_back(m);
   };
 
   
-void CSystemMgr::deleteSchedule(CMsg &msg){
+void CSystemMgr::deleteTask(CMsg &msg){
   for (auto m = Scheduler.begin(); m != Scheduler.end(); m++) {
-    if((m->getACT()==msg.getACT())&&(1)) {   //nEED SOME OTHER QUALIFIER
+    if(m->getREFID()==msg.getREFID()) {   //nEED SOME OTHER QUALIFIER
       m = Scheduler.erase(m);   //Check to make sure this works			 
-      break;
+      return;
     }
   }
-
-
 };
+
+
+void CSystemMgr::pauseTask(CMsg &msg){
+  for (auto m = Scheduler.begin(); m != Scheduler.end(); m++) {
+    if(m->getREFID()==msg.getREFID()) {   //nEED SOME OTHER QUALIFIER
+      m->setParameter("PAUSE",1);   //Check to make sure this works			 
+      return;
+    }
+  }
+}
+
+void CSystemMgr::unpauseTask(CMsg &msg){
+  for (auto m = Scheduler.begin(); m != Scheduler.end(); m++) {
+    if(m->getREFID()==msg.getREFID()) {   //nEED SOME OTHER QUALIFIER
+      m->setParameter("PAUSE",0);   //Check to make sure this works			 
+      return;
+    }
+  }
+}
+
+
+
+
+void CSystemMgr::SendCmdToScheduler(CMsg &msg){
+  std::string str=msg.getACT(); 
+  CMsg m;
+  m.setSYS(Name());
+  m.setINFO("SendCmdToScheduler: ");
+  m.setCOMMENT(str);
+  writeconsoleln(m.serializeout());
+  std::list<CMsg> ml=Commands[str];
+  for(auto m:ml){
+    if(m.Parameters.size()){
+      
+      writeconsoleln(m.serializeout());
+      Scheduler.push_back(m);
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void CSystemMgr::newState(const char *str){
     CMsg msg;

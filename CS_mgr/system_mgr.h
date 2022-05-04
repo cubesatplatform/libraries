@@ -74,8 +74,10 @@ public:
     
   void newState(const char *str="LOWPOWER");
   
-  void addSchedule(CMsg &msg);
-  void deleteSchedule(CMsg &msg);
+  void addTask(CMsg &msg);
+  void deleteTask(CMsg &msg);
+  void pauseTask(CMsg &msg);
+  void unpauseTask(CMsg &msg);
   void showScheduler(CMsg &msg);
   void showCommands();
   void showTests();

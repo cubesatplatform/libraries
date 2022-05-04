@@ -14,7 +14,6 @@ class CMsg  {
   float _rssi = 0.0;
   float _snr = 0.0;
   static int _ID;       //Count of objects created
-  int _refID = 0;       //May use this as a passed reference ID
   unsigned long _tc=getTime();
 
 protected:
@@ -29,7 +28,7 @@ public:
   CMsg(const char* s, float frssi , float fsnr = 0.0) { _str = s; _tc=getTime(); deserialize();  _rssi = frssi; fsnr = fsnr; _ID++;}
   
   void decompose(const char* s){ _str = s; }
-  void clear(){_str="";_rssi = 0.0;_snr = 0.0;_refID = 0; _tc=getTime();Parameters.clear();byteVector.clear();}
+  void clear(){_str="";_rssi = 0.0;_snr = 0.0; _tc=getTime();Parameters.clear();byteVector.clear();}
   
   std::string serialize();
   std::string serializeout();
@@ -40,12 +39,15 @@ public:
   std::string getMsg() {return _str;}
   std::string getSys() { return  getSYS(); }
 
+  int getStaticID(){return _ID;}
+
   std::string getACT() { return  Parameters["ACT"]; }
   std::string getACK() { return  Parameters["ACK"]; }
   std::string getSYS() { return  Parameters["SYS"]; }
   std::string getSAT() { return  Parameters["SAT"]; }
   std::string getMODE() { return  Parameters["MODE"]; }
   std::string getID() { return  Parameters["ID"]; }
+  std::string getREFID() { return  Parameters["REFID"]; }
   std::string getCID() { return  Parameters["CID"]; } 
   std::string getDATA() { return  Parameters["D"]; } 
   std::string getOFFSET() { return  Parameters["O"]; } 
@@ -78,6 +80,12 @@ public:
   
   void setMODE(std::string str) { Parameters["MODE"]=str; }
   void setID(std::string str) { Parameters["ID"]=str; }  
+  void setREFID(std::string str) { Parameters["REFID"]=str; }  
+  void setREFID() { 
+    std::string str=Parameters["REFID"];
+    if (!str.size())
+      Parameters["REFID"]=tostring((long) _ID); 
+    }  
   void appendParams(std::map<std::string, std::string> &Params);
 
   std::string getParameter(std::string str) { return Parameters[str]; }
@@ -107,8 +115,7 @@ public:
   std::string TransmitData();
   bool needACK();
    
-  int REFID() { return _refID; }
-  void REFID(int r) { _refID = r; }
+  
 
   void initArray(unsigned char* myRawArray, int byteCount) {
     byteVector.reserve(byteCount);

@@ -99,9 +99,10 @@ void CSystemMgr::showCommands(){
  void CSystemMgr::callCustomFunctions(CMsg &msg){
   CMessages* pMSG= getMessages();
   std::string act=msg.getACT(); 
-  writeconsoleln("");
-  writeconsole(" CallCustomFunctions :  ");
-  writeconsoleln(act);  
+  
+  writeconsoleln(" CallCustomFunctions :  ");
+  msg.serializeout();
+  
 
 
   if(act=="CHKRADIO") {chkRadio(msg); return; }
@@ -111,9 +112,6 @@ void CSystemMgr::showCommands(){
   if(act=="CHKMAGFIELD") {chkMagField(msg); return; }
   if(act=="CHKMESSAGES") {chkMessages(msg); return; }
   
-  if(act=="SENDBEACON") {sendBeacon(msg); return; }
-  if(act=="ADD")  {addSchedule(msg); return; }
-  if(act=="DELETE")  {deleteSchedule(msg);   return; }
   if(act=="ENABLEI2C") {enableI2C(); return; }
   
   if(act=="SHOWTESTS") {showTests(); return; }
@@ -133,7 +131,10 @@ void CSystemMgr::showCommands(){
   if(act== "MAGSMOTORSON"){  enableMagsMotors(); return; }
   if(act== "MAGSMOTORSOFF"){  disableMagsMotors(); return; }
 
-
+  if(act=="PINHIGH"){ pinHigh(msg); return;}
+  if(act=="PINLOW"){ pinLow(msg); return;}
+  if(act=="PINPWM"){ pinPWM(msg); return;}
+ 
   if(act=="TRANSMITDATA") {pMSG->movetoTransmitList(msg);return;}
   if(act=="DATALISTCLEAR") {pMSG->DataList.clear();return;}
   if(act=="MESSAGESLISTCLEAR") {pMSG->MessageList.clear();return;}
@@ -169,7 +170,10 @@ void CSystemMgr::showCommands(){
   if(act == "RESETI2C1") { resetWire(&Wire1,"1");    return;  }
   
   if(act=="SCHEDULE") {SendCmdToScheduler(msg);return;}
-
+  if(act=="ADDTASK")  {addTask(msg); return; }
+  if(act=="DELETETASK")  {deleteTask(msg);   return; }
+  if(act=="PAUSETASK")  {pauseTask(msg);   return; }
+  if(act=="UNPAUSETASK")  {unpauseTask(msg);   return; }
     
 }
 
@@ -245,8 +249,3 @@ void CSystemMgr::chkMagField(CMsg &msg){
 }
 
 
-
-void CSystemMgr::sendBeacon(CMsg &msg){//Have the Satelite send this out  so this just messages it
-
-}
-  
