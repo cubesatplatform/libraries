@@ -7,6 +7,9 @@
 #include <radio.h>
 #include <system_imu.h>
 
+
+
+
 CSystemMgr::CSystemMgr(){
   Name("MGR");
   init();  
@@ -70,7 +73,10 @@ void CSystemMgr::loop(){
     
     if(last==0){
       start=start+currentTime;
-      stop=start+stop;     
+      if(stop<STOPTASKLIMIT)
+        stop=start+stop;     
+      else 
+        stop=STOPTASKMAX;
       m->setParameter("START",start);     
       m->setParameter("STOP",stop);           
       }
@@ -84,6 +90,7 @@ void CSystemMgr::loop(){
       addMessageList(*m);
     }
 
+    
     if((currentTime>stop)||(start==stop)) {
       writeconsoleln("----------------Erasing   Scheduler Loop--------------------------------------------------------------------------------");
       m->writetoconsole();
@@ -142,12 +149,7 @@ void CSystemMgr::unpauseTask(CMsg &msg){
 
 
 void CSystemMgr::SendCmdToScheduler(CMsg &msg){
-  std::string str=msg.getACT(); 
-  CMsg m;
-  m.setSYS(Name());
-  m.setINFO("SendCmdToScheduler: ");
-  m.setCOMMENT(str);
-  writeconsoleln(m.serializeout());
+  std::string str=msg.getParameter("CMD"); 
   std::list<CMsg> ml=Commands[str];
   for(auto m:ml){
     if(m.Parameters.size()){

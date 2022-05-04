@@ -14,7 +14,7 @@
   #define Wire2 Wire
 #endif
    
-void CSystemMgr::initCommands(){
+void CSystemMgr::initCommands(){  //SYS:MGR~ACT:COMMAND~CMD:CMD_BEACON
   CMsg m;
   std::list<CMsg> ml;
   
@@ -28,19 +28,17 @@ void CSystemMgr::initCommands(){
   m.clear();  
   m.setSYS("GPS");
   m.setACT("OUTPUT");
-  m.setParameter("_START",3000L);
-  m.setParameter("_STOP",30000L);
-  m.setParameter("_INTERVAL",10000L);  
+  m.setParameter("START",3000L);
+  m.setParameter("STOP",30000L);
+  m.setParameter("INTERVAL",1000000L);  
   ml.push_back(m);
 
   m.clear();  
   m.setSYS("GPS");
-  m.setACT("STOP");
-  m.setParameter("_START",33000L);
-  m.setParameter("_STOP", 33000L);  
+  m.setACT("STOP");  
   ml.push_back(m);
 
-  Commands["CMD_GPS_OUTPUT"]=ml;
+  Commands["CMD_GPS"]=ml;
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   ml.clear();
 
@@ -52,20 +50,30 @@ void CSystemMgr::initCommands(){
   m.clear();  
   m.setSYS("IRX1");
   m.setACT("OUTPUT");
-  m.setParameter("_START",3000L);
-  m.setParameter("_STOP",300000L);
-  m.setParameter("_INTERVAL",10000L);   
+  m.setParameter("START",3000L);
+  m.setParameter("STOP",300000L);
+  m.setParameter("INTERVAL",10000L);   
   ml.push_back(m);
 
   m.clear();  
   m.setSYS("IRX1");
   m.setACT("STOP");
-  m.setParameter("_START",10000L);
-  m.setParameter("_STOP",10000L);  
+ 
   ml.push_back(m);
-  Commands["CMD_IRX1_OUTPUT"]=ml;
+  Commands["CMD_IRX1"]=ml;
 
+  //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  ml.clear();
 
+  m.clear();  
+  m.setSYS("SAT");
+  m.setACT("BEACON");
+  m.setParameter("INTERVAL",15000);
+  m.setParameter("START",0);
+  m.setParameter("STOP",(long) STOPTASKMAX);
+
+  ml.push_back(m);
+  Commands["CMD_BEACON"]=ml;
 
 }
 
@@ -169,11 +177,13 @@ void CSystemMgr::showCommands(){
   if(act == "RESETI2C0") { resetWire(&Wire, "0");    return;  }
   if(act == "RESETI2C1") { resetWire(&Wire1,"1");    return;  }
   
-  if(act=="SCHEDULE") {SendCmdToScheduler(msg);return;}
+  
   if(act=="ADDTASK")  {addTask(msg); return; }
   if(act=="DELETETASK")  {deleteTask(msg);   return; }
   if(act=="PAUSETASK")  {pauseTask(msg);   return; }
   if(act=="UNPAUSETASK")  {unpauseTask(msg);   return; }
+
+  if(act=="COMMAND") {SendCmdToScheduler(msg);return;}    //Calls a predefined Command group
     
 }
 
