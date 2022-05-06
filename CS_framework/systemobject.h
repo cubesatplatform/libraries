@@ -15,6 +15,10 @@ typedef int PinName;
 #endif
 
 
+#define STOPTASKLIMIT 1234567890 
+#define STOPTASKMAX   2147483647
+
+
 class CSystemObject {  
   bool success;  //true,false
 

@@ -100,11 +100,129 @@ void CIRArray::loop(){
   }
 }
 
+
+
+float CIRArray::getTemp(int x, int y, int incx, int incy){
+  int offset=0;
+  float t = NAN;
+  
+  int posX=x+incx;
+  int posY=y+incy;
+
+  if( (posX<0)||(posY<0))
+    return t;
+
+  if( (posX>=IR_X)||(posY>IR_Y))
+    return t;  
+  
+  offset=posX+posY*IR_X;
+  t=frame[offset];
+  return t;
+}
+
+
+
+std::tuple<int, int> CIRArray::getHotSpot(){
+  int maxX=-1,maxY=-1;
+  float favg=NAN;
+  for (int y=0; y<IR_Y; y++) {
+    for (int x=0; x<IR_X; x++) {
+      float tot=0;
+      int count=0;
+      favg=NAN;
+      float f1=getTemp(x,y,0,0);
+      float f2=getTemp(x,y,0,1);
+      float f3=getTemp(x,y,0,-1);
+      float f4=getTemp(x,y,1,0);
+      float f5=getTemp(x,y,1,1);
+      float f6=getTemp(x,y,1,-1);
+      float f7=getTemp(x,y,-1,0);
+      float f8=getTemp(x,y,-1,1);
+      float f9=getTemp(x,y,-1,-1);
+      
+      
+
+      if(!isnan(f1)){
+        tot+=f1;
+        count++;
+      }
+      
+
+      if(!isnan(f2)){
+        tot+=f2;
+        count++;
+      }
+
+      if(!isnan(f3)){
+        tot+=f3;
+        count++;
+      }
+
+      if(!isnan(f4)){
+        tot+=f4;
+        count++;
+      }
+
+      if(!isnan(f5)){
+        tot+=f5;
+        count++;
+      }
+
+      if(!isnan(f6)){
+        tot+=f6;
+        count++;
+      }
+
+      if(!isnan(f7)){
+        tot+=f7;
+        count++;
+      }
+
+      if(!isnan(f8)){
+        tot+=f8;
+        count++;
+      }
+
+      if(!isnan(f9)){
+        tot+=f9;
+        count++;
+      }
+
+
+      if(count>0){
+        favg=tot/(float)count;
+        //writeconsole(favg); writeconsole(" ");writeconsoleln(x+y*IR_X);
+        
+        avgframe[x+y*IR_X]=favg;
+      }
+    }
+    
+  }
+
+  float fmaxAVG=-1000.0;
+  for (int y=0; y<IR_Y; y++) {
+    for (int x=0; x<IR_X; x++) {
+      favg=avgframe[x+y*IR_X];
+      if(!isnan(favg)){
+        if(favg>fmaxAVG){
+          maxX=x;
+          maxY=y;
+          fmaxAVG=favg;
+        }
+      }
+    }
+  }
+
+  return std::tuple<int, int>{maxX, maxY};
+}
+
+
+
 void CIRArray::consoleOutTemp(){
 writeconsoleln("   ");
-for (uint8_t h=0; h<24; h++) {
-  for (uint8_t w=0; w<32; w++) {
-    float t = frame[h*32 + w];
+for (uint8_t h=0; h<IR_Y; h++) {
+  for (uint8_t w=0; w<IR_X; w++) {
+    float t = frame[h*IR_X + w];
 
     writeconsole(t);
     writeconsole(", ");
@@ -118,9 +236,9 @@ writeconsoleln("   ");
 void CIRArray::consoleOut(){
 writeconsoleln("   ");
 char c;
-for (uint8_t h=0; h<24; h++) {
-  for (uint8_t w=0; w<32; w++) {
-     c= imageTable[h*32 + w];
+for (uint8_t h=0; h<IR_Y; h++) {
+  for (uint8_t w=0; w<IR_X; w++) {
+     c= imageTable[h*IR_X + w];
     writeconsole(c);    
   }
   writeconsoleln("  ");
@@ -279,8 +397,18 @@ void CIRArray::Output(CMsg &msg){  //Easier to send as long   convert to decimal
   CMsg m;
   m.setTABLE("IR");
   m.setPANEL(Name());
-  m.setDATA(imageTable);
+//  m.setDATA(imageTable);
+
+  std::tuple<int, int> XY=getHotSpot();
+  
+
+  m.setParameter("X",std::get<0>(XY));
+  m.setParameter("Y",std::get<1>(XY));
+  m.setParameter("MAX",fmax);
+  m.setParameter("MIN",fmin);
+  
+  
           
-  addDataList(m); 
+  addTransmitList(m); 
 }
 
