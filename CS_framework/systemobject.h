@@ -181,6 +181,7 @@ public:
   void unsubscribe(std::string str);
   int subscribers(std::string str);
   unsigned long getReceivedTimestamp();
+  void transmitError(const char *tmp);
 };
 
 extern std::map<std::string,CSystemObject *> SysMap;
@@ -194,6 +195,6 @@ CSystemObject *getSystem(const char *sys, const char *comment="");
 CSystemObject *getIMU(const char *sys="IMU");
 
 
-void transmitError(const char *tmp);
+
 
 

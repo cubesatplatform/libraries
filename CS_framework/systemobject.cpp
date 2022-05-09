@@ -81,19 +81,33 @@ CSystemObject *getIMU(const char *tmp){
   CSystemObject *pIMU=getSystem(tmp,"CSystemObject *getIMU(const char *tmp)");
 
   if(pIMU==NULL){
-    transmitError("ERROR IMU");
     pIMU=getSystem("IMUI2C");
   }
 
   if(pIMU==NULL){
-    transmitError("ERROR IMU2");
   }
   return(pIMU);  
 }
 
+void CSystemObject::transmitError(const char *tmp){
+  writeconsole("Critical Error: ");  writeconsoleln(tmp);
+  CMsg msg;
+  msg.setACT("TRANSMITDATA");
+  msg.Parameters["ERROR"]=tmp;    
+
+  addTransmitList(msg); 
+} 
+
+
 
 
 void CSystemObject::Name(std::string s) {
+  if(_name.size()){
+    auto it=SysMap.find(_name);
+    SysMap.erase (it);
+  }
+    
+
     _name = s;    
     CSystemObject *ptr=this; 
     if(s.size()&&(ptr!=NULL))
