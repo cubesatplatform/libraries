@@ -32,6 +32,22 @@ void CMDrive::config(char addr, TwoWire *twowire, int m){
 
   }
 
+  
+void CMDrive::config(CMsg &msg){
+  std::string straddress=msg.getParameter("ADDRESS");
+  std::string strwire=msg.getParameter("WIRE");
+
+  TwoWire *pWire;
+
+  if(strwire=="Wire") pWire=&Wire;  
+  if(strwire=="Wire1") pWire=&Wire1;  
+  if(strwire=="Wire2") pWire=&Wire2;  
+
+  if(straddress.size()>0){
+    config(straddress[0],pWire);
+  }
+}
+
 
 
 void CMDrive::init(){

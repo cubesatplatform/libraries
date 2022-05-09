@@ -16,7 +16,6 @@ private:
   int imin,imax;
   
   
-  
   Adafruit_MLX90640 mlx;
   
   float frame[IR_X*IR_Y]; // buffer for full frame of temperatures
@@ -33,6 +32,7 @@ public:
   void loop();
   void init();
   void test(CMsg &msg);
+  void config(CMsg &msg);
   std::tuple<int, int> getHotSpot();
   float getTemp(int x, int y, int incx, int incy);
   void fillPixel();

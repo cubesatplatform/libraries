@@ -57,6 +57,8 @@ class CPhone:public CSystemObject {
     long lastSerial = getTime(), lastTx = getTime(), lastDebug = getTime();
     long int lastPacketTOA = 0;
     bool bnew=false;
+    PinName _TX;
+    PinName _RX;
 
     
   public:
@@ -67,6 +69,7 @@ class CPhone:public CSystemObject {
     CPhone();
  
     void setup();
+    void config(CMsg &msg);
     bool waitForBytes(int count);
     bool readUntil(char terminator, unsigned char* buffer);
     void sendSerial(const char* cmd);

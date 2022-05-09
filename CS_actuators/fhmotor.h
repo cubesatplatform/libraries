@@ -81,6 +81,7 @@ public:
   ~CMotorController();
 
   void config(PinName sig, PinName fg,PinName dir);
+  void config(CMsg &msg);
   void configSpeed();
   void configRotation(CIMU *pIMU);
   void init();

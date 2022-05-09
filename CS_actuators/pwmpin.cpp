@@ -25,6 +25,13 @@ void CPWMController::config( PinName sig){
 }
 
 
+void CPWMController::config(CMsg &msg){
+  std::string strPin=msg.getParameter("PIN");
+  
+  config(Pins[strPin]);  
+}
+
+
 
   void CPWMController::init(){
     

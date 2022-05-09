@@ -38,6 +38,8 @@ CPhone::CPhone(){
   Name("PHONE");
   setForever(true);    
   setInterval(20);
+  _TX=PHONE_TX;
+  _RX=PHONE_RX;
   }
 
 
@@ -73,6 +75,17 @@ void CPhone::setup() {
 #endif  
   sendSerial("INIT"); //to synchronise  
   setState("PLAY");
+}
+
+
+void CPhone::config(CMsg &msg){
+  std::string strTX=msg.getParameter("TX");
+  std::string strRX=msg.getParameter("RX");
+  
+  
+  _TX=Pins[strTX];
+  _RX=Pins[strRX];
+  setup();
 }
 
 

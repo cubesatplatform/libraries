@@ -21,6 +21,7 @@ public:
   void setup();
   void loop();
   void init();
+  void config(CMsg &msg);
   void test(CMsg &msg);
   void runOnce(CMsg &m);
 };

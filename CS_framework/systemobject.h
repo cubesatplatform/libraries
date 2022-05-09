@@ -7,11 +7,11 @@
 
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
- #include "Wire.h"
- TwoWire *getWire2();
-using namespace mbed;
+  #include "Wire.h" 
+  using namespace mbed;
 #else
-typedef int PinName; 
+  typedef int PinName; 
+  #define Wire2 Wire
 #endif
 
 
@@ -103,7 +103,7 @@ public:
 
   void State(CMsg &msg); 
   std::string State() { return _ostate; }
-  std::string lastState() { return _olaststate; }
+  std::string lastState() { return _olaststate; }  
   virtual void Update(CMsg &msg);
   virtual void Output(CMsg &msg){Output();}
   virtual void Output(){

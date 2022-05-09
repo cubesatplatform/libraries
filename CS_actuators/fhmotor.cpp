@@ -139,6 +139,16 @@ void CMotorController::config(PinName sig, PinName fg,PinName dir){
 
 
 
+void CMotorController::config(CMsg &msg){
+  std::string strSignal=msg.getParameter("PIN_SIGNAL");
+  std::string strDir=msg.getParameter("PIN_DIR");
+  std::string strFG=msg.getParameter("PIN_FG");
+  
+
+  config(Pins[strSignal],Pins[strDir],Pins[strFG]);
+}
+
+
 
 
 void CMotorController::init(){

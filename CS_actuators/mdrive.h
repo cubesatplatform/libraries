@@ -17,6 +17,7 @@ public:
   CMDrive();
   ~CMDrive();  
   void config(char addr=0x60, TwoWire *twowire=&Wire,int m=0);
+  void config(CMsg &msg);
 
   void Address(char c);
   void runOnce(CMsg &m);

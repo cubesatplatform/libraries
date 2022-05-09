@@ -40,12 +40,24 @@ void CGPS::init()
 
 void CGPS::setup()
 {
-   Serial1.begin(GPS_BAND_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+   Serial1.begin(GPS_BAND_RATE, SERIAL_8N1, _RX, _TX);
 
 
   delay(1500);
   setState("PLAY");
 }
+
+
+void CGPS::config(CMsg &msg){
+  std::string strTX=msg.getParameter("TX");
+  std::string strRX=msg.getParameter("RX");
+  
+  
+  _TX=Pins[strTX];
+  _RX=Pins[strRX];
+  setup();
+}
+
 
 void CGPS::loop()
 {

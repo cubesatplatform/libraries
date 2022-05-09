@@ -41,6 +41,7 @@ public:
 
   void setup();
   void config(PinName sig);
+  void config(CMsg &msg);
 
   void init();
   void activateDrive(float val);  

@@ -15,6 +15,9 @@ class CGPS :public CSystemObject {
   TinyGPSPlus gps;
   AXP20X_Class axp;
 
+  PinName _TX;
+   PinName _RX;
+
   float latitude=0.0;
   float longitude=0.0;
   float altitude=0.0;
@@ -31,6 +34,7 @@ public:
   CGPS();
   ~CGPS();
   void setup();
+  void config(CMsg &msg);
   void loop();
   void init();
   void output();
