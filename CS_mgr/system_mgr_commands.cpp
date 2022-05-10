@@ -66,15 +66,17 @@ void CSystemMgr::initCommands(){  //SYS:MGR~ACT:COMMAND~CMD:CMD_BEACON
   ml.clear();
 
   m.clear();  
-  m.setSYS("SAT");
-  m.setACT("BEACON");
+
+
+  m.setSYS("MGR");
+  m.setACT("ADDTASK");
+  m.setParameter("_SYS","SAT");
+  m.setParameter("_ACT","BEACON");   
   m.setParameter("INTERVAL",15000);
   m.setParameter("START",0);
   m.setParameter("STOP",(long) STOPTASKMAX);
-
-  ml.push_back(m);
-  Commands["CMD_BEACON"]=ml;
-
+  m.setREFID();
+  addMessageList(m);
 }
 
 void CSystemMgr::showScheduler(CMsg &msg){

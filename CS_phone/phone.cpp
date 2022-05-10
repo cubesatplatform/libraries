@@ -6,8 +6,12 @@
 #define TIMEOUT 1*1000
 
 #define PHONE_BAUD_RATE 115200
-#define PHONE_TX 23
-#define PHONE_RX 4
+
+#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+#else
+  #define PHONE_TX 23
+  #define PHONE_RX 4
+#endif
 
 
 #define PHONE_DELAY_START 1
@@ -38,8 +42,11 @@ CPhone::CPhone(){
   Name("PHONE");
   setForever(true);    
   setInterval(20);
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+  #else
   _TX=PHONE_TX;
   _RX=PHONE_RX;
+  #endif
   }
 
 
@@ -79,12 +86,15 @@ void CPhone::setup() {
 
 
 void CPhone::config(CMsg &msg){
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+  #else
   std::string strTX=msg.getParameter("TX");
   std::string strRX=msg.getParameter("RX");
   
   
   _TX=Pins[strTX];
   _RX=Pins[strRX];
+  #endif
   setup();
 }
 

@@ -12,7 +12,6 @@
 
 CSystemMgr::CSystemMgr(){
   Name("MGR");
-  init();  
   }; 
          
 CSystemMgr::~CSystemMgr(){}  

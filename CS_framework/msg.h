@@ -70,6 +70,7 @@ public:
   void setEVENT(std::string str="") { Parameters["E"]=str; }
   void setERROR(std::string str="") { Parameters["0"]=str; }
   void setINFO(std::string str="") { Parameters["I"]=str; }
+  void setVALUE(std::string str="") { Parameters["V"]=str; }
   void setOFFSET(std::string str="") { Parameters["O"]=str; }
   void setOFFSET(int tmp) { Parameters["O"]=tostring(tmp); }
   void setTABLE(std::string str) { Parameters["T"]=str; }

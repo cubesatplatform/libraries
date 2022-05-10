@@ -1,6 +1,10 @@
 #include "system_temperature.h"
 
-
+CTemperatureObject::CTemperatureObject(){ 
+  Name("TEMP");
+  init();
+  _pWire=&Wire;
+  };
 
 void CTemperatureObject::init(){
   CSystemObject::init();
@@ -13,7 +17,7 @@ void CTemperatureObject::setup(){
  
 int count=0;
 init();
-while(count<5){
+while((count<5)&&(_pWire!=NULL)){
  if (sensor.begin(_address, *_pWire)== true)
   //if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
   {

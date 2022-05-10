@@ -135,26 +135,25 @@ void CStateObj::processMsg(CMsg &msg) {
 	std::string sys = msg.getSYS();
 	std::string act = msg.getACT();
 
-	//writeconsoleln(Name()+"> A    CStateObj::processMsg(CMsg &msg) ");
-	if ((Name()!="CORE") && (act == "START")) {
-		//writeconsoleln(Name()+">  B   CStateObj::processMsg(CMsg &msg) ");	
-    	addSystem(msg) ;		
-		return;
-	}
-	CSystemObject::newMsg(msg);
-	//writeconsoleln(Name()+"> C   CStateObj::processMsg(CMsg &msg) ");	
+	
+	if ((Name()!="CORE") && (act == "ADDSYSTEM")) { addSystem(msg) ; return;}
+	CSystemObject::newMsg(msg);	
 };
 
 
 void CStateObj::addSystem(CSystemObject* psys){
-      subsystems.push_back(psys);       
+    subsystems.push_back(psys);      
+	CMsg m;
+	m.setSYS(Name()+">"+psys->Name());
+	m.setEVENT("ADD");
+	m.setTABLE("STATUS");
+	m.setINFO("addSystem(CSystemObject* psys)   Success  push back");
+	writeconsoleln(m.serializeout()); 
+	addTransmitList(m);
  }
 
 void CStateObj::addSystem(CMsg &msg){
-  std::string sys = msg.getSYS();
-  std::string act = msg.getACT();
-  std::string CID = msg.getCID();
-  std::string ID = msg.getID();
+  std::string sys = msg.getVALUE();  
   CSystemObject* psys=nullptr;
   psys=FindNameInSubsystems(sys);
   if(psys!=nullptr){
@@ -181,22 +180,10 @@ void CStateObj::addSystem(CMsg &msg){
       return; //Prevents from too many things running and blowing up system memory
     }
   
-
-
   psys=getSystem(sys.c_str(),"CStateObj::addSystem(CMsg &msg)");
 
-  if (psys!=NULL) {
-	  subsystems.push_back(psys); 
-		CMsg m;
-		m.setSYS(Name()+">"+psys->Name());
-		m.setEVENT("ADD");
-		m.setTABLE("STATUS");
-		m.setINFO("addSystem(CSystemObject* psys)   Success  push back");
-		writeconsoleln(m.serializeout());
-		//addTransmitList(m);
-  }
+  if (psys!=NULL) 	addSystem(psys); 
 }
-
 
 
 bool CStateObj :: outOfTime() {
@@ -207,7 +194,6 @@ bool CStateObj :: outOfTime() {
   	}
   return false;
 }
-
 
 
  CMsg CStateObj::stats(){   //XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXXXXXXXX  Doesnt work yet!!!  First messages not sent  

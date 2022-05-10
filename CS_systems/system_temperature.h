@@ -11,7 +11,7 @@ class CTemperatureObject:public CSystemObject{
   unsigned long _ltime=0;
   TMP117 sensor;
 public:
-   CTemperatureObject(){ Name("TEMP");init();};
+   CTemperatureObject();
   ~CTemperatureObject(){};
   void address(char tmp=0x48){_address=tmp;}
   void config(char addr, TwoWire *pWire);
