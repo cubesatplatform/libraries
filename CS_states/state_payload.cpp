@@ -17,15 +17,16 @@ void CPayloadState::start(){
 
 
 void CPayloadState::enter() { 
-  enablePhone();
+  
   CStateObj::enter();
+  enablePhone();
   writeconsoleln("Enter Payload  Need to charge Phone"); 
   
   _startTime = getTime();
 	setState("PAUSE");
 
   CSystemObject * psys=getSystem("PHONE");
- // startTime(getTime()+PHONE_DELAY_START);
+ 
   startTime(getTime()+10000);
   
   if (psys!=NULL){
@@ -38,11 +39,7 @@ void CPayloadState::enter() {
     msg.setACT(str);
     psys->addMessageList(msg);
     }        
-  CMsg m;
-  m.setTABLE("LOG");
-  m.setINFO("Enter Payload");  
-  writeconsoleln(m.serializeout()) ;
-  addTransmitList(m);
+ 
  
 }
 
@@ -51,9 +48,4 @@ void CPayloadState::exit() {
   disablePhone();
   CStateObj::exit();
     
-  CMsg m;
-  m.setTABLE("LOG");
-  m.setINFO("Exit Payload");  
-  writeconsoleln(m.serializeout()) ;
-  addTransmitList(m);
 }

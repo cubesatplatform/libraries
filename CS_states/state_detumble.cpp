@@ -13,7 +13,7 @@ CDetumbleState::CDetumbleState() {
 
 CDetumbleState::~CDetumbleState() {};
 
-void CDetumbleState::setup() {CSystemObject::init();};
+void CDetumbleState::setup() {};
 
 void CDetumbleState::stateMsg(CMsg &msg){_statemsg=msg;};
 
@@ -22,12 +22,7 @@ void CDetumbleState::enter() {
   resetSubSystems();
   _detumblecount++;
   CStateObj::enter();
-  CMsg m;
-  m.setTABLE("LOG");
-  m.setINFO("Enter Detumble");  
   
-  addTransmitList(m);
-  writeconsoleln(m.serializeout()) ;
     #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
     CFS fs;
 
@@ -43,9 +38,4 @@ void CDetumbleState::enter() {
 void CDetumbleState::exit() { 
   disableMagsMotors();
   CStateObj::exit();
-   CMsg m;
-  m.setTABLE("LOG");
-  m.setINFO("EXIT Detumble");  
-  
-  addTransmitList(m);
   }

@@ -49,16 +49,6 @@ void CStateObj::loop() {
 	}	
 }
 
-void CStateObj::enter(){
-	_statecount++;
-	_startTime = getTime();	
-	setState("PLAY");
-}
-void CStateObj::exit(){
-	_stopTime = getTime();
-	setState("PAUSE");
-}
-
 
 void CStateObj::resetSubSystems(){
 	
@@ -267,10 +257,52 @@ for (auto  psys:subsystems) {
 	_starttimeoffset = 0;	
 	_lastcleanuptime=0;
 
-	
-	
+	setMaxTime(3*TIMEORBIT);
+		
   	
 	_statemsg.Parameters.clear();
   }
 
  
+void CStateObj::enter(){
+	_statecount++;
+	_startTime = getTime();	
+
+	if(onEnter["DISABLEMAGSMOTORS"]) disableMagsMotors();
+	if(onEnter["DISABLEBURNWIRE"]) disableBurnWire();
+	if(onEnter["DISABLESENSORS"]) disableSensors();
+	if(onEnter["DISABLEPHONE"]) disablePhone();
+
+	if(onEnter["ENABLEMAGSMOTORS"]) enableMagsMotors();
+	if(onEnter["ENABLEBURNWIRE"]) enableBurnWire();
+	if(onEnter["ENABLESENSORS"]) enableSensors();
+	if(onEnter["ENABLEPHONE"]) enablePhone();
+
+	setState("PLAY");
+	CMsg m;
+    m.setTABLE("LOG");
+    m.setParameter("ENTERSTATE",Name());	
+    addTransmitList(m);
+    writeconsoleln(m.serializeout()) ;
+}
+void CStateObj::exit(){
+	_stopTime = getTime();
+
+	if(onExit["DISABLEMAGSMOTORS"]) disableMagsMotors();
+	if(onExit["DISABLEBURNWIRE"]) disableBurnWire();
+	if(onExit["DISABLESENSORS"]) disableSensors();
+	if(onExit["DISABLEPHONE"]) disablePhone();
+
+	if(onExit["ENABLEMAGSMOTORS"]) enableMagsMotors();
+	if(onExit["ENABLEBURNWIRE"]) enableBurnWire();
+	if(onExit["ENABLESENSORS"]) enableSensors();
+	if(onExit["ENABLEPHONE"]) enablePhone();
+
+	setState("PAUSE");
+	CMsg m;
+    m.setTABLE("LOG");
+	m.setParameter("EXITSTATE",Name());    
+    addTransmitList(m);
+    writeconsoleln(m.serializeout()) ;
+}
+ 	

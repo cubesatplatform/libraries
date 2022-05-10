@@ -104,10 +104,9 @@ void CSystemObject::transmitError(const char *tmp){
 void CSystemObject::Name(std::string s) {
   if(_name.size()){
     auto it=SysMap.find(_name);
-    SysMap.erase (it);
+    if(it != SysMap.end()) SysMap.erase (it);   //Definitely causing problem!!!
   }
     
-
     _name = s;    
     CSystemObject *ptr=this; 
     if(s.size()&&(ptr!=NULL))

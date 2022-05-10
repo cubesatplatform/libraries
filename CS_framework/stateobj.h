@@ -9,6 +9,8 @@
 #include "consoleio.h"
 #include <algorithm>
 #include "systemobject.h"
+#include "state_defs.h"
+#include <powerup.h>
 
 class CStateObj:public CSystemObject {  	
 	
@@ -28,7 +30,9 @@ protected:
 public:
 	std::list<CSystemObject  *> subsystems;
 	std::map<std::string, bool> availablesystems;
-	CStateObj() { _enter_time = 0;  _exit_time=0; }
+	std::map<std::string, bool> onEnter;
+	std::map<std::string, bool> onExit;
+	CStateObj() { init(); }
 	virtual ~CStateObj() {}
 
 	virtual void init();
