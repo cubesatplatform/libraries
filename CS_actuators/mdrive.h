@@ -9,7 +9,7 @@
   
 class CMDrive:public CBaseDrive{
   char _address=0x60;
-  TwoWire *_pWire;
+  TwoWire *_pWire=&Wire;
   
 public:
   Adafruit_DRV8830 myMotorDriver; //This creates the main object of one motor driver and connected slaves.

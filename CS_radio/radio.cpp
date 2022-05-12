@@ -304,7 +304,7 @@ void CRadio::SendAck(CMsg &m){
   resetAck();
   
   if(m.needACK()){
-    mACK.setSAT(m.getSAT());
+    mACK.setTO(m.getFROM());
     mACK.setSYS(m.getSYS());
     mACK.setCID(m.getCID());
     mACK.confirmACK();
@@ -406,10 +406,9 @@ void CRadio::receivedLogic(unsigned char *buffer, int len){
     }
   }
   else{
-    //writeconsoleln("addReceivedList-----------------------------------------------");    
     addReceivedList(robj);
     
-    if(robj.needACK()&&robj.getSAT().size()&&(robj.getSAT()==thisSat()))  SendAck(robj);
+    if(robj.needACK()&&robj.getTO()==getIAM())  SendAck(robj);
   }
   //writeconsoleln("Received Logic End");
 }

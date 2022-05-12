@@ -117,7 +117,7 @@ void CSystemObject::Name(std::string s) {
  void CSystemObject::fillMetaMSG(CMsg *m){
     _currentTime = getTime(); 
     if((m->getSYS()=="")&&(m->getSYS()!="RADIO"))m->setSYS(Name());
-    if(m->getSAT()=="")m->setSAT(_sat);
+    if(m->getFROM()=="") m->setFROM(getIAM());
     if(_cid.size())m->setCID(_cid);
  }
 
@@ -435,7 +435,7 @@ int CSystemObject::subscribers(std::string str){
 
   void CSystemObject::addReceivedList(CMsg &m ){
     CMessages* pM = getMessages();  
-    pM->addReceivedList(m);
+    pM->addReceivedList(m,getIAM());
     pM->setReceivedTimestamp();
 
   }

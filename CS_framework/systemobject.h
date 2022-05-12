@@ -25,7 +25,8 @@ class CSystemObject {
   std::string _name;
   std::string _cid;
   static int sid;
-  static std::string _sat;
+  static std::string _IAM;
+  static std::string _defaultTO;
   static unsigned long _lastLowPowerMsg;
   int _sid;
   
@@ -77,7 +78,8 @@ public:
   
   void restart(){setState("");}
   
-  std::string thisSat(){return _sat;}
+  std::string IAM(){return _IAM;}
+  std::string defaultTO(){return _defaultTO;}
   bool outOfTime();
  
   void setup(CMsg &msg) { setup(); };
@@ -166,6 +168,8 @@ public:
   long timeSinceStateChange(){return getTime()-_lastStateTime;}
   std::string Name() { return _name; }
   std::string getCID() { return _cid; }
+  std::string getIAM() { return _IAM; }
+
 
   bool isNextCycle();
   bool isSuccess() { return success; }

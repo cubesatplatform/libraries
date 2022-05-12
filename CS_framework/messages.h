@@ -74,7 +74,7 @@ public:
   void addTransmitList(CMsg &m );
   void addDataList(CMsg &m); 
   void addMessageList(CMsg &m );
-  void addReceivedList(CMsg &m );
+  void addReceivedList(CMsg &m,std::string strIAM );
 
   std::list<CMsg> splitMsg(CMsg &m);
   std::list<CMsg> splitMsgData(CMsg &m);  

@@ -12,7 +12,7 @@ void CMessages::moveReceived() {
 }
 
 void  CMessages::sendData(CMsg &msg){
-  //SYS:SAT
+  
   //ACT:SENDDATA
 
   CMsg m;
@@ -320,7 +320,7 @@ void CMessages::addMessageList(CMsg &m){
 
 }
 
-void CMessages::addReceivedList(CMsg &s){
+void CMessages::addReceivedList(CMsg &s,std::string strIAM){
   _lastReceived=getTime();
   if(!s.checkPWD()){    
     CMsg m;
@@ -331,7 +331,7 @@ void CMessages::addReceivedList(CMsg &s){
   }
   
   
-  if((s.getSAT()==SATNAME)|| (s.getSAT()=="") ){
+  if(s.getTO()==strIAM){
      ReceivedList.push_front(s);
      return;
   }
@@ -363,7 +363,8 @@ std::list<CMsg> CMessages::splitMsg(CMsg &m){
 
   std::string strSYS=m.getSYS();
   std::string strACT=m.getACT();
-  std::string strSAT=m.getSAT();
+  std::string strFROM=m.getFROM();
+  std::string strTO=m.getTO();
   
 
   CMsg cm;
@@ -396,7 +397,8 @@ std::list<CMsg> CMessages::splitMsg(CMsg &m){
       
       cm.setSYS(strSYS);
       cm.setACT(strACT);
-      cm.setSAT(strSAT);
+      cm.setFROM(strFROM);
+      cm.setTO(strTO);
       //cm.setParameter("PT",part);
       lM.push_front(cm);
       part++;
@@ -409,7 +411,8 @@ std::list<CMsg> CMessages::splitMsg(CMsg &m){
     {
       cm.setSYS(strSYS);
       cm.setACT(strACT);
-      cm.setSAT(strSAT);
+      cm.setFROM(strFROM);
+      cm.setTO(strTO);
       //cm.setParameter("PT",part);
       lM.push_front(cm);
       part++;

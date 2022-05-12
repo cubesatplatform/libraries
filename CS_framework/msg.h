@@ -44,7 +44,8 @@ public:
   std::string getACT() { return  Parameters["ACT"]; }
   std::string getACK() { return  Parameters["ACK"]; }
   std::string getSYS() { return  Parameters["SYS"]; }
-  std::string getSAT() { return  Parameters["SAT"]; }
+  std::string getFROM() { return  Parameters["FR"]; }
+  std::string getTO() { return  Parameters["TO"]; }
   std::string getMODE() { return  Parameters["MODE"]; }
   std::string getID() { return  Parameters["ID"]; }
   std::string getREFID() { return  Parameters["REFID"]; }
@@ -65,7 +66,8 @@ public:
   void setACT(std::string str) { Parameters["ACT"]=str; }
   void setACK(std::string str) { Parameters["ACK"]=str; }
   void setSYS(std::string str) { Parameters["SYS"]=str; }
-  void setSAT(std::string str="") { Parameters["SAT"]=str; }
+  void setFROM(std::string str="") { Parameters["FR"]=str; }
+  void setTO(std::string str="") { Parameters["TO"]=str; }
   void setDATA(std::string str="") { Parameters["D"]=str; }
   void setEVENT(std::string str="") { Parameters["E"]=str; }
   void setERROR(std::string str="") { Parameters["0"]=str; }

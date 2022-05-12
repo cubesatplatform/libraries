@@ -5,7 +5,7 @@
 
 
 class CTemperatureObject:public CSystemObject{
-  TwoWire *_pWire;
+  TwoWire *_pWire=&Wire;
   char _address;
   float _temp=0.0;
   unsigned long _ltime=0;

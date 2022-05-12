@@ -141,7 +141,7 @@ class CIMU:public CSystemObject{
 
     long _dataUpdatedOn=0;
     char _address;
-    TwoWire *_pWire=NULL;
+    TwoWire *_pWire=&Wire;
     std::string _dataMode;
 
   public:

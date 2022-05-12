@@ -186,7 +186,7 @@ class CEPS:public CSystemObject
 {
   private:
   char _address;
-  TwoWire *_pWire=NULL;
+  TwoWire *_pWire=&Wire;
   //uint8_t addr=0x18;              /*!< EPS module I2C address */    
   //  uint8_t (*readI2C)(uint8_t i2cs_addr, uint8_t reg, uint8_t * data, uint16_t nbyte);     /*!< Low level I2C read function */
   //  uint8_t (*writeI2C)(uint8_t i2cs_addr, uint8_t reg, uint8_t * data, uint16_t nbyte);      /*!< Low level I2C write function */
