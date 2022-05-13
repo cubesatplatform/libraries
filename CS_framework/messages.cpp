@@ -323,8 +323,7 @@ void CMessages::addMessageList(CMsg &m){
 void CMessages::addReceivedList(CMsg &s,std::string strIAM){
   _lastReceived=getTime();
   if(!s.checkPWD()){    
-    CMsg m;
-    m.setCOMMENT("Message PWD Invalid   Dropping   ------- Problably should add to some Log");
+    s.setCOMMENT("Message PWD Invalid   Dropping   ------- Problably should add to some Log");
     writeconsoleln(s.serializeout());
     //addTransmitList(s);
     return;
@@ -336,8 +335,7 @@ void CMessages::addReceivedList(CMsg &s,std::string strIAM){
      return;
   }
   else {
-    CMsg m;
-    m.setCOMMENT("Message Received not for this Satellite   Dropping");
+    s.setCOMMENT("Message Received not for this Satellite   Dropping");
     writeconsoleln(s.serializeout());
     //addTransmitList(s);
   }
