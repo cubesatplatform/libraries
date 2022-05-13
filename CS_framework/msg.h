@@ -46,6 +46,7 @@ public:
   std::string getSYS() { return  Parameters["SYS"]; }
   std::string getFROM() { return  Parameters["FR"]; }
   std::string getTO() { return  Parameters["TO"]; }
+  std::string getto() { return  Parameters["to"]; }
   std::string getMODE() { return  Parameters["MODE"]; }
   std::string getID() { return  Parameters["ID"]; }
   std::string getREFID() { return  Parameters["REFID"]; }

@@ -1,14 +1,15 @@
 #pragma once
 
-#include "framework_defs.h"
 #include <vector>
 #include <list>
 #include <map>
 #include "msg.h"
 #include "systemobject.h"
 
+
 #define MAXLISTSIZE 50
 #define MAXDATALEN 170
+
 
 class CMessageList{
 private:
@@ -26,8 +27,8 @@ public:
   void pop_back();
   void push_back(CMsg &m);
   void push_front(CMsg &m);
-  CMsg find(std::string str);
-  CMsg findwRemove(std::string str);
+  CMsg find(std::string str,std::string field="SYS");
+  CMsg findwRemove(std::string str,std::string field="SYS");
   void clear();
   void prune();
 

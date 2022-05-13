@@ -381,14 +381,7 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
 
 //Packet received.  Place in Rcvd queue.
 void CRadio::receivedLogic(unsigned char *buffer, int len){
-  //writeconsole("RSSI:\t\t"); writeconsole(plora->getRSSI()); writeconsole(" dBm ");
-  //writeconsole("SNR:\t\t");  writeconsole(plora->getSNR()); writeconsoleln(" dB ");        
 
-  //CMsg mm;
-  //mm.setSYS(Name());
-  //mm.setINFO("Received");
-  
-  //writeconsoleln(mm.serializeout());
 
   std::string tmpstr; 
   for (int count=0;count<len;count++) tmpstr+=buffer[count];              //Convert byte buffer to string
@@ -398,11 +391,14 @@ void CRadio::receivedLogic(unsigned char *buffer, int len){
   CMsg robj(tmpstr.c_str(), plora->getRSSI(), plora->getSNR());
   robj.setParameter("RSSI",plora->getRSSI());
   robj.setParameter("S/N",plora->getSNR());
+  writeconsoleln("------------------------------RADIO MSG--------------------------------");
   writeconsoleln(robj.serializeout());
+  writeconsoleln("------------------------------RADIO MSG END--------------------------------");
   if(robj.getACK()=="1"){// This is an acknowledgement of a requested ACK.  No need to push to reeceived list
-    if(_nextTransmit>(getTime()+RADIOTXDELAY)){    //No need to wait longer as we got the ack
+    if((_nextTransmit>(getTime()+RADIOTXDELAY)) ||(_delayTransmit>(getTime()+RADIOTXDELAY))){    //No need to wait longer as we got the ack
       _nextTransmit=getTime()+RADIOTXDELAY;
       _delayTransmit=RADIOTXDELAY;
+      
     }
   }
   else{

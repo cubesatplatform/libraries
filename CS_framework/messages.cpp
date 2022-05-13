@@ -192,7 +192,7 @@ CMessageList::CMessageList(){}
 CMessageList::~CMessageList(){}
 
 
-CMsg CMessageList::find(std::string str){
+CMsg CMessageList::find(std::string str,std::string field){
 std::string tmpstr;
 CMsg *pmsg;
 CMsg m;
@@ -201,7 +201,7 @@ for (auto it = MList.begin(); it != MList.end(); ++it) {
 
   
   
-  tmpstr=pmsg->getSYS();
+  tmpstr=pmsg->getParameter(field);
   if(str==tmpstr){    
     return *pmsg;
     }
@@ -210,14 +210,14 @@ for (auto it = MList.begin(); it != MList.end(); ++it) {
   return m;		
 }
 
-CMsg CMessageList::findwRemove(std::string str){
+CMsg CMessageList::findwRemove(std::string str,std::string field){
 std::string tmpstr;
 CMsg m;
 CMsg *pmsg;
 for (auto it = MList.begin(); it != MList.end(); ++it) {  
   pmsg=*it;
   
-  tmpstr=pmsg->getSYS();
+  tmpstr=pmsg->getParameter(field);
   if(str==tmpstr){      
     m=*pmsg;
     MList.erase(it);   //Check to make sure this works		
