@@ -42,7 +42,7 @@ void CStateObj::loop() {
 			return;
 		}
 		if(psys->isNextCycle())      	
-			psys->nextState();				
+			psys->Run();				
 	}
 	if(_currentTime>_lastDebug+2000){
 		_lastDebug=_currentTime;

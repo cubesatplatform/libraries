@@ -61,10 +61,8 @@ void CGPS::config(CMsg &msg){
 
 void CGPS::loop()
 {
-  if(subscribers(Name())){
-    CMsg m;
-    runOnce(m);
-  }
+  CMsg m;
+  runOnce(m); 
 }
 
 void CGPS::runOnce(CMsg &msg)
@@ -90,28 +88,28 @@ void CGPS::runOnce(CMsg &msg)
     Sec=gps.time.second();
     //Speed=gpsl.time.kmph()
 
-    //Output();   //Called automatically
+    fillData();
    }
 }
 
 
-CMsg CGPS::fillData(){  //Easier to send as long   convert to decimal when receive
-  
-   CMsg m;
-   m.setParameter("table","gps");
-   m.setParameter("lat",latitude);
-   m.setParameter("lon",longitude);
-   m.setParameter("alt",altitude);
-   m.setParameter("siv",(long)SIV);
-   m.setParameter("hr",(long) Hr);
-   m.setParameter("min",(long) Min);
-   m.setParameter("sec",(long) Sec);
-   m.setParameter("mon",(long) Mon);
-   m.setParameter("day",(long) Day);
-   m.setParameter("yr",(long) Yr);
+void CGPS::fillData(){  //Easier to send as long   convert to decimal when receive  
+  CMsg m;
+  m.setParameter("table","gps");
+  m.setParameter("lat",latitude);
+  m.setParameter("lon",longitude);
+  m.setParameter("alt",altitude);
+  m.setParameter("siv",(long)SIV);
+  m.setParameter("hr",(long) Hr);
+  m.setParameter("min",(long) Min);
+  m.setParameter("sec",(long) Sec);
+  m.setParameter("mon",(long) Mon);
+  m.setParameter("day",(long) Day);
+  m.setParameter("yr",(long) Yr);
+  m.setParameter("TIME",(long) Yr);
+  m.setTIME(getTime());
 
-   addDataList(m);
-  return m;
+  addDataMap(std::string("GPS"),m);
  }
 
 

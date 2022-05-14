@@ -55,11 +55,13 @@ public:
   std::string getOFFSET() { return  Parameters["O"]; } 
   std::string getTABLE() { return  Parameters["T"]; }
   std::string getEVENT() { return  Parameters["E"]; } 
+  std::string getKEY() { return  Parameters["K"]; } 
   std::string getERROR() { return  Parameters["0"]; } 
   std::string getINFO() { return  Parameters["I"]; } 
   std::string getVALUE() { return  Parameters["V"]; } 
   std::string getCOMMENT() { return  Parameters["C"]; } 
   std::string getPANEL() { return  Parameters["P"]; } 
+  std::string getTIME() { return  Parameters["TM"]; } 
   bool checkPWD();
 
   void requestACK(){setACK("0");}
@@ -71,6 +73,7 @@ public:
   void setTO(std::string str="") { Parameters["TO"]=str; }
   void setDATA(std::string str="") { Parameters["D"]=str; }
   void setEVENT(std::string str="") { Parameters["E"]=str; }
+  void setKEY(std::string str="") { Parameters["K"]=str; }
   void setERROR(std::string str="") { Parameters["0"]=str; }
   void setINFO(std::string str="") { Parameters["I"]=str; }
   void setVALUE(std::string str="") { Parameters["V"]=str; }
@@ -80,6 +83,7 @@ public:
   void setPANEL(std::string str) { Parameters["P"]=str; }
   void setCOMMENT(std::string str) { Parameters["C"]=str; }
   void setCID(std::string str="") { Parameters["CID"]=str; }
+  void setTIME(unsigned long tmp) { Parameters["TM"]=tostring(tmp); }
   bool setPWD();  //Returns false if parameters are not there for a real pwd    
   
   void setMODE(std::string str) { Parameters["MODE"]=str; }
@@ -109,9 +113,6 @@ public:
   void setParameter(std::string str,double val ) { Parameters[str]=tostring( val); } 
   void setParameter(std::string str,char val ) { Parameters[str]=tostring( val); }   
 
-  //std::string Offset() {  return  Parameters["OFFSET"]; }
-  //std::string StringOffset() { return Parameters["OFFSET"]; }
-  //void Offset(std::string str) {  Parameters["OFFSET"] = str; }
   
   std::string Data() { return _str; }
   void Data(std::string s) { _str = s; }

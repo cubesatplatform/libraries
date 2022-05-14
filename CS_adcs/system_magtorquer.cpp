@@ -20,7 +20,6 @@ void CMagTorquer::init()  {
 void CMagTorquer::setup()  {
   init();
  _pIMU=(CIMU *)getIMU();
- //subscribe(_pIMU->Name());
  
   if(_pIMU==NULL){           
     CMsg m;
@@ -161,9 +160,10 @@ void CMagTorquer::newCMD(CMsg &msg){
 
 void CMagTorquer::loop(){ 
    if (Mode()=="CUSTOM"){   //Do some control
-    if(_pMagX!=NULL) _pMagX->loop();
-    if(_pMagY!=NULL) _pMagY->loop();
-    if(_pMagZ!=NULL) _pMagZ->loop();
+    if(_pIMU!=NULL) _pIMU->Run();
+    if(_pMagX!=NULL) _pMagX->Run();
+    if(_pMagY!=NULL) _pMagY->Run();
+    if(_pMagZ!=NULL) _pMagZ->Run();
   }
   loopDetumble();         
   std::string str=State();

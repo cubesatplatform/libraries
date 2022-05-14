@@ -166,7 +166,6 @@ class CIMU:public CSystemObject{
     void test(CMsg &msg);
     void runOnce(CMsg &m);
 
-    void Output(CMsg &msg);
     void GetData();
     std::string getDataMode(){return _dataMode;}
     void dataMode(const char * option, int period=50);

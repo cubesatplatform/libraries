@@ -107,11 +107,7 @@ public:
   std::string State() { return _ostate; }
   std::string lastState() { return _olaststate; }  
   virtual void Update(CMsg &msg);
-  virtual void Output(CMsg &msg){Output();}
-  virtual void Output(){
-    CMsg m=fillData();
-    addTransmitList(m);
-  }
+
   void newMsg(CMsg &msg);
   void newMode(CMsg &msg);
   virtual void initMode(){};
@@ -131,14 +127,14 @@ public:
   void timeStamp();
  
   void stats(CMsg &ms);
-  virtual CMsg fillData(){CMsg m; return m;}
-  void nextState();                                                                                         //Next state calls State Transition Functions
+  void Run(long runtime);                    
+  void Run();                                                                                         //Next state calls State Transition Functions
   void setState(std::string str);        //Only set the state  Dont call any functions.  The Next state should take care of that
   void Name(const char* s) { std::string str= s; Name(str); }
   void Name(std::string s);
  
   void addTransmitList(CMsg &m );
-  void addDataList(CMsg &m); 
+  void addDataMap(std::string key, CMsg &m); 
   void addMessageList(CMsg &m );
   void addReceivedList(CMsg &m );
     
@@ -180,10 +176,6 @@ public:
 
 
   std::string outputStatus(long val=100000);
- // void respondCallBack(CMsg &m);
-  void subscribe(std::string str);
-  void unsubscribe(std::string str);
-  int subscribers(std::string str);
   unsigned long getReceivedTimestamp();
   void transmitError(const char *tmp);
 };

@@ -107,13 +107,10 @@ void CIRArray::test(CMsg &msg){
 }
 
 
-void CIRArray::loop(){
-  if(subscribers(Name())){
+void CIRArray::loop(){  
     CMsg m;
     runOnce(m);
     Output(m);
-    //writeconsoleln("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   SUBSCRIBED IRARRAY XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-  }
 }
 
 
@@ -401,9 +398,9 @@ void CIRArray::Output(CMsg &msg){  //Easier to send as long   convert to decimal
   std::string sDisplay=msg.getParameter("CONSOLE","1");
 
   
-  if((sType=="P")||(subscribers(Name()+"P"))) fillPixel();
-  if((sType=="G")||(subscribers(Name()+"G"))) fillGrey();
-  if((sType=="A")||(subscribers(Name()+"A"))) fillAscii();
+  if(sType=="P") fillPixel();
+  if(sType=="G") fillGrey();
+  if(sType=="A") fillAscii();
   
   if(sDisplay=="1"){
     consoleOutTemp();

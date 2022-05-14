@@ -1,7 +1,6 @@
 #pragma once
 
 
-
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
 #else
 #include <systemobject.h>
@@ -11,12 +10,12 @@
 #include <boards.h>
 
 class CGPS :public CSystemObject {
- // TinyGPSPlus gps;
+ 
   TinyGPSPlus gps;
   AXP20X_Class axp;
 
   PinName _TX;
-   PinName _RX;
+  PinName _RX;
 
   float latitude=0.0;
   float longitude=0.0;
@@ -38,9 +37,8 @@ public:
   void loop();
   void init();
   void output();
-  void runOnce(CMsg &msg);
-  void smartDelay(unsigned long ms);
-  CMsg fillData();
+  void runOnce(CMsg &msg);  
+  void fillData();
 };
 
 #endif

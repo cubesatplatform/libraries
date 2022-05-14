@@ -32,11 +32,9 @@ setState("ERROR");
 return;
 }
 
-void CTemperatureObject::loop(){
-  //if(subscribers(Name())){
+void CTemperatureObject::loop(){  
   CMsg m;
-  runOnce(m);
-  //}
+  runOnce(m);  
 }
 
 void CTemperatureObject::test(CMsg &msg){
@@ -84,22 +82,13 @@ void CTemperatureObject::runOnce(CMsg &m){
   {
    _temp = sensor.readTempC();
    _ltime=getTime();
-  }
-return;
-}
-
-CMsg CTemperatureObject::getTempMSG(){
- 
-  CMsg m;
-  runOnce(m);
 
   m.setSYS(Name());
   m.setParameter("TEMP",_temp);
   m.setParameter("TIME",_ltime);
 
-  addDataList(m);
-  return m;
+  addDataMap(std::string(Name()),m);
+  }
+return;
 }
-
-
 

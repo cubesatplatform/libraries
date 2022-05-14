@@ -1,5 +1,6 @@
 #pragma once
 
+#include <messages.h>
 #include <systemobject.h>
 #include <list>
 #include <queue>
@@ -59,7 +60,6 @@ class CPhone:public CSystemObject {
     bool bnew=false;
     PinName _TX;
     PinName _RX;
-
     
   public:
     std::queue<CMsg> commandQueue;   //This is the commands that should be sent to phone,filled from the Transmitter  
@@ -85,6 +85,7 @@ class CPhone:public CSystemObject {
     void ReceivedPacket();
     void loop();
     void init();
-    void ready();
+    void ready();    
+	  void getData(CMsg &msg);
     void callCustomFunctions(CMsg &msg);
 };

@@ -606,8 +606,7 @@ void CSystemMgr::chkTemperature(CMsg &msg){
     CTemperatureObject *pTest=(CTemperatureObject *)getSystem(s,s);  
     if(pTest!=NULL) {
       CMsg m;
-      pTest->setup();
-      pTest->loop();
+      pTest->Run(50);      
       unsigned long ltime=pTest->getTempTime();
    
      if(ltime>=ct){                      

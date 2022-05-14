@@ -45,10 +45,11 @@ class CMessages {
 
 public:  
   CMessageList ReceivedList;     //Received via Radio.  Put inbound received msgs here  ---Need to add acks for these as well
-  CMessageList MessageList;     //Moved from Radio to here.  These are pumped out
-  CMessageList DataList;       //This is where the one demand data is put to be sent per request.  Most things put data here
+  CMessageList MessageList;     //Moved from Radio to here.  These are pumped out  
   CMessageList TransmitList;     //Add output to transmit here (health, beacons and non on demand stuff go here)    Radio reads from here
   CMessageList TransmittedList;    //Sent  Heep for a bit if then need a resend    Radio writes to here when transmitted
+
+  std::map<std::string, CMsg> DataMap;     //This is where the one demand data is put to be sent per request.  Most things put data here
   
   std::map<std::string, int> Subscribers;  //Subscribers to a specific system
 
@@ -58,22 +59,12 @@ public:
   CMessages(){TransmittedList.maxSize(5);};
   ~CMessages(){};
 
-
-
-  CMsg findinDataList(std::string filename,std::string block);
-
-  void moveReceived();
-  void movetoTransmitList(CMsg &msg);                             //Need to make a subsystem that moved data to transmitlist data based on requests
-  void sendData(CMsg &msg);            //Similar to movetoTransmitList
-  void moveDataToTransmit();
-
-  void subscribe(std::string str);
-  void unsubscribe(std::string str);
-  int subscribers(std::string str);
-
+  void moveReceived();                        //Need to make a subsystem that moved data to transmitlist data based on requests
   
-  void addTransmitList(CMsg &m );
-  void addDataList(CMsg &m); 
+  void addDataMap(std::string key,CMsg &m); 
+  void sendData(CMsg &msg);            //Similar to movetoTransmitList
+    
+  void addTransmitList(CMsg &m );  
   void addMessageList(CMsg &m );
   void addReceivedList(CMsg &m,std::string strIAM );
 

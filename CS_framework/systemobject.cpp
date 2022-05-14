@@ -2,12 +2,6 @@
 #include "systemobject.h"
 #include "messages.h"
 
-//stateNone->switchOn()->stateOn|StateError
-//stateOn->setup()->->stateReady|StateError
-//stateReady->switchPlay()->statePlay|StateError
-//statePlay->loop()
-//
-
 
 int CSystemObject::sid=0;
 
@@ -118,6 +112,7 @@ void CSystemObject::Name(std::string s) {
     _currentTime = getTime(); 
     if((m->getSYS()=="")&&(m->getSYS()!="RADIO"))m->setSYS(Name());
     if(m->getFROM()=="") m->setFROM(getIAM());
+    if(m->getTO()=="") m->setTO("ALL");
     if(_cid.size())m->setCID(_cid);
  }
 
@@ -172,7 +167,6 @@ void CSystemObject::newMsg(CMsg &msg){
   if (act.substr(0,4)=="MODE") { newMode(msg); return;} //Updates a parameter in the Subsystem
   //if (act == "SETMODE") { newMode(msg); return;} //Updates a parameter in the Subsystem
 
-  if (act == "OUTPUT") {Output(msg); return;}
   if (act == "PLAY") {play();return;}
   if (act == "START") {start();return;}
   if (act == "OFF") {off();return;}
@@ -192,7 +186,7 @@ void CSystemObject::newMsg(CMsg &msg){
   if(act=="UPDATE") {Update(msg);return;}
   if(act=="CONFIG") {config(msg);return;}
 
-  if(act=="ADDDATALIST") {addDataList(msg);return;}
+  if(act=="ADDDATAMAP") {std::string key=msg.getKEY(); addDataMap(key,msg);return;}
   if(act=="ADDTRANSMITLIST") {addTransmitList(msg);return;}
 
 
@@ -248,12 +242,20 @@ std::string CSystemObject::outputStatus(long val) {
 }
   
 
-void CSystemObject::nextState() {
+void CSystemObject::Run(long runtime){
+  if(runtime>MAXRUNTIME)
+    return;
+  unsigned long endtime=getTime()+runtime;
+
+  while(getTime()<endtime){
+    Run();
+  }
+
+}    
+void CSystemObject::Run() {
     _procCount++;
     _currentTime = getTime();   
-
-    //std::string str=outputStatus(0);
-    
+       
 
   if (_currentTime<_startTime) return;   //Do nothing as it shouldnt be activated yet
 //timeSinceStateChange()  // Can use this to progress states
@@ -394,22 +396,6 @@ unsigned long CSystemObject::getReceivedTimestamp(){
   }
 
 
-void CSystemObject::subscribe(std::string str){
-  CMessages* pM = getMessages();  
-  pM->subscribe(str);
-}
-
-void CSystemObject::unsubscribe(std::string str){
-  CMessages* pM = getMessages();  
-  pM->unsubscribe(str);
-}
-
-int CSystemObject::subscribers(std::string str){
-  CMessages* pM = getMessages();  
-  return(pM->subscribers(str));
-}
-
-
 
   
   void CSystemObject::addTransmitList(CMsg &m ){
@@ -419,11 +405,10 @@ int CSystemObject::subscribers(std::string str){
     
   }
 
-  void CSystemObject::addDataList(CMsg &m){
+  void CSystemObject::addDataMap(std::string key,CMsg &m){
     CMessages* pM = getMessages();  
-    if(m.getSYS().size()<1)
-    m.setSYS(Name());
-    pM->addDataList(m);
+    if(key.size()>1)    
+      pM->addDataMap(key,m);
     
   }
 

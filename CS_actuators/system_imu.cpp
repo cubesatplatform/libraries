@@ -45,11 +45,9 @@ void CIData::remap(float * pnewX, float *pnewY, float *pnewZ){
 }
 
 
-void CIMU::loop(){
-  if(subscribers(Name())){
+void CIMU::loop(){  
     CMsg m;
-    runOnce(m);
-    }
+    runOnce(m);  
   }
 
 
@@ -70,8 +68,6 @@ void CIMU::test(CMsg &msg){
 
 
 void CIMU::runOnce(CMsg &m){
-     if((State()!="READY")&&(State()!="PLAY") )setup();
-    if((State()!="READY")&&(State()!="PLAY") ) return;
     if (myIMU.dataAvailable() == true) {
       GetData();      
       writeconsoleln("New IMU Data");
@@ -89,95 +85,80 @@ void CIMU::GetData(){
     //Look for reports from the IMU    
   //  writeconsoleln(" --------------------------------------------------------------------------------- GET IMU DATA ---------------------------------------------------------------------------");
 
-      _dataUpdatedOn=getTime();
-      PRY.archiveData();
-      Quat.archiveData();
-      Lin.archiveData();
-      Gyro.archiveData();
-      Mag.archiveData();
-      
-      *PRY.pPitch=(myIMU.getPitch()) * 180.0 / PI; // Convert pitch to degrees
-      *PRY.pRoll=(myIMU.getRoll()) * 180.0 / PI; // Convert roll to degrees
-      *PRY.pYaw=(myIMU.getYaw()) * 180.0 / PI; // Convert yaw / heading to degrees
+  _dataUpdatedOn=getTime();
+  PRY.archiveData();
+  Quat.archiveData();
+  Lin.archiveData();
+  Gyro.archiveData();
+  Mag.archiveData();
+  
+  *PRY.pPitch=(myIMU.getPitch()) * 180.0 / PI; // Convert pitch to degrees
+  *PRY.pRoll=(myIMU.getRoll()) * 180.0 / PI; // Convert roll to degrees
+  *PRY.pYaw=(myIMU.getYaw()) * 180.0 / PI; // Convert yaw / heading to degrees
 
-      //Quat.I=myIMU.getQuatI();       
-      //Quat.J = myIMU.getQuatJ();
-      //Quat.K = myIMU.getQuatK();
-      //Quat.R = myIMU.getQuatReal();
-      //Quat.Acc = myIMU.getQuatRadianAccuracy();
+  //Quat.I=myIMU.getQuatI();       
+  //Quat.J = myIMU.getQuatJ();
+  //Quat.K = myIMU.getQuatK();
+  //Quat.R = myIMU.getQuatReal();
+  //Quat.Acc = myIMU.getQuatRadianAccuracy();
 
-      float quatRadianAccuracy;
+  float quatRadianAccuracy;
 
-       
+    
 
-      //Lin.X = myIMU.getLinAccelX();
-      //Lin.Y = myIMU.getLinAccelY();
-      //Lin.Z = myIMU.getLinAccelZ();
-      //Lin.Acc = myIMU.getLinAccelAccuracy();
+  //Lin.X = myIMU.getLinAccelX();
+  //Lin.Y = myIMU.getLinAccelY();
+  //Lin.Z = myIMU.getLinAccelZ();
+  //Lin.Acc = myIMU.getLinAccelAccuracy();
 
-      myIMU.getLinAccel(Lin._fX , Lin._fY, Lin._fZ, Lin.Acc);
-      myIMU.getGyro(Gyro._fX , Gyro._fY, Gyro._fZ, Gyro.Acc);
-      myIMU.getMag(Mag._fX , Mag._fY, Mag._fZ, Mag.Acc);
-      myIMU.getQuat(Quat._fX, Quat._fY, Quat._fZ, Quat._fR, quatRadianAccuracy, Quat.Acc);
+  myIMU.getLinAccel(Lin._fX , Lin._fY, Lin._fZ, Lin.Acc);
+  myIMU.getGyro(Gyro._fX , Gyro._fY, Gyro._fZ, Gyro.Acc);
+  myIMU.getMag(Mag._fX , Mag._fY, Mag._fZ, Mag.Acc);
+  myIMU.getQuat(Quat._fX, Quat._fY, Quat._fZ, Quat._fR, quatRadianAccuracy, Quat.Acc);
 
-  //  gyrox = myIMU.getGyroX();
-  //  gyroy = myIMU.getGyroY();
-  //  Gyro.z = myIMU.getGyroZ();
-    //  Gyro.X = myIMU.getFastGyroX();
-    //  Gyro.Y = myIMU.getFastGyroY();
-    //  Gyro.Z = myIMU.getFastGyroZ();
+//  gyrox = myIMU.getGyroX();
+//  gyroy = myIMU.getGyroY();
+//  Gyro.z = myIMU.getGyroZ();
+//  Gyro.X = myIMU.getFastGyroX();
+//  Gyro.Y = myIMU.getFastGyroY();
+//  Gyro.Z = myIMU.getFastGyroZ();
 
-    //  Mag.X = myIMU.getMagX();
-    //  Mag.Y = myIMU.getMagY();
-    //  Mag.Z = myIMU.getMagZ();
-    //  Mag.Acc = myIMU.getMagAccuracy();
+//  Mag.X = myIMU.getMagX();
+//  Mag.Y = myIMU.getMagY();
+//  Mag.Z = myIMU.getMagZ();
+//  Mag.Acc = myIMU.getMagAccuracy();
 
-      Mag._changedOn=getTime();
-      Quat._changedOn=getTime();
-      Lin._changedOn=getTime();
-      PRY._changedOn=getTime();
-      Gyro._changedOn=getTime();
+  Mag._changedOn=getTime();
+  Quat._changedOn=getTime();
+  Lin._changedOn=getTime();
+  PRY._changedOn=getTime();
+  Gyro._changedOn=getTime();
 
-      CMsg mGyro,mLin,mMag,mPRY;
+  CMsg mGyro,mLin,mMag,mPRY;
 
-      if (Gyro.anythingNew()){
-        mGyro=Gyro.makeMessage("GYRO");
-        addDataList(mGyro);
-      }
+  if (Gyro.anythingNew()){
+    mGyro=Gyro.makeMessage("GYRO");
+    addDataMap(std::string("GYRO"),mGyro);
+  }
 
-      
-      if (Lin.anythingNew()){
-        mLin=Lin.makeMessage("LIN");
-        addDataList(mLin);
-      }
+  
+  if (Lin.anythingNew()){
+    mLin=Lin.makeMessage("LIN");
+    addDataMap(std::string("LIN"),mLin);
+  }
 
-      if (Mag.anythingNew()){
-        mMag=Mag.makeMessage("Mag");
-        addDataList(mMag);
-      }
+  if (Mag.anythingNew()){
+    mMag=Mag.makeMessage("MAG");
+    addDataMap(std::string("MAG"),mMag);
+  }
 
-      
-      if (PRY.anythingNew()){
-        mPRY=PRY.makeMessage("PRY");
-        addDataList(mPRY);
-      }
-
-      //mGyro.appendParams(mLin.Parameters);   
-      //mGyro.appendParams(mMag.Parameters);
-      //mGyro.appendParams(mPRY.Parameters);
-      
-
-      //if(mGyro.Parameters.size())
-        //respondCallBack(mGyro);
+  
+  if (PRY.anythingNew()){
+    mPRY=PRY.makeMessage("PRY");
+    addDataMap(std::string("PRY"),mPRY);
+  }
       
 }    
-
- void CIMU::Output(CMsg &msg){  
-  CMsg mGyro;
-  mGyro=Gyro.makeMessage("GYRO");
-  addTransmitList(mGyro);
-
-}
 
   
 void CIMU::init(){  

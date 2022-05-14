@@ -21,17 +21,17 @@
 
 
 
-/*
-void CPhone::newCMD(CMsg &msg){
-   writeconsoleln("..................................... Phone Adding Command Queue .....................................");
-  commandQueue.push(msg);
+
+void CPhone::getData(CMsg &msg) {  //Send message to phone to get stuff 
+	std::string key=msg.getKEY();
+  //Need to craft message to send msg to phone
 }
-*/
 
 void  CPhone::callCustomFunctions(CMsg &msg){
   std::string act=msg.getACT();
   
-  writeconsoleln(act);
+  
+	if((act=="GET")) {getData(msg);  return;}
   
   if(act.size()>1)  commandQueue.push(msg);
 }
@@ -147,7 +147,7 @@ void CPhone::sendSerial(const char* cmd) {    //Send to Phone
   delayMicroseconds(500); 
   id++;
 
-   writeconsoleln();
+  writeconsoleln();
   writeconsole("Sending to phone => ");
   writeconsoleln(cmd);
 }
@@ -229,9 +229,13 @@ for (count=0;count<len;count++){
     m.Parameters["FILE"]=strfn;
     m.Parameters["BLK"]=tostring(block);
     m.initArray(buffer,bufcount);   ///////////////////////////////////////////////////////////////////////////////////////////////////////////// FIX THIS
-    addDataList(m); 
-      writeconsoleln("..................................... Adding Picture Data to DataList .....................................");
-      writeconsoleln(m.serialize());
+    std::string key=strfn;
+    key+="_";
+    key+=tostring(block);
+
+    addDataMap(key,m); 
+    writeconsoleln("..................................... Adding Picture Data to DataList .....................................");
+    writeconsoleln(m.serialize());
 }
 
 void CPhone::onInitAvailable(int id) {   //Read from Phone add to queue

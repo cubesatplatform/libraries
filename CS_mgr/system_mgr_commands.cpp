@@ -144,15 +144,12 @@ void CSystemMgr::showCommands(){
   if(act=="PINHIGH"){ pinHigh(msg); return;}
   if(act=="PINLOW"){ pinLow(msg); return;}
   if(act=="PINPWM"){ pinPWM(msg); return;}
- 
-  if(act=="TRANSMITDATA") {pMSG->movetoTransmitList(msg);return;}
-  if(act=="DATALISTCLEAR") {pMSG->DataList.clear();return;}
+   
+  //if(act=="DATAMAPCLEAR") {pMSG->DataMap.clear();return;}
   if(act=="MESSAGESLISTCLEAR") {pMSG->MessageList.clear();return;}
   if(act=="TRANSMITLISTCLEAR") {pMSG->TransmitList.clear();return;}
   if(act=="TRANSMITTEDLISTCLEAR") {pMSG->TransmittedList.clear();return;}
-  if(act=="SENDDATA") {pMSG->sendData(msg);return;}
-  if(act=="SUBSCRIBE") {pMSG->subscribe(msg.getDATA());return;}
-  if(act=="UNSUBSCRIBE") {pMSG->unsubscribe(msg.getDATA());return;}
+  if(act=="SENDDATA") {pMSG->sendData(msg);return;}  
 
   if(act== "?") {    showTests();    return;  }
 

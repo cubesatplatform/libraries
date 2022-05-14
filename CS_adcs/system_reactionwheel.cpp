@@ -105,8 +105,9 @@ void  CRW::callCustomFunctions(CMsg &msg){
 
 void CRW::loop(){ 
   if (Mode()==""){   //Do some control
-    if(_pMotorX!=NULL)_pMotorX->loop();
-    if(_pMotorY!=NULL)_pMotorY->loop();
-    if(_pMotorZ!=NULL)_pMotorZ->loop();
+    if(_pIMU!=NULL) _pIMU->Run();
+    if(_pMotorX!=NULL)_pMotorX->Run();
+    if(_pMotorY!=NULL)_pMotorY->Run();
+    if(_pMotorZ!=NULL)_pMotorZ->Run();
   }
 }

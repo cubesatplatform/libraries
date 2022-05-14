@@ -381,12 +381,8 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
 
 //Packet received.  Place in Rcvd queue.
 void CRadio::receivedLogic(unsigned char *buffer, int len){
-
-
   std::string tmpstr; 
   for (int count=0;count<len;count++) tmpstr+=buffer[count];              //Convert byte buffer to string
-  //mm.setDATA(tmpstr);
-  //writeconsole("Data:\t\t"); writeconsoleln(tmpstr.c_str());
 
   CMsg robj(tmpstr.c_str(), plora->getRSSI(), plora->getSNR());
   robj.setParameter("RSSI",plora->getRSSI());

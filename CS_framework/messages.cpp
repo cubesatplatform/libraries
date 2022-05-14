@@ -1,6 +1,8 @@
 #include "messages.h"
 #include "consoleio.h"
 
+#define ALL "ALL"
+
 void CMessages::moveReceived() {
   
   while (ReceivedList.size()){
@@ -11,140 +13,13 @@ void CMessages::moveReceived() {
   }  
 }
 
-void  CMessages::sendData(CMsg &msg){
-  
-  //ACT:SENDDATA
-
-  CMsg m;
-  std::string d=msg.getDATA();
-  if(d=="")
-    return;
-  int count=msg.getParameter("COUNT",1);
-  m.setSYS(d);  
- 
-  if(d=="TIME"){
-    m.setSYS("SAT");
-    m.setParameter("TIME",getTime());
-    addTransmitList(m);
-    return;
-  }
-
-  if(d=="IRARRAY"){
-    CMsg x1=DataList.find("IRARRAYX1");
-    addTransmitList(x1);
-    CMsg x2=DataList.find("IRARRAYX2");
-    addTransmitList(x2);
-
-    CMsg y1=DataList.find("IRARRAYY1");
-    addTransmitList(y1);
-    CMsg y2=DataList.find("IRARRAYY2");
-    addTransmitList(y1);
-
-    CMsg z1=DataList.find("IRARRAYZ1");
-    addTransmitList(z1);
-    CMsg z2=DataList.find("IRARRAYZ2");
-    addTransmitList(z1);
-    return;
-
-  }
-  if(d=="TEMP"){
-    CMsg x1=DataList.find("TEMPX1");
-    CMsg x2=DataList.find("TEMPX2");
-
-    CMsg y1=DataList.find("TEMPY1");
-    CMsg y2=DataList.find("TEMPY2");
-
-    CMsg z1=DataList.find("TEMPZ1");
-    CMsg z2=DataList.find("TEMPZ2");
-    
-    m.setParameter("TEMPX1",x1.getParameter("TEMP"));
-    m.setParameter("TEMPX1T",x1.getParameter("TIME"));
-
-    m.setParameter("TEMPY1",y1.getParameter("TEMP"));
-    m.setParameter("TEMPY1T",y1.getParameter("TIME"));
-
-    m.setParameter("TEMPZ1",z1.getParameter("TEMP"));
-    m.setParameter("TEMPZ1T",z1.getParameter("TIME"));
-    addTransmitList(m);
-  }
-
-m=DataList.find(d);    
-addTransmitList(m);
-
-}
-
-CMsg CMessages::findinDataList(std::string filename,std::string block){
-  CMsg m;
-  /*
-  m.Parameters["FOUND"]="0";
-
-  for(auto x:DataList){
-    if((filename==x->Parameters["FILE"])&&(block==x->Parameters["BLK"])){
-      x->Parameters["FOUND"]="1";
-      return *x;
-    }
-  }
-  */
-  return m;
-}
-
-
-void  CMessages::movetoTransmitList(CMsg &msg){
-  /*
-  std::string filename=msg.Parameters["FILE"];
-  std::string block=msg.Parameters["BLK"];
-  std::string blockend=msg.Parameters["BLKEND"];
-
-
-  if (filename.size()&&block.size()&&blockend.size()){
-    writeconsoleln("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ FOUND END ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-    int startBlock=msg.getParameter("BLK",0);
-    int endBlock=msg.getParameter("BLKEND",0);
-
-    for (int x=startBlock;x<=endBlock;x++){
-      CMsg m=findinDataList(filename,tostring(x));
-        if(m.Parameters["FOUND"]=="1"){
-          push_backTransmitList(m);
-          writeconsoleln("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ FOUND IT ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");          
-        }
-    }
-    
-    return;
-  }
-
-
-  if (filename.size()&&block.size()){
-    writeconsoleln("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ FOUND ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-    CMsg m=findinDataList(filename,block);
-      if(m.Parameters["FOUND"]=="1"){
-        push_backTransmitList(m);
-        writeconsoleln("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ FOUND IT ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-        
-      }
-    return;
-
-  }
-
-
-  int count=0;
-  int items=msg.getParameter("ITEMS",100);
-  while(count<items&&DataList.size()){
-    CMsg m=frontDataList();
-    pop_frontDataList();
-    push_backTransmitList(m);
-    count++;
-  }
-  */
-}
-
-
 
 void CMessages::prune() { 
   TransmitList.prune();
   TransmittedList.prune();
   ReceivedList.prune();
   MessageList.prune();
-  DataList.prune();
+ // DataMap.prune();
 }
 
 void CMessages::displayList(int option=0){
@@ -152,37 +27,6 @@ void CMessages::displayList(int option=0){
 }
 
 
-
-
-void CMessages::moveDataToTransmit(){
-
-   while (DataList.size()){
-    CMsg m=DataList.back();
-    DataList.pop_back();
-    TransmitList.push_front(m);
-  }
-  DataList.clear();
-}
-
-
-void  CMessages::subscribe(std::string str){
-    Subscribers[str]=Subscribers[str]+1;
-
-}
-
-int  CMessages::subscribers(std::string str){
-    return(Subscribers[str]);
-
-}
-
-
-
-void  CMessages::unsubscribe(std::string str){
-  Subscribers[str]=Subscribers[str]-1;
-  if(Subscribers[str]<0)
-    Subscribers[str]=0;
-  
-}
 
 /////////////////////////////////////////////////////////////////
   
@@ -324,20 +168,18 @@ void CMessages::addReceivedList(CMsg &s,std::string strIAM){
   _lastReceived=getTime();
   if(!s.checkPWD()){    
     s.setCOMMENT("Message PWD Invalid   Dropping   ------- Problably should add to some Log");
-    writeconsoleln(s.serializeout());
-    //addTransmitList(s);
+    writeconsoleln(s.serializeout());    
     return;
   }
   
   
-  if(s.getTO()==strIAM){
+  if((s.getTO()==strIAM)||(s.getTO()==ALL)){
      ReceivedList.push_front(s);
      return;
   }
   else {
     s.setCOMMENT("Message Received not for this Satellite   Dropping");
-    writeconsoleln(s.serializeout());
-    //addTransmitList(s);
+    writeconsoleln(s.serializeout());    
   }
   return;
 }
@@ -364,16 +206,13 @@ std::list<CMsg> CMessages::splitMsg(CMsg &m){
   std::string strFROM=m.getFROM();
   std::string strTO=m.getTO();
   
-
   CMsg cm;
   int totsize=0;
   int part=0;
 
-
   long ltmp=getTime();
   ltmp=ltmp%1000;
 
-  
   
   for(auto x:m.Parameters){
     cm.setParameter("UID",tostring(ltmp)+std::string("_")+tostring(part));
@@ -474,10 +313,18 @@ for(auto x:lMD){
 
 
 
-void CMessages::addDataList(CMsg &m) {
+void CMessages::addDataMap(std::string key,CMsg &m) {
   _lastData=getTime();
-  DataList.prune();
-  DataList.push_front(m);
-  return;
+  DataMap[key]=m;  
   }
+
+
+void  CMessages::sendData(CMsg &msg){    
+  
+ 
+  std::string key=msg.getKEY();
+  CMsg m=DataMap[key];
+  if(m.Parameters.size())
+    addTransmitList(m);
+}
 

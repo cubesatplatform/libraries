@@ -16,8 +16,7 @@ public:
   void address(char tmp=0x48){_address=tmp;}
   void config(char addr, TwoWire *pWire);
   float getTemp(){return _temp;}
-  float getTempTime(){return _ltime;}
-  CMsg getTempMSG();
+  float getTempTime(){return _ltime;}  
   void setup();
   void loop();
   void init();
