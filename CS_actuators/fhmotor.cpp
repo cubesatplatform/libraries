@@ -108,8 +108,7 @@ float PWMCounter::RPM(){
 }
 
   
-CMotorController::CMotorController():CBaseDrive(){
-  //Name("MOTOR");
+CMotorController::CMotorController():CBaseDrive(){  
   _channel=channel;
   channel++;
 };
@@ -326,35 +325,6 @@ void CMotorController::loopRamp(){
     
   
 
-/*
-writeconsoleln(1500);
-activateDrive(1500);
-delay(2000);
-writeconsoleln(500);
-activateDrive(500);
-delay(2000);
-writeconsoleln(1);
-activateDrive(1);
-delay(1000);
-
-//digitalWrite(PIN_DIR,HIGH);
-activateDrive(PWM_MAX);
-delay(2000);
-int val=2000;
-activateDrive(val);
-float ftmp;
-while(getTime()<tt){
- //loop(); 
-  ftmp=RPS();
-  flist.push_back(ftmp);
-  delay(10);
-  }
-
-writeconsole("Value: ");writeconsoleln(val);
- for(auto x:flist) {
-   writeconsoleln(x);
- }
- */
 }
 
 void CMotorController::runOnce(CMsg &m){
@@ -430,6 +400,7 @@ void CMotorController::configSpeed(){
 
 
 void CMotorController::test(CMsg &msg) {
+Run(50);
 std::list<float> flist; 
 int sspeed=0;  
 
@@ -459,8 +430,8 @@ else{
 unsigned long tt=getTime()+duration;
 
 while(getTime()<tt){
-  loop();   
-  delay(30);
+  Run(30);   
+  
   }
 
 

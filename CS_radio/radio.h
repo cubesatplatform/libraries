@@ -147,7 +147,13 @@ public:
   void sleep(bool tmp);
   bool stillSleeping();
   void clearSleep();
-  void callCustomFunctions(CMsg &msg);   
+
+  void setPower(CMsg &m);
+  void setCR(CMsg &m);
+  void setBW(CMsg &m);
+  void setSF(CMsg &m);
+  void callCustomFunctions(CMsg &m);   
+  void resetParams(CMsg &m);   
 
   unsigned long getLastTransmit(){return _lastTransmit=0;}
   unsigned long getLastReceive(){return _lastReceive=0;}

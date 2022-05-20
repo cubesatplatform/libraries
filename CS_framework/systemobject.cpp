@@ -96,10 +96,12 @@ void CSystemObject::transmitError(const char *tmp){
 
 
 void CSystemObject::Name(std::string s) {
+  /*
   if(_name.size()){
     auto it=SysMap.find(_name);
     if(it != SysMap.end()) SysMap.erase (it);   //May causing problem!!!
   }
+  */
     
     _name = s;    
     CSystemObject *ptr=this; 
@@ -122,11 +124,11 @@ void CSystemObject::newMode(CMsg &msg){
   initMode();
 }
 
- void CSystemObject::stats(CMsg &msg){    
+void CSystemObject::stats(CMsg &msg){    
   CMsg m;
 
   m.setParameter("table","stats");
-  
+
   m.setParameter("ostate",_ostate);
   m.setParameter("name",_name);
   m.setParameter("cid",_cid);
@@ -149,21 +151,14 @@ void CSystemObject::newMode(CMsg &msg){
   writeconsoleln(m.serializeout());
 
   addTransmitList(m);
- }
+}
 
 
 void CSystemObject::newMsg(CMsg &msg){
- // std::string callback=msg.getParameter("CALLBACK");
- // std::string callbackoff=msg.getParameter("CALLBACKOFF");
-
-//  if(callback.size()) Callback[callback]="1";
-  //if(callbackoff.size()) Callback[callbackoff]="0";
  
   std::string act=msg.getACT();
-  CMsg m=msg;
-  m.setINFO(Name());   
-  m.setCOMMENT("...........................System received message...............................");  
 
+  writeconsole(Name());writeconsoleln(":  Message received");
   if (act.substr(0,4)=="MODE") { newMode(msg); return;} //Updates a parameter in the Subsystem
   //if (act == "SETMODE") { newMode(msg); return;} //Updates a parameter in the Subsystem
 
@@ -178,9 +173,8 @@ void CSystemObject::newMsg(CMsg &msg){
   }
 
   if(act=="SETUP") {setup();return;}
-  if(act=="LOOP") {loop();return;}
+  if(act=="RUN") {Run(msg);return;}
   if(act=="INIT") {init();return;}
-  if(act=="RUNONCE") {runOnce(msg);return;}
             
   if(act=="STATE") {State(msg);return;}
   if(act=="UPDATE") {Update(msg);return;}
@@ -189,8 +183,8 @@ void CSystemObject::newMsg(CMsg &msg){
   if(act=="ADDDATAMAP") {std::string key=msg.getKEY(); addDataMap(key,msg);return;}
   if(act=="ADDTRANSMITLIST") {addTransmitList(msg);return;}
 
-
-callCustomFunctions(msg);
+  writeconsoleln("cllCustomFunctions");
+  callCustomFunctions(msg);
 }
 
 
@@ -309,6 +303,15 @@ void CSystemObject::timeStamp() {
   _loopCount++; 
 }
 
+void CSystemObject::sendError() { 
+  CMsg m;
+  m.setERROR(Name());
+  m.setTIME(getTime());
+  m.setParameter("STATE",State());
+  m.writetoconsole();
+  addTransmitList(m);
+}
+
 bool CSystemObject::isNextCycle() {
   if (State()=="STOP")
     return false;  
@@ -342,45 +345,6 @@ bool CSystemObject::isNextCycle() {
 
 
 
-
-/*
-void CSystemObject::statusUpdate(CMsg &m){  //NEED TO HANDLE MULTIPLE CALLBACKS HERE
-  for (auto it : m.Parameters  ){
-    if((it.first=="CALLBACK")||(it.first=="CALLBACKOFF")){
-      if(it.first=="CALLBACK")
-        Callback[it.second]= "1";
-      else
-        Callback[it.second]= "0";
-    }
-    else{
-      _cmsg.Parameters[it.first]= it.second;
-    }
-  }
-}
-
-
-void CSystemObject::respondCallBack(CMsg &m){
-  
-  for (auto it :Callback){   
-    std::string strsystem;
-     strsystem=it.first;
-     
-    if(it.second=="1"){     //Send if the system wants a callback      
-             
-      std::string timestr=Name();
-      
-      timestr+="_TIME";      
-      m.setSYS(strsystem);      
-      m.setACT("STATUSUPDATE");            
-    
-      m.setParameter(timestr,getTimeString());
-      addMessageList(m);
-
-    }       
-  }  
-}
-*/
-
 void CSystemObject::State(CMsg &m) { 
   std::string s=m.getParameter("STATE");
   if ((_name=="RADIO")||(_name=="RADIO1")||(_name=="RADIO2")||(_name=="RADIO3")){
@@ -398,39 +362,47 @@ unsigned long CSystemObject::getReceivedTimestamp(){
 
 
   
-  void CSystemObject::addTransmitList(CMsg &m ){
-    CMessages* pM = getMessages();  
-    fillMetaMSG(&m);    
-    pM->addTransmitList(m);
-    
-  }
+void CSystemObject::addTransmitList(CMsg &m ){
+  CMessages* pM = getMessages();  
+  fillMetaMSG(&m);    
+  pM->addTransmitList(m);
+  
+}
 
-  void CSystemObject::addDataMap(std::string key,CMsg &m){
-    CMessages* pM = getMessages();  
-    if(key.size()>1)    
-      pM->addDataMap(key,m);
-    
-  }
+void CSystemObject::addDataMap(std::string key,CMsg &m){
+  CMessages* pM = getMessages();  
+  if(key.size()>1)    
+    pM->addDataMap(key,m);
+  
+}
 
-  void CSystemObject::addMessageList(CMsg &m ){
-    CMessages* pM = getMessages();  
-    pM->addMessageList(m);
-    
-  }
+CMsg CSystemObject::getDataMap(std::string key){
+  CMessages* pM = getMessages();  
+  CMsg m;
+  if(key.size()>1)    
+    m=pM->DataMap[key];
+  return m;
+}
 
-  void CSystemObject::addReceivedList(CMsg &m ){
-    CMessages* pM = getMessages();  
-    pM->addReceivedList(m,getIAM());
-    pM->setReceivedTimestamp();
+void CSystemObject::addMessageList(CMsg &m ){
+  CMessages* pM = getMessages();  
+  pM->addMessageList(m);
+  
+}
 
-  }
+void CSystemObject::addReceivedList(CMsg &m ){
+  CMessages* pM = getMessages();  
+  pM->addReceivedList(m,getIAM());
+  pM->setReceivedTimestamp();
 
-  void CSystemObject::goLowPowerState(){
-    if(getTime()>_lastLowPowerMsg+LOWPOWERDELAY){
-      _lastLowPowerMsg=getTime();
-      CMsg m;
-      m.setSYS("SAT");
-      m.setACT("LOWPOWER");
-      addMessageList(m);
-    }
+}
+
+void CSystemObject::goLowPowerState(){
+  if(getTime()>_lastLowPowerMsg+LOWPOWERDELAY){
+    _lastLowPowerMsg=getTime();
+    CMsg m;
+    m.setSYS("SAT");
+    m.setACT("LOWPOWER");
+    addMessageList(m);
   }
+}

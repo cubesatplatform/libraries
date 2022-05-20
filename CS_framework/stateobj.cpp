@@ -1,6 +1,8 @@
 #include "stateobj.h"
 //#include "powerup.h"
 
+#define ECHOINTERVAL 2000
+
 void CStateObj::start(){
 	if(getTime()>startTime()){
 		setState("PLAY");	
@@ -17,7 +19,7 @@ void CStateObj::loop() {
 	}
 
 	for (auto  psys:subsystems) {
-		if(_currentTime>_lastDebug+2000){
+		if(_currentTime>_lastDebug+ECHOINTERVAL){
 			if(Name()!="SAT") { writeconsole(psys->Name()); writeconsole("  Errors:"); writeconsole(psys->getRetryCount()); writeconsole("  State:"); writeconsole(psys->State()); writeconsole("  Forever:"); writeconsole(psys->getForever());
 			
 			writeconsole("  Start:"); writeconsole(psys->startTime());writeconsole("  Time:"); writeconsoleln(getTime());
@@ -83,7 +85,7 @@ void CStateObj::Cleanup(){
 
 			if(!psys->getForever()) delete psys;	
 			it = subsystems.erase(it);   //Check to make sure this works			 
-			break;						//Ends loop on a delete   Will continue on next cycle. Faster than doing all cleanup here
+			break;						//Ends  on a delete   Will continue on next cycle. Faster than doing all cleanup here
 			}
 		else{	
 			
@@ -134,7 +136,6 @@ void CStateObj::filterMsg(CMsg &msg){
 void CStateObj::processMsg(CMsg &msg) { 
 	std::string sys = msg.getSYS();
 	std::string act = msg.getACT();
-
 	
 	if ((Name()!="CORE") && (act == "ADDSYSTEM")) { addSystem(msg) ; return;}
 	CSystemObject::newMsg(msg);	
@@ -149,7 +150,7 @@ void CStateObj::addSystem(CSystemObject* psys){
 	m.setTABLE("STATUS");
 	m.setINFO("addSystem(CSystemObject* psys)   Success  push back");
 	writeconsoleln(m.serializeout()); 
-	addTransmitList(m);
+	//addTransmitList(m);
  }
 
 void CStateObj::addSystem(CMsg &msg){

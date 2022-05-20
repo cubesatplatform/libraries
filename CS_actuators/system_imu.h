@@ -142,7 +142,7 @@ class CIMU:public CSystemObject{
     long _dataUpdatedOn=0;
     char _address;
     TwoWire *_pWire=&Wire;
-    std::string _dataMode;
+    std::string _dataMode="GYRO";
 
   public:
     BNO080 myIMU;  //options   q,a,m,g,l,e
@@ -152,7 +152,7 @@ class CIMU:public CSystemObject{
     CIData Mag;
     CIData Gyro;
     
-    CIMU() {Name("IMU");init();}
+    CIMU() {init();}
 
     void config(char addr, TwoWire *twowire=&Wire);
     bool ShutDown(){  setState("DONE"); return true;    }
@@ -168,7 +168,7 @@ class CIMU:public CSystemObject{
 
     void GetData();
     std::string getDataMode(){return _dataMode;}
-    void dataMode(const char * option, int period=50);
+    void dataMode(std::string option, int period=50);
     CMsg fillData(){
       CMsg m;
       return m;

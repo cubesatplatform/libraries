@@ -70,13 +70,9 @@ void CRW::setup()
   _pIMU=(CIMU *)getIMU();
  
   if(_pIMU==NULL){             
-    CMsg m;
-    m.setSYS(Name());
-    m.setCOMMENT("RW - IMU Error  Setup leaving...");  
-    m.setINFO("ERROR RW");
-    addTransmitList(m);
-    writeconsoleln(m.serializeout());
-    setState("ERROR");
+     if(incErrorCount()){
+      sendError();
+    }
     return;
   }   
 

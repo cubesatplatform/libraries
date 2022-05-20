@@ -45,6 +45,8 @@ class CSystemObject {
   bool _forever = false;
   int _step=0;
   std::string _mode;   //This determines what you are doing   Set to IDLE when done and nothing left to do  When u set new mode need to get it out of IDLE
+  int _errorCount=0;
+  int _errorThreshold=5;
 
 protected:
   
@@ -92,6 +94,12 @@ public:
   void setForever(bool tmp=true){  _forever=tmp;}
   bool getForever(){ return _forever;}
 
+  int getErrorCount(int tmp=0){  _errorCount=tmp;}
+  void resetErrorCount(){  _errorCount=0;}
+  bool incErrorCount(){  _errorCount++;  if(_errorCount>_errorThreshold){_errorCount=0;setState(""); return true;}return false;}
+  void setErrorThreshold(int tmp=1){  _errorThreshold=tmp;}
+  int getErrorThreshold(){  return _errorThreshold;}
+
   void setStep(int tmp=0){  _step=tmp;}
   bool getStep(){ return _step;}
   bool incStep(){ _step++;}
@@ -102,7 +110,6 @@ public:
   void setInterval(unsigned long tmp){_interval=tmp;}
   unsigned long getInterval(){return _interval;}
 
-
   void State(CMsg &msg); 
   std::string State() { return _ostate; }
   std::string lastState() { return _olaststate; }  
@@ -110,6 +117,7 @@ public:
 
   void newMsg(CMsg &msg);
   void newMode(CMsg &msg);
+  void sendError();
   virtual void initMode(){};
 
   void setMode(std::string tmp){_mode=tmp;}
@@ -121,14 +129,14 @@ public:
   void stopTime(unsigned long tmp){_stopTime=tmp;};
   unsigned long modifiedTime(){return _modifiedTime;};
   
-
   virtual void callCustomFunctions(CMsg &msg){};   //Override to calls any system specific function directly
   
   void timeStamp();
  
   void stats(CMsg &ms);
   void Run(long runtime);                    
-  void Run();                                                                                         //Next state calls State Transition Functions
+  void Run();          
+  void Run(CMsg &m){long runtime=m.getParameter("RUNTIME",10); Run(runtime);}                                                                               //Next state calls State Transition Functions
   void setState(std::string str);        //Only set the state  Dont call any functions.  The Next state should take care of that
   void Name(const char* s) { std::string str= s; Name(str); }
   void Name(std::string s);
@@ -137,18 +145,13 @@ public:
   void addDataMap(std::string key, CMsg &m); 
   void addMessageList(CMsg &m );
   void addReceivedList(CMsg &m );
+  CMsg getDataMap(std::string key); 
     
   //void statusUpdate(CMsg &m);
   void fillMetaMSG(CMsg *m);
 
   void goLowPowerState();
-
-   void goNormalState(){
-    CMsg m;
-    m.setSYS("SAT");
-    m.setACT("NORMAL");
-    addMessageList(m);
-  }
+  void goNormalState(){    CMsg m;    m.setSYS("SAT");    m.setACT("NORMAL");    addMessageList(m);  }
 
   int getRetryCount(){return _retryCount; }
   void clearRetryCount(){_retryCount=0; }

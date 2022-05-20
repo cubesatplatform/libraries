@@ -7,9 +7,9 @@ void CMessages::moveReceived() {
   
   while (ReceivedList.size()){
     CMsg m=ReceivedList.back(); 
-    ReceivedList.pop_back();
+    ReceivedList.pop_front();
     
-    MessageList.push_front(m);    
+    MessageList.push_back(m);    
   }  
 }
 
@@ -124,6 +124,10 @@ void CMessageList::pop_back(){
 }
 
 void CMessageList::push_back(CMsg &m){
+  if(m.Parameters.size()==0){
+    writeconsoleln("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Empty Message Push_Back xxxxxxxxxxxxxxxxxxxxxxx");
+    return;
+  }
 
   CMsg *pM=new CMsg;  
   *pM=m;
@@ -136,6 +140,10 @@ void CMessageList::push_back(CMsg &m){
 
 
 void CMessageList::push_front(CMsg &m){
+  if(m.Parameters.size()==0){
+    writeconsoleln("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Empty Message Push_Front xxxxxxxxxxxxxxxxxxxxxxx");
+    return;
+  }
 
   CMsg *pM=new CMsg;  
   *pM=m;
@@ -159,7 +167,7 @@ void CMessageList::clear(){
 //////////////////////////////////////////////////////////////////////////////////
 void CMessages::addMessageList(CMsg &m){
   _lastMessage=getTime();
-  MessageList.push_front(m);
+  MessageList.push_back(m);
   return;
 
 }
@@ -174,7 +182,7 @@ void CMessages::addReceivedList(CMsg &s,std::string strIAM){
   
   
   if((s.getTO()==strIAM)||(s.getTO()==ALL)){
-     ReceivedList.push_front(s);
+     ReceivedList.push_back(s);
      return;
   }
   else {
@@ -191,7 +199,7 @@ void CMessages::_addTransmit(CMsg &m){
     m.setPWD();
 
     m.cleanup();
-    TransmitList.push_front(m);
+    TransmitList.push_back(m);
     return;
 }
 
@@ -237,7 +245,7 @@ std::list<CMsg> CMessages::splitMsg(CMsg &m){
       cm.setFROM(strFROM);
       cm.setTO(strTO);
       //cm.setParameter("PT",part);
-      lM.push_front(cm);
+      lM.push_back(cm);
       part++;
       cm.clear();
     }
@@ -251,7 +259,7 @@ std::list<CMsg> CMessages::splitMsg(CMsg &m){
       cm.setFROM(strFROM);
       cm.setTO(strTO);
       //cm.setParameter("PT",part);
-      lM.push_front(cm);
+      lM.push_back(cm);
       part++;
       cm.clear();
     }
@@ -280,14 +288,14 @@ std::list<CMsg> CMessages::splitMsgData(CMsg &m){
       tmpstr=data.substr(count,len);
       cm.setDATA(tmpstr);
       cm.setOFFSET(offset);
-      lM.push_front(cm);
+      lM.push_back(cm);
 
       count+=MAXDATALEN;
       offset++;
     }
   }
   else{
-    lM.push_front(m);
+    lM.push_back(m);
   }
   return lM;
 }

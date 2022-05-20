@@ -489,23 +489,24 @@ void CSystemMgr::resetWire(TwoWire *wire,const char * s) {
 
 
 void CSystemMgr::testIMU(CMsg &msg){  
-  std::string s=msg.getACT(); 
-  CIMU *pTest=(CIMU *)getSystem(s.c_str(),"Test IMU");
+
+  std::string act=msg.getACT(); 
+  CIMU *pTest=(CIMU *)getSystem(act.c_str(),"IMUI2C");
  // enableMagsMotors();        
-  //enableADCS();
+ if(act=="IMUI2C")
+    enableADCS();
 
   if(pTest!=NULL) {
-    writeconsoleln(s);  
-
-    //m.setParameter("MODE","SIMPLE");
-    pTest->setup();
+    writeconsoleln(act);      
     pTest->test(msg);
   }
   else
-    writeconsoleln(s);  
+    writeconsoleln("Could not find System IMU");  
 
  // disableMagsMotors();  
- // disableADCS();
+ if(act=="IMUI2C")
+    disableADCS();
+ 
 
   return;
 }
@@ -522,8 +523,7 @@ void CSystemMgr::testMotor(CMsg &msg){
 
   CMotorController *pTest=(CMotorController *)getSystem(s.c_str(),"Test Motor");
   if(pTest!=NULL) {
-    writeconsoleln("Testing Motor");
-    //pTest->setup();
+    writeconsoleln("Testing Motor");    
     pTest->test(msg);
   }
   disableMagsMotors();  
@@ -539,8 +539,7 @@ void CSystemMgr::testMAG(CMsg &msg){
   enableMagsMotors();  
 
   CMDrive *pTest=(CMDrive *)getSystem(s.c_str(),"Test Mag");
-  if(pTest!=NULL) {
-    pTest->setup();
+  if(pTest!=NULL) {    
     pTest->test(msg);
   }
   
@@ -558,8 +557,7 @@ void CSystemMgr::testIR(CMsg &msg){
   writeconsoleln("ENTER void CSystemMgr::testIR(char addr)");  
   enableSensors();  
   CIRArray *pTest=(CIRArray *)getSystem(s.c_str(),"Test IR");
-  if(pTest!=NULL) {
-    pTest->setup();
+  if(pTest!=NULL) {    
     pTest->test(msg);
   }
   
@@ -574,8 +572,7 @@ void CSystemMgr::testTemp(CMsg &msg){
   enableSensors();  
   CTemperatureObject *pTest=(CTemperatureObject *)getSystem(s.c_str(),"Test Temp");
   
-  if(pTest!=NULL) {
-    pTest->setup();
+  if(pTest!=NULL) {    
     pTest->test(msg);
   }
   
@@ -662,7 +659,7 @@ void CSystemMgr::testMAGDrive(char addr){
 
 
 
-void CSystemMgr::loopWire(TwoWire *wire,const char * s) {
+void CSystemMgr::loopWire(TwoWire *wire,const char * s) {  //I2C2 Sensitive to VOltage   Needs 3.4V sometimes
   if(wire==NULL){
     CMsg m;
     m.setSYS("TWOWIRE");
@@ -671,16 +668,18 @@ void CSystemMgr::loopWire(TwoWire *wire,const char * s) {
 
   }
   
+  
   byte error, address;
   int nDevices=0;
   int naddress;
-  enableSensors();
-  enableMagsMotors();  
+  //enableSensors();
+  //enableMagsMotors();  
   
   CMsg m;
   m.setSYS("LoopWire");
   m.setINFO("Scanning");
   wire->begin();
+  delay(500);
   for(byte address = 1; address < 127; address++ ) {
     std::string strI;
     std::string strIM;
@@ -723,7 +722,7 @@ void CSystemMgr::loopWire(TwoWire *wire,const char * s) {
   writeconsoleln(m.serializeout());
   
   addTransmitList(m);
-  disableMagsMotors();  
+  //disableMagsMotors();  
   delay(150);          
 }
 

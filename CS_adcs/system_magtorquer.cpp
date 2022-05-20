@@ -22,13 +22,9 @@ void CMagTorquer::setup()  {
  _pIMU=(CIMU *)getIMU();
  
   if(_pIMU==NULL){           
-    CMsg m;
-    m.setSYS(Name());
-    m.setCOMMENT("ERROR   COULDNT START IMU.  Called from MagTorquer ...........................................");  
-    m.setINFO("ERROR");
-    addTransmitList(m);
-    writeconsoleln(m.serializeout());
-    setState("ERROR");
+    if(incErrorCount()){
+      sendError();
+    }
     return;
   }   
   
@@ -67,6 +63,7 @@ void CMagTorquer::deactivate(){
 
 
 void CMagTorquer::getGyroData(){
+  _pIMU->Run(30);
   _gyroX=*_pIMU->Gyro.pZ;
   _gyroY=*_pIMU->Gyro.pY;    
   _gyroZ=*_pIMU->Gyro.pX;
@@ -74,6 +71,7 @@ void CMagTorquer::getGyroData(){
 
 
 void CMagTorquer::getMagData(){
+  _pIMU->Run(30);
   _gyroX=*_pIMU->Mag.pZ;
   _gyroY=*_pIMU->Mag.pY;    
   _gyroZ=*_pIMU->Mag.pX;
@@ -99,15 +97,17 @@ if(_pIMU==NULL) {writeconsoleln("NO IMU!!!!!!!!!!!!!!!!!!!!!");setState("ERROR")
 
   case 0: 
     _pIMU->dataMode("GYRO", GYROPERIOD);
+    _pIMU->Run(30);
     break;
-  case 1:
+  case 1:    
     getGyroData();    
     break;
   case 2:
     deactivate();
     _pIMU->dataMode("MAG", MAGPERIOD);
+    _pIMU->Run(30);
     break;  
-  case 3:
+  case 3:    
     getMagData();
     activate(_pMagX,_gyroX,_magX);
     activate(_pMagY,_gyroY,_magY);
@@ -155,17 +155,17 @@ void CMagTorquer::newCMD(CMsg &msg){
   }   
 }
 
-
   
 
 void CMagTorquer::loop(){ 
-   if (Mode()=="CUSTOM"){   //Do some control
+  if (Mode()=="CUSTOM"){   //Do some control
     if(_pIMU!=NULL) _pIMU->Run();
     if(_pMagX!=NULL) _pMagX->Run();
     if(_pMagY!=NULL) _pMagY->Run();
     if(_pMagZ!=NULL) _pMagZ->Run();
   }
-  loopDetumble();         
+  else
+    loopDetumble();         
   std::string str=State();
   if ((str=="STOP")||(str=="ERROR")){
     goLowPowerState();

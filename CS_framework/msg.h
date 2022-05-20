@@ -61,6 +61,7 @@ public:
   std::string getVALUE() { return  Parameters["V"]; } 
   std::string getCOMMENT() { return  Parameters["C"]; } 
   std::string getPANEL() { return  Parameters["P"]; } 
+  std::string getLOG() { return  Parameters["L"]; } 
   std::string getTIME() { return  Parameters["TM"]; } 
   bool checkPWD();
 
@@ -81,6 +82,7 @@ public:
   void setOFFSET(int tmp) { Parameters["O"]=tostring(tmp); }
   void setTABLE(std::string str) { Parameters["T"]=str; }
   void setPANEL(std::string str) { Parameters["P"]=str; }
+  void setLOG(std::string str) { Parameters["L"]=str; }
   void setCOMMENT(std::string str) { Parameters["C"]=str; }
   void setCID(std::string str="") { Parameters["CID"]=str; }
   void setTIME(unsigned long tmp) { Parameters["TM"]=tostring(tmp); }

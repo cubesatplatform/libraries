@@ -8,7 +8,7 @@
 class CPayloadState: public CStateObj {
 public:
   CPayloadState() {
-  Name("Payload");
+  Name("PAYLOAD");
     //add some items to the map    
     //availablesystems["IMU"] = true;
     setMaxTime(2*TIMEORBIT);

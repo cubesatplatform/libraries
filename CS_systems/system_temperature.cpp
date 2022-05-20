@@ -11,24 +11,32 @@ void CTemperatureObject::init(){
   _temp=0.0;
   _ltime=0;
   setInterval(10000);
+  setErrorThreshold(10);
 }
 
 void CTemperatureObject::setup(){
- 
+if(_pWire==NULL) 
+  return;
 int count=0;
 init();
-while((count<5)&&(_pWire!=NULL)){
+
+for(int count=0;count<5;count++){
  if (sensor.begin(_address, *_pWire)== true)
-  //if (sensor.begin() == true) // Function to check if the sensor will correctly self-identify with the proper Device ID/Address
   {
   setState("PLAY");
   return;
+  }
+  else{
+    if(incErrorCount()){
+      sendError();
+    }
   }
   
   count++;
   delay(50);
 }
 setState("ERROR");
+
 return;
 }
 
@@ -38,16 +46,10 @@ void CTemperatureObject::loop(){
 }
 
 void CTemperatureObject::test(CMsg &msg){
-  CSystemObject::test(msg);  
-  CMsg m;
-  runOnce(m);
-
-  m.setSYS(Name());
-  m.setParameter("TEMP",_temp);
-  m.setParameter("TIME",_ltime);
+  Run(50);
+  CMsg m=getDataMap(std::string(Name()));
 
   addTransmitList(m);
-
 }
 
 
@@ -74,10 +76,7 @@ void CTemperatureObject::config(CMsg &msg){
 }
 
 void CTemperatureObject::runOnce(CMsg &m){
-  if (State()!="PLAY"){
-    setup();    
-    return;
-}
+
  if (sensor.dataReady() == true) // Function to make sure that there is data ready to be printed, only prints temperature values when data is ready
   {
    _temp = sensor.readTempC();
@@ -88,6 +87,9 @@ void CTemperatureObject::runOnce(CMsg &m){
   m.setParameter("TIME",_ltime);
 
   addDataMap(std::string(Name()),m);
+  }
+  else{
+    incErrorCount();
   }
 return;
 }

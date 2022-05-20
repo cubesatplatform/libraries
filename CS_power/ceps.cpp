@@ -35,17 +35,27 @@ void CEPS::config(char addr, TwoWire *twowire){
 
 uint8_t  CEPS::readI2C(uint8_t reg, uint8_t * data, uint16_t nbyte)   
 {
+  if(getErrorCount()==getErrorThreshold()){
+    incErrorCount();
+    _pWire->begin();
+    return 0; 
+  }
   _pWire->beginTransmission(_address);
   _pWire->write(&reg,1);
-  _pWire->endTransmission();
+  int status=_pWire->endTransmission();
+  if(status>1)
+    incErrorCount();
   _pWire->requestFrom(_address, nbyte);    // request 6 bytes from slave device #8
+
+  long counter=0;
 
   uint16_t k = 0;
   //writeconsole("Available :"); writeconsoleln(_pWire->available());
-  while (_pWire->available())
+  while ((_pWire->available())&&(counter<10000))
   { // slave may send less than requested
     uint8_t c = _pWire->read(); // receive a byte as character
     data[k++] = c;
+    counter++;
   }
   return 0;
 }
@@ -55,7 +65,9 @@ uint8_t CEPS::writeI2C(uint8_t reg, uint8_t * data, uint16_t nbyte)
   _pWire->beginTransmission(_address);
   _pWire->write(&reg,1);
   _pWire->write(data,nbyte);
-  _pWire->endTransmission();
+  int status=_pWire->endTransmission();
+  if(status>1)
+    incErrorCount();
   return 0;
 }
 
@@ -177,6 +189,7 @@ void CEPS::init(){
   CSystemObject::init();
   setForever();
   setInterval(30000);
+  setErrorThreshold(150);
   
   setState("PLAY");
 }

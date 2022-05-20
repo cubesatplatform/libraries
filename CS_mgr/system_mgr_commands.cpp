@@ -72,7 +72,7 @@ void CSystemMgr::initCommands(){  //SYS:MGR~ACT:COMMAND~CMD:CMD_BEACON
   m.setACT("ADDTASK");
   m.setParameter("_SYS","SAT");
   m.setParameter("_ACT","BEACON");   
-  m.setParameter("INTERVAL",15000);
+  m.setParameter("INTERVAL",60000);
   m.setParameter("START",0);
   m.setParameter("STOP",(long) STOPTASKMAX);
   m.setREFID();
@@ -83,7 +83,8 @@ void CSystemMgr::showScheduler(CMsg &msg){
   writeconsoleln("");
   writeconsoleln("ShowScheduler xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");  
   for(auto m:Scheduler){    
-    writeconsoleln(m.serialize());  
+    m.writetoconsole();  
+    addTransmitList(m);
   }
    writeconsoleln("");
 }
@@ -99,7 +100,7 @@ void CSystemMgr::showCommands(){
     writeconsoleln(namestr);
     ml=it->second;  
     for(auto m:ml){    
-      writeconsoleln(m.serialize());  
+      m.writetoconsole();  
     }
   }
   writeconsoleln("");
@@ -123,6 +124,7 @@ void CSystemMgr::showCommands(){
   if(act=="CHKMESSAGES") {chkMessages(msg); return; }
   
   if(act=="ENABLEI2C") {enableI2C(); return; }
+  if(act=="DISABLEI2C") {disableI2C(); return; }
   
   if(act=="SHOWTESTS") {showTests(); return; }
   if(act=="SHOWCOMMANDS") {showCommands(); return; }

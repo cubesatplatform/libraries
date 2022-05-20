@@ -49,7 +49,7 @@ void setFlag2(void) {  // this function is called when a complete packet is rece
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 CRadio::CRadio():CSystemObject() {
-  Name("RADIO");
+  Name("radio");
   init();
   };
 
@@ -57,6 +57,7 @@ void CRadio::init(){
   CSystemObject::init();
   setForever();
   setInterval(10);
+  setErrorThreshold(5);
   pMsgs=getMessages();
 
   if(Name()=="RADIO"){
@@ -365,7 +366,7 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
   _radioState = plora->startTransmit((uint8_t*)buffer,len);  //Asynch  Comes right back and sends on its own
   if (_radioState!=RADIOLIB_ERR_NONE){
     writeconsoleln("ERROR in Transmission");
-    setup();
+    incErrorCount();  //Reset
     return;
   }
   
@@ -466,18 +467,13 @@ void CRadio::SetRadioReceive(){
  
    else {
     writeconsole(" Failed to start reception, code ");    writeconsoleln(_radioState); 
-    setup();
+    incErrorCount();  //Reset
     return;
   }
   
   *_penableInterrupt=true;
   
 }
-
-
-
-
-
 
 
 
@@ -496,11 +492,22 @@ bool CRadio::readyToTransmit(){
   }
   return false;
 }
-
+  
 
   void CRadio::callCustomFunctions(CMsg &msg){   //Calls a specific function directly
+writeconsoleln("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+  writeconsoleln("void CRadio::callCustomFunctions(CMsg &msg)");
+  msg.writetoconsole();
     std::string act=msg.getParameter("ACT");
     if (act=="TRANSMITPACKET") TransmitPacket(msg);                   
+    
+    if (act=="POWER") setPower(msg);
+    if (act=="CR") setCR(msg);
+    if (act=="BW") setBW(msg);
+    if (act=="SF") setSF(msg);
+
+    if (act=="RESETPARAMS") resetParams(msg);
+
   }
 
 
@@ -525,7 +532,7 @@ void CRadio::checkModeTX(){   //Puts radio back to receive Mode if stuck in Tran
 
 void CRadio:: checkModeRX(){   
   if(*_pbFlag) { // check if the previous operation finished     this is set by interrupt    
-    *_penableInterrupt=false; // disable the interrupt service routine while processing the data      
+    *_penableInterrupt=false; // disable the interrupt service routine when processing the data      
     *_pbFlag=false;
     if (Mode()=="RX")
       ReceivedPacket();
@@ -556,3 +563,36 @@ void CRadio::loop() {
   //writeconsoleln(Name());
   loopRadio();  
 }
+
+
+void CRadio::setPower(CMsg &m){
+  writeconsoleln("Set Power");
+  int power=m.getParameter("VAL",OUTPUT_POWER);
+  plora->setOutputPower(power);
+}
+
+
+void CRadio::setCR(CMsg &m){
+  writeconsoleln("Set CR");
+  int cr=m.getParameter("VAL",CODING_RATE);
+  plora->setCodingRate(cr);
+}
+
+void CRadio::setBW(CMsg &m){
+  writeconsoleln("Set BW");
+  float bw=m.getParameter("VAL",BANDWIDTH);
+  plora->setBandwidth(bw);
+  }
+
+void CRadio::setSF(CMsg &m){
+  writeconsoleln("Set SF");
+  int sf=m.getParameter("VAL",SPREADING_FACTOR);
+  plora->setSpreadingFactor(sf);
+  }
+
+void CRadio::resetParams(CMsg &m){
+  plora->setOutputPower(OUTPUT_POWER);
+  plora->setCodingRate(CODING_RATE);
+  plora->setBandwidth(BANDWIDTH);
+  plora->setSpreadingFactor(SPREADING_FACTOR);
+  }

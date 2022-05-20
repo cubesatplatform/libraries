@@ -5,8 +5,7 @@
 
   //  It uses .setDrive( motorNum <0,1>, direction<1:forward,0:backward>, level<0...255> ) to drive the motors.
 
-CMDrive::CMDrive(){
-  //Name("MAGNET");
+CMDrive::CMDrive(){  
   writeconsoleln("MDrive Constructor");
   }
 
@@ -29,6 +28,7 @@ void CMDrive::config(char addr, TwoWire *twowire, int m){
   setInterval(5);  
   setModifiedTime(getTime());
   setDuration(200000);
+  setErrorThreshold(5);
 
   }
 
@@ -52,23 +52,18 @@ void CMDrive::config(CMsg &msg){
 
 void CMDrive::init(){
   //setState("ERROR");
-  int count=0;
-  
-  while ( !myMotorDriver.begin(_address, _pWire) ) //Wait until a valid ID word is returned
-  {      
-    delay(100);
-    count++;
-    writeconsoleln(Name());writeconsoleln("  Fail");
-    if (count>5) {
-      setState("ERROR");
-      return;
-    }
+  for(int count=0;count<5;count++){  
+    if( !myMotorDriver.begin(_address, _pWire) ) {//Wait until a valid ID word is returned          
+      if(incErrorCount()){
+        sendError();
+      }
+      else{
+        writeconsoleln(Name()); writeconsoleln("  Success");
+        setState("PLAY");
+        myMotorDriver.run(RELEASE);
+      }
+    } 
   }
-  writeconsoleln(Name()); writeconsoleln("  Success");
-
-  setState("PLAY");
-  myMotorDriver.run(RELEASE);
-
   return;
 }
 
@@ -108,7 +103,7 @@ void CMDrive::activateDrive(int val){   //0-1000
 
 
 void CMDrive::test(CMsg &msg){
-  CSystemObject::test(msg);
+  Run(50);
   Speed(PWM_MAX); 
   
   delay(10000);

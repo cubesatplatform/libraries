@@ -12,18 +12,16 @@
 
 CSystemMgr::CSystemMgr(){
   Name("MGR");
+  setForever();
+  setInterval(3000);
   }; 
          
 CSystemMgr::~CSystemMgr(){}  
   
-void CSystemMgr::init(){
-  CSystemObject::init();
-  setForever();
-  setInterval(3000);
+void CSystemMgr::init(){  
   initPins();
   initCommands();
   initI2CMap();
-
 }
    
 
@@ -68,6 +66,7 @@ void CSystemMgr::loop(){
     stop=m->getParameter("STOP",stop);
     interval=m->getParameter("INTERVAL",interval);
     last=m->getParameter("LAST",last);
+
     
     
     if(last==0){
@@ -78,7 +77,8 @@ void CSystemMgr::loop(){
         stop=STOPTASKMAX;
       m->setParameter("START",start);     
       m->setParameter("STOP",stop);           
-      }
+      m->setParameter("LAST",start);     
+      }   
      
 
     if(currentTime>(last+interval)){      
@@ -92,16 +92,15 @@ void CSystemMgr::loop(){
     
     if((currentTime>stop)||(start==stop)) {
       writeconsoleln("----------------Erasing   Scheduler Loop--------------------------------------------------------------------------------");
+      writeconsoleln(currentTime);
+      writeconsoleln(start);
+      writeconsoleln(stop);
       m->writetoconsole();
       m = Scheduler.erase(m);   //Check to make sure this works			 
       continue;
     }
 	}
   }
-
-
-
-
 
 
 void CSystemMgr::addTask(CMsg &msg){

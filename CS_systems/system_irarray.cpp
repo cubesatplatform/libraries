@@ -14,6 +14,7 @@ CIRArray::CIRArray(){
 void CIRArray::init(){
   CSystemObject::init();
   setInterval(10000);
+  setErrorThreshold(3); 
 }
 
  void CIRArray::config( char addr, TwoWire *pWire) {
@@ -45,14 +46,9 @@ void CIRArray::setup()
 
   for(int retries=0;retries<5;retries++){
   if (! mlx.begin(_address, _pWire)) {
-    
-    m.setSYS(Name());
-    m.setINFO("ERROR");
-    m.setCOMMENT("mlx.begin ERROR   IRARRAY Setup");
-    writeconsoleln(m.serializeout());
-    addTransmitList(m);    
-    setState("ERROR");
-    delay(300);
+     if(incErrorCount()){
+      sendError();
+    }
   }
   else{
     writeconsoleln("Found MLX90640");
@@ -98,19 +94,16 @@ void CIRArray::setup()
 
 }
 
-void CIRArray::test(CMsg &msg){  
-  CSystemObject::test(msg);
+void CIRArray::test(CMsg &msg){    
+  Run(250);
   CMsg m;
-  runOnce(m);
   Output(m);
-  
 }
 
 
 void CIRArray::loop(){  
     CMsg m;
-    runOnce(m);
-    Output(m);
+    runOnce(m);    
 }
 
 
@@ -336,19 +329,10 @@ void CIRArray::fillAscii(){
 
 
 void CIRArray::runOnce(CMsg &msg)
-{
-  if (State()!="PLAY")
-    setup();
-  if (State()!="PLAY")
-    return;    
-  std::string sOut=msg.getParameter("OUTPUT","");
+{    
   CMsg m;
   if (mlx.getFrame(frame) != 0) {
-    m.setSYS(Name());
-    m.setINFO("ERROR");
-    m.setCOMMENT("mlx.begin ERROR   IRARRAY runOnce");
-    addTransmitList(m);
-    writeconsoleln(m.serializeout());    
+    incErrorCount();    
   }
 
   float y,lasty;
@@ -390,10 +374,7 @@ void CIRArray::runOnce(CMsg &msg)
 }
 
 
-
-
 void CIRArray::Output(CMsg &msg){  //Easier to send as long   convert to decimal when receiv
-  runOnce(msg);
   std::string sType=msg.getParameter("TYPE","A");
   std::string sDisplay=msg.getParameter("CONSOLE","1");
 
@@ -410,17 +391,14 @@ void CIRArray::Output(CMsg &msg){  //Easier to send as long   convert to decimal
   CMsg m;
   m.setTABLE("IR");
   m.setPANEL(Name());
-//  m.setDATA(imageTable);
+  m.setDATA(imageTable);   ///  CHECK!!#!@#!@#
 
   std::tuple<int, int> XY=getHotSpot();
   
-
   m.setParameter("X",std::get<0>(XY));
   m.setParameter("Y",std::get<1>(XY));
   m.setParameter("MAX",fmax);
   m.setParameter("MIN",fmin);
-  
-  
           
   addTransmitList(m); 
 }
