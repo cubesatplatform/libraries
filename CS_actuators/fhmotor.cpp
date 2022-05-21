@@ -412,8 +412,7 @@ int duration=msg.getParameter("DURATION",10000);
 
 if(testMode=="ROTATION"){
   CIMU *pIMU=(CIMU *)getSystem("IMUSPI");
-  if(pIMU!=NULL) {    
-   // pIMU->setup();
+  if(pIMU!=NULL) {       
     pIMU->test(msg);
   }
 

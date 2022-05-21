@@ -50,20 +50,19 @@ void CMDrive::config(CMsg &msg){
 
 
 
-void CMDrive::init(){
-  //setState("ERROR");
+void CMDrive::init(){  
   for(int count=0;count<5;count++){  
     if( !myMotorDriver.begin(_address, _pWire) ) {//Wait until a valid ID word is returned          
-      if(incErrorCount()){
-        sendError();
+      incErrorCount();        
       }
       else{
         writeconsoleln(Name()); writeconsoleln("  Success");
         setState("PLAY");
         myMotorDriver.run(RELEASE);
+        return;
       }
     } 
-  }
+  sendError();
   return;
 }
 

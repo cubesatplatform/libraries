@@ -305,9 +305,12 @@ void CSystemObject::timeStamp() {
 
 void CSystemObject::sendError() { 
   CMsg m;
+  setState("ERROR");
   m.setERROR(Name());
   m.setTIME(getTime());
+  m.setCOMMENT("ERROR");
   m.setParameter("STATE",State());
+  
   m.writetoconsole();
   addTransmitList(m);
 }

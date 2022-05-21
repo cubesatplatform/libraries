@@ -46,10 +46,9 @@ void CIRArray::setup()
 
   for(int retries=0;retries<5;retries++){
   if (! mlx.begin(_address, _pWire)) {
-     if(incErrorCount()){
-      sendError();
+     incErrorCount();      
+     delay(30);
     }
-  }
   else{
     writeconsoleln("Found MLX90640");
   
@@ -71,7 +70,7 @@ void CIRArray::setup()
       case MLX90640_ADC_17BIT: m.setINFO("17 bit"); break;
       case MLX90640_ADC_18BIT: m.setINFO("18 bit"); break;
       case MLX90640_ADC_19BIT: m.setINFO("19 bit"); break;
-    }
+      }
   
     mlx.setRefreshRate(MLX90640_2_HZ);
     //writeconsole("Current frame rate: ");
@@ -85,19 +84,21 @@ void CIRArray::setup()
       case MLX90640_16_HZ: m.setCOMMENT("16 Hz"); break;
       case MLX90640_32_HZ: m.setCOMMENT("32 Hz"); break;
       case MLX90640_64_HZ: m.setCOMMENT("64 Hz"); break;
-    }
+      }
     writeconsoleln(m.serializeout());
     setState("PLAY");
     return;
+    }
   }
-  }
-
+  sendError();
 }
 
 void CIRArray::test(CMsg &msg){    
   Run(250);
-  CMsg m;
-  Output(m);
+  if (State()!="ERROR"){
+    CMsg m;
+    Output(m);
+  }
 }
 
 

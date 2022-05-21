@@ -11,32 +11,31 @@ void CTemperatureObject::init(){
   _temp=0.0;
   _ltime=0;
   setInterval(10000);
-  setErrorThreshold(10);
+  setErrorThreshold(4);
 }
 
 void CTemperatureObject::setup(){
-if(_pWire==NULL) 
+if(_pWire==NULL) {
+  sendError();
   return;
-int count=0;
+}
+
 init();
 
 for(int count=0;count<5;count++){
  if (sensor.begin(_address, *_pWire)== true)
-  {
+  {  
   setState("PLAY");
   return;
   }
-  else{
-    if(incErrorCount()){
-      sendError();
-    }
+  else{   
+    incErrorCount();               
   }
   
-  count++;
   delay(50);
 }
-setState("ERROR");
 
+sendError();
 return;
 }
 
@@ -47,9 +46,10 @@ void CTemperatureObject::loop(){
 
 void CTemperatureObject::test(CMsg &msg){
   Run(50);
-  CMsg m=getDataMap(std::string(Name()));
-
-  addTransmitList(m);
+  if (State()!="ERROR"){
+    CMsg m=getDataMap(std::string(Name()));
+    addTransmitList(m);
+  }
 }
 
 

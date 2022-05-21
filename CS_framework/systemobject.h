@@ -96,7 +96,7 @@ public:
 
   int getErrorCount(int tmp=0){  _errorCount=tmp;}
   void resetErrorCount(){  _errorCount=0;}
-  bool incErrorCount(){  _errorCount++;  if(_errorCount>_errorThreshold){_errorCount=0;setState(""); return true;}return false;}
+  bool incErrorCount(){  _errorCount++;  if(_errorCount>_errorThreshold){_errorCount=0;setState("ERROR"); return true;}return false;}
   void setErrorThreshold(int tmp=1){  _errorThreshold=tmp;}
   int getErrorThreshold(){  return _errorThreshold;}
 

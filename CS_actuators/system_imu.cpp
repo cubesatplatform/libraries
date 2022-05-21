@@ -60,9 +60,11 @@ void CIMU::test(CMsg &msg){
   setState("");
   Run(period);
     
-  CMsg m=getDataMap(mode);
-  m.writetoconsole();
-  addTransmitList(m);    
+  if (State()!="ERROR"){  
+    CMsg m=getDataMap(mode);
+    m.writetoconsole();
+    addTransmitList(m);   
+  } 
 }
 
 
@@ -133,7 +135,7 @@ void CIMU::GetData(){
 
   
 void CIMU::init(){  
-  setErrorThreshold(5);
+  setErrorThreshold(4);
   setInterval(5);
   setForever();
 }
@@ -195,9 +197,7 @@ void CIMU::setupSPI(){
 for(int retries=0;retries<5;retries++){
     if(myIMU.beginSPI(IMU_OBC_NSS, IMU_OBC_WAKE, IMU_OBC_INT, IMU_OBC_RST) == false)
     {
-      if(incErrorCount()){
-       sendError();
-      }     
+      incErrorCount();             
     }
     else{ 
      dataMode(_dataMode);
@@ -207,7 +207,8 @@ for(int retries=0;retries<5;retries++){
      return;
     }
   }
-#endif  
+#endif 
+sendError(); 
 }
 
 
@@ -223,9 +224,9 @@ void CIMU::setupI2C(){
       unsigned int counter=10000;
       while(_pWire->available()&&counter) {  _pWire->read();counter--;}   //Flushes wire.  Then try again    Wire.flush() should do the same thing
         
-      if(incErrorCount())
-        sendError();        
-      }
+      incErrorCount();
+    
+    }  
     else{ 
       dataMode(_dataMode);
         
@@ -234,4 +235,5 @@ void CIMU::setupI2C(){
       return;
       }
     }
+    sendError(); 
   }

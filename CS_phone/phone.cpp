@@ -224,18 +224,18 @@ for (count=0;count<len;count++){
 //memcpy(buffer, str.c_str(), 10);
 
 
-    CMsg m(str);
-    std::string strfn((const char *)fileName);
-    m.Parameters["FILE"]=strfn;
-    m.Parameters["BLK"]=tostring(block);
-    m.initArray(buffer,bufcount);   ///////////////////////////////////////////////////////////////////////////////////////////////////////////// FIX THIS
-    std::string key=strfn;
-    key+="_";
-    key+=tostring(block);
+CMsg m(str);
+std::string strfn((const char *)fileName);
+m.Parameters["FILE"]=strfn;
+m.Parameters["BLK"]=tostring(block);
+m.initArray(buffer,bufcount);   ///////////////////////////////////////////////////////////////////////////////////////////////////////////// FIX THIS
+std::string key=strfn;
+key+="_";
+key+=tostring(block);
 
-    addDataMap(key,m); 
-    writeconsoleln("..................................... Adding Picture Data to DataList .....................................");
-    writeconsoleln(m.serialize());
+addDataMap(key,m); 
+writeconsoleln("..................................... Adding Picture Data to DataList .....................................");
+writeconsoleln(m.serialize());
 }
 
 void CPhone::onInitAvailable(int id) {   //Read from Phone add to queue
@@ -273,7 +273,6 @@ void CPhone::onGpsAvailable(int id) {   //Read from Phone  add to queue
   bool ok = readUntil('\n', gpsStr);
   if (!ok) return;
 
-
   std::string str;
   str=String((char *)gpsStr).c_str();
   int x=str.find(',');
@@ -283,10 +282,7 @@ void CPhone::onGpsAvailable(int id) {   //Read from Phone  add to queue
     m.Parameters["lat"]=str.substr(0,x);
     m.Parameters["lon"]=str.substr(x+1,20);
     addTransmitList(m);
-    
-
   }
-
 }
 
 void CPhone::onPhotoAvailable(int id) {    //Read from Phone  add to filename queue to go to comms
@@ -303,12 +299,11 @@ void CPhone::onPhotoAvailable(int id) {    //Read from Phone  add to filename qu
   //sprintf(msg, "%s,%d", fileName, fileSize);
   std::string strfn((const char *)fileName);
   std::string strfs((const char *)fileSizeStr);
-   CMsg m;
-    m.Parameters["table"]="photos";
-    m.Parameters["filename"]=strfn;
-    m.Parameters["filesize"]=strfs;
-    addTransmitList(m);
- 
+  CMsg m;
+  m.Parameters["table"]="photos";
+  m.Parameters["filename"]=strfn;
+  m.Parameters["filesize"]=strfs;
+  addTransmitList(m);
 
   /*char cmd[BUFFER_LENGTH];
   sprintf(cmd, "STREAM(%s,%d)", fileName, 0);
