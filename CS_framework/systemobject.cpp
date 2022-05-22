@@ -159,7 +159,7 @@ void CSystemObject::newMsg(CMsg &msg){
   std::string act=msg.getACT();
 
   writeconsole(Name());writeconsoleln(":  Message received");
-  if (act.substr(0,4)=="MODE") { newMode(msg); return;} //Updates a parameter in the Subsystem
+  if ((act!="MODEM") &&(act.substr(0,4)=="MODE")) { newMode(msg); return;} //Updates a parameter in the Subsystem
   //if (act == "SETMODE") { newMode(msg); return;} //Updates a parameter in the Subsystem
 
   if (act == "PLAY") {play();return;}

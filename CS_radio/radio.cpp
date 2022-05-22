@@ -214,8 +214,7 @@ void CRadio::setup() {
   init();
 
   float freq= LORA_RADIO_FREQUENCY;
-  if (Name()!="RADIO")
-     freq= LORA_RADIO2_FREQUENCY;
+  //if (Name()!="RADIO")     freq= LORA_RADIO2_FREQUENCY;
 
 
 
@@ -397,9 +396,9 @@ void CRadio::receivedLogic(unsigned char *buffer, int len){
   CMsg robj(tmpstr.c_str(), plora->getRSSI(), plora->getSNR());
   robj.setParameter("RSSI",plora->getRSSI());
   robj.setParameter("S/N",plora->getSNR());
-  writeconsoleln("------------------------------RADIO MSG--------------------------------");
-  writeconsoleln(robj.serializeout());
-  writeconsoleln("------------------------------RADIO MSG END--------------------------------");
+  writeconsole("Received by: ");writeconsoleln(Name());
+  robj.writetoconsole();
+  
   if(robj.getACK()=="1"){// This is an acknowledgement of a requested ACK.  No need to push to reeceived list
     if((_nextTransmit>(getTime()+RADIOTXDELAY)) ||(_delayTransmit>(getTime()+RADIOTXDELAY))){    //No need to wait longer as we got the ack
       _nextTransmit=getTime()+RADIOTXDELAY;
@@ -502,9 +501,9 @@ bool CRadio::readyToTransmit(){
   return false;
 }
   
-
+               
   void CRadio::callCustomFunctions(CMsg &msg){   //Calls a specific function directly
-writeconsoleln("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+  writeconsoleln("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
   writeconsoleln("void CRadio::callCustomFunctions(CMsg &msg)");
   msg.writetoconsole();
     std::string act=msg.getParameter("ACT");
