@@ -14,9 +14,23 @@
 #define LORA_RADIO2_FREQUENCY       445.0   //FREQUENCY_900M30S
 #define LORA_FREQUENCY_400M30S         443.0   // MHz carrier, for E22-400M30S
 #define LORA_FREQUENCY_GATEWAY         443.0   // MHz carrier, for ESP32 single-channel gateway
+
 #define LORA_BANDWIDTH                 125  //125.0   // kHz dual-sideband
-#define LORA_SPREADING_FACTOR          9       // 2^9 chirps
+#define LORA_SPREADING_FACTOR          10       // 2^9 chirps
 #define LORA_CODING_RATE               7       // 4/7 coding
+
+#define LORA_BANDWIDTHHIGH                 500  //125.0   // kHz dual-sideband
+#define LORA_SPREADING_FACTORHIGH          9       // 2^9 chirps
+#define LORA_CODING_RATEHIGH               7       // 4/7 coding
+
+#define LORA_BANDWIDTHMEDIUM                 250  //125.0   // kHz dual-sideband
+#define LORA_SPREADING_FACTORMEDIUM          10       // 2^9 chirps
+#define LORA_CODING_RATEMEDIUM               7       // 4/7 coding
+
+#define LORA_BANDWIDTHLOW                 125  //125.0   // kHz dual-sideband
+#define LORA_SPREADING_FACTORLOW          11       // 2^9 chirps
+#define LORA_CODING_RATELOW               7       // 4/7 coding
+
 #define LORA_SYNC_WORD                 0x12    // private network
 #define LORA_OUTPUT_POWER              12      // +14 dBm
 #define LORA_OUTPUT_POWER_TTGO         16

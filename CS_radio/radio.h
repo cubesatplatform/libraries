@@ -111,6 +111,8 @@ SX1268 *plora=&radio1;
 
   unsigned long _lastTransmit=0;
   unsigned long _lastReceive=0;
+
+  std::string _modem="";
   
 
 public:
@@ -148,12 +150,10 @@ public:
   bool stillSleeping();
   void clearSleep();
 
-  void setPower(CMsg &m);
-  void setCR(CMsg &m);
-  void setBW(CMsg &m);
-  void setSF(CMsg &m);
+  void setPower(CMsg &m);  
+  void setModem(CMsg &m);  
   void callCustomFunctions(CMsg &m);   
-  void resetParams(CMsg &m);   
+  void resetPower(CMsg &m);   
 
   unsigned long getLastTransmit(){return _lastTransmit=0;}
   unsigned long getLastReceive(){return _lastReceive=0;}

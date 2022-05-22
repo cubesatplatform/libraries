@@ -239,7 +239,16 @@ void CRadio::setup() {
     writeconsole("CUBESAT ... "); writeconsoleln(LORACHIP);
     //state =  plora->begin(float freq = 434.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX126X_SYNC_WORD_PRIVATE, int8_t power = 10, uint16_t preambleLength = 8, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);
 
-    _radioState =  plora->begin(freq, LORA_BANDWIDTH,  LORA_SPREADING_FACTOR,  LORA_CODING_RATE,  RADIOLIB_SX127X_SYNC_WORD  , LORA_OUTPUT_POWER,  LORA_PREAMBLE_LENGTH,  2.4,  false);   //RADIOLIB_SX126X_SYNC_WORD_PRIVATE
+    if(_modem=="HIGHBW")
+      _radioState =  plora->begin(freq, LORA_BANDWIDTHHIGH,  LORA_SPREADING_FACTORHIGH,  LORA_CODING_RATEHIGH,  RADIOLIB_SX127X_SYNC_WORD  , LORA_OUTPUT_POWER,  LORA_PREAMBLE_LENGTH,  2.4,  false);   //RADIOLIB_SX126X_SYNC_WORD_PRIVATE
+    else if(_modem=="MEDIUMBW")
+        _radioState =  plora->begin(freq, LORA_BANDWIDTHMEDIUM,  LORA_SPREADING_FACTORMEDIUM,  LORA_CODING_RATEMEDIUM,  RADIOLIB_SX127X_SYNC_WORD  , LORA_OUTPUT_POWER,  LORA_PREAMBLE_LENGTH,  2.4,  false);   //RADIOLIB_SX126X_SYNC_WORD_PRIVATE
+    else if(_modem=="LOWBW")
+        _radioState =  plora->begin(freq, LORA_BANDWIDTHLOW,  LORA_SPREADING_FACTORLOW,  LORA_CODING_RATELOW,  RADIOLIB_SX127X_SYNC_WORD  , LORA_OUTPUT_POWER,  LORA_PREAMBLE_LENGTH,  2.4,  false);   //RADIOLIB_SX126X_SYNC_WORD_PRIVATE
+    else 
+      _radioState =  plora->begin(freq, LORA_BANDWIDTH,  LORA_SPREADING_FACTOR,  LORA_CODING_RATE,  RADIOLIB_SX127X_SYNC_WORD  , LORA_OUTPUT_POWER,  LORA_PREAMBLE_LENGTH,  2.4,  false);   //RADIOLIB_SX126X_SYNC_WORD_PRIVATE
+
+
     if (plora->setTCXO(2.4) == RADIOLIB_ERR_INVALID_TCXO_VOLTAGE)    {      writeconsoleln(F("Selected TCXO voltage is invalid for this module!"));    }
     
     #elif defined(TTGO)  
@@ -502,11 +511,9 @@ writeconsoleln("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
     if (act=="TRANSMITPACKET") TransmitPacket(msg);                   
     
     if (act=="POWER") setPower(msg);
-    if (act=="CR") setCR(msg);
-    if (act=="BW") setBW(msg);
-    if (act=="SF") setSF(msg);
+    if (act=="MODEM") setModem(msg);    
 
-    if (act=="RESETPARAMS") resetParams(msg);
+    if (act=="RESETPOWER") resetPower(msg);
 
   }
 
@@ -566,16 +573,10 @@ void CRadio::loop() {
 
 
 
-
-
-
 /*
 WARNING!!!!!
-
-
 Other than Power, may need a new Begin for other parameters to actually be used!!!
 Need to check!!!!
-
 */
 
 void CRadio::setPower(CMsg &m){
@@ -584,28 +585,12 @@ void CRadio::setPower(CMsg &m){
   plora->setOutputPower(power);
 }
 
+void CRadio::resetPower(CMsg &m){
+  plora->setOutputPower(LORA_OUTPUT_POWER);  
+  }
 
-void CRadio::setCR(CMsg &m){
-  writeconsoleln("Set CR");
-  int cr=m.getParameter("VAL",LORA_CODING_RATE);
-  plora->setCodingRate(cr);
+void CRadio::setModem(CMsg &m){
+  writeconsoleln("Set Modem");
+  _modem=m.getParameter("VAL","");
+  setState("");  
 }
-
-void CRadio::setBW(CMsg &m){
-  writeconsoleln("Set BW");
-  float bw=m.getParameter("VAL",LORA_BANDWIDTH);
-  plora->setBandwidth(bw);
-  }
-
-void CRadio::setSF(CMsg &m){
-  writeconsoleln("Set SF");
-  int sf=m.getParameter("VAL",LORA_SPREADING_FACTOR);
-  plora->setSpreadingFactor(sf);
-  }
-
-void CRadio::resetParams(CMsg &m){
-  plora->setOutputPower(LORA_OUTPUT_POWER);
-  plora->setCodingRate(LORA_CODING_RATE);
-  plora->setBandwidth(LORA_BANDWIDTH);
-  plora->setSpreadingFactor(LORA_SPREADING_FACTOR);
-  }
