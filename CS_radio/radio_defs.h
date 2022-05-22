@@ -9,21 +9,56 @@
 #define PING_INTERVAL             2       // seconds, how much time to wait between PINGs sent from this node
 
 
-#define LORAFREQUENCY             443.0   //FREQUENCY_900M30S
-#define RADIOLORAFREQUENCY        443.0   //FREQUENCY_900M30S
-#define RADIO2LORAFREQUENCY       445.0   //FREQUENCY_900M30S
-#define FREQUENCY_400M30S         443.0   // MHz carrier, for E22-400M30S
-#define FREQUENCY_GATEWAY         443.0   // MHz carrier, for ESP32 single-channel gateway
-#define BANDWIDTH                 125  //125.0   // kHz dual-sideband
-#define SPREADING_FACTOR          9       // 2^9 chips
-#define CODING_RATE               7       // 4/7 coding
-#define SYNC_WORD                 0x12    // private network
-#define OUTPUT_POWER              12      // +14 dBm
-#define OUTPUT_POWER_TTGO         16
-#define CURRENT_LIMIT             140.0    // mA  was 60,  120
-#define PREAMBLE_LENGTH           8       // symbols
-#define TCXO_VOLTAGE              1.6     // V
+#define LORA_FREQUENCY             443.0   //FREQUENCY_900M30S
+#define LORA_RADIO_FREQUENCY        443.0   //FREQUENCY_900M30S
+#define LORA_RADIO2_FREQUENCY       445.0   //FREQUENCY_900M30S
+#define LORA_FREQUENCY_400M30S         443.0   // MHz carrier, for E22-400M30S
+#define LORA_FREQUENCY_GATEWAY         443.0   // MHz carrier, for ESP32 single-channel gateway
+#define LORA_BANDWIDTH                 125  //125.0   // kHz dual-sideband
+#define LORA_SPREADING_FACTOR          9       // 2^9 chirps
+#define LORA_CODING_RATE               7       // 4/7 coding
+#define LORA_SYNC_WORD                 0x12    // private network
+#define LORA_OUTPUT_POWER              12      // +14 dBm
+#define LORA_OUTPUT_POWER_TTGO         16
+#define LORA_CURRENT_LIMIT             140.0    // mA  was 60,  120
+#define LORA_PREAMBLE_LENGTH           8       // symbols
+#define LORA_TCXO_VOLTAGE              1.6     // V
 
+
+/* FossaSat Rates
+#define LORA_CARRIER_FREQUENCY                          436.7       //< MHz 
+#define LORA_BANDWIDTH                                  125.0       //< kHz dual sideband 
+#define LORA_SPREADING_FACTOR                           11
+#define LORA_SPREADING_FACTOR_ALT                       10
+#define LORA_CODING_RATE                                8           //< 4/8, Extended Hamming 
+#define LORA_OUTPUT_POWER                               20          //< dBm 
+#define LORA_PREAMBLE_LENGTH                            8           //< symbols 
+#define LORA_CURRENT_LIMIT                              140.0       //< mA 
+*/
+
+
+/*
+https://medium.com/home-wireless/testing-lora-radios-with-the-limesdr-mini-part-2-37fa481217ff
+https://www.rfwireless-world.com/calculators/LoRa-Data-Rate-Calculator.html
+
+Minimize bandwidth and maximize spreading factor to boost link budget. 
+Maximize coding rate to boost reliability.    
+
+Data Rate = Bandwidth / (2 ** SF)
+
+Spreading Factor - LoRa converts symbols (binary data) to chirp signals that span the frequency range. The chirp time (=symbol time) is roughly proportional to 2**spreading factor.
+    Each step up in spreading factor doubles the time on air to transmit a symbol.
+    Each unit increase in SF correlates to about 2.5dB extra link budget.
+
+
+Bandwidth - Higher bandwidth has higher data rates and is more power-efficient, but has more congestion and less range.
+    Each doubling of the bandwidth correlates to almost 3dB less link budget   
+
+Coding Rate - Increasing the coding rate increases reliability while decreasing data rate.     
+
+
+
+*/
 
 
 

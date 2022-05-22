@@ -96,10 +96,7 @@ void CIMU::GetData(){
   *PRY.pRoll=(myIMU.getRoll()) * 180.0 / PI; // Convert roll to degrees
   *PRY.pYaw=(myIMU.getYaw()) * 180.0 / PI; // Convert yaw / heading to degrees
 
-
-  float quatRadianAccuracy;
-
-  
+  float quatRadianAccuracy;  
 
   Mag._changedOn=getTime();
   Quat._changedOn=getTime();
@@ -108,7 +105,6 @@ void CIMU::GetData(){
   Gyro._changedOn=getTime();
 
   CMsg mGyro,mLin,mMag,mPRY, mQuat;
-
 
   myIMU.getGyro(Gyro._fX , Gyro._fY, Gyro._fZ, Gyro.Acc);
   mGyro=Gyro.makeMessage("GYRO");
@@ -128,9 +124,7 @@ void CIMU::GetData(){
   addDataMap(std::string("QUAT"),mQuat);
 
   mPRY=PRY.makeMessage("PRY");
-  addDataMap(std::string("PRY"),mPRY);
-
-      
+  addDataMap(std::string("PRY"),mPRY);      
 }    
 
   
@@ -146,6 +140,7 @@ void CIMU::setup(){
   if(Name()=="IMUSPI") setupSPI();
   if(Name()=="IMUI2C") setupI2C();
 }
+
 
 void CIMU::config(char addr, TwoWire *twowire){
   _address=addr;

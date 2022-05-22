@@ -82,11 +82,11 @@ void CTemperatureObject::runOnce(CMsg &m){
    _temp = sensor.readTempC();
    _ltime=getTime();
 
-  m.setSYS(Name());
-  m.setParameter("TEMP",_temp);
-  m.setParameter("TIME",_ltime);
-
-  addDataMap(std::string(Name()),m);
+    m.setKEY(Name());
+    m.setTIME(_ltime);
+    m.setParameter("TEMP",_temp);
+    
+    addDataMap(Name(),m);
   }
   else{
     incErrorCount();

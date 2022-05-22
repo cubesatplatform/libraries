@@ -327,12 +327,32 @@ void CMessages::addDataMap(std::string key,CMsg &m) {
   }
 
 
-void  CMessages::sendData(CMsg &msg){    
-  
- 
+void  CMessages::sendData(CMsg &msg){   
+  //SYS:MGR~ACT:SENDDATA~START:7~END:10~K:KEY_ 
   std::string key=msg.getKEY();
-  CMsg m=DataMap[key];
-  if(m.Parameters.size())
-    addTransmitList(m);
+
+  if(key.size()==0)
+    return;
+
+  int start=msg.getParameter("START",-1);
+  int end=msg.getParameter("END",-1);
+
+  if((start<0)||(end<0)){
+    CMsg m=DataMap[key];
+    if(m.Parameters.size()){
+      m.setKEY(key);
+      addTransmitList(m);
+      }
+    }
+  else{
+    for(int count=start;count<end;count++){
+      std::string key1=key+tostring(count);
+      CMsg m=DataMap[key1];
+      if(m.Parameters.size()){
+        m.setKEY(key1);
+        addTransmitList(m);
+      }
+    }
+  }
 }
 

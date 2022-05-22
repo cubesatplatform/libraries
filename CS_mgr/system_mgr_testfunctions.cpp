@@ -551,6 +551,22 @@ void CSystemMgr::testMAG(CMsg &msg){
 
 
 
+void CSystemMgr::testDataMap(CMsg &msg){  //Usually stops over 600 so 500 is a safe number
+//SYS:MGR~ACT:SENDDATA~START:7~END:10~K:KEY_
+std::string key="KEY_";
+  for(int count=0; count<500;count++){
+    std::string key1=key+tostring(count);
+    CMsg m;
+    m.setParameter("VAL","0123456789QWERTYUIOP[]ASDFGHJKL;ZXCVBNM,./qwertyuiop[]asdfghjkl;zxcvbnm,./0123456789QWERTYUIOP[]ASDFGHJKL;ZXCVBNM,./qwertyuiop[]asdfghjkl;zxcvbnm,");
+    addDataMap(key1,m);
+    //addTransmitList(m);
+    writeconsoleln(count);
+    delay(50);
+  }
+}
+
+
+
 void CSystemMgr::testIR(CMsg &msg){
   std::string s=msg.getACT(); 
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
@@ -617,6 +633,29 @@ void CSystemMgr::chkTemperature(CMsg &msg){
   writeconsoleln("EXIT void CSystemMgr::chkTemperature(CMsg &msg)");  
   
 }
+
+void CSystemMgr::chkIRArrays(CMsg &msg){
+  const char * temps [] =  {"IRX1","IRX2","IRY1","IRY2","IRZ1","IRZ2"};
+  unsigned long ct=getTime();
+
+  for(int count=0;count<5;count++){
+    for(auto s:temps){
+      CIRArray *pTest=(CIRArray *)getSystem(s,s);  
+      if(pTest!=NULL)       
+        pTest->Run(20);
+    }
+  }
+
+   CMsg m;
+  for(auto s:temps){
+    CIRArray *pTest=(CIRArray *)getSystem(s,s);  
+    if(pTest!=NULL) {
+     
+      pTest->Output(m);                     
+    }    
+  }
+}
+
 
 
 

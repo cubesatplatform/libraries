@@ -118,6 +118,7 @@ void CSystemMgr::showCommands(){
 
   if(act=="CHKRADIO") {chkRadio(msg); return; }
   if(act=="CHKTEMPERATURE") {chkTemperature(msg); return; }
+  if(act=="CHKIRARRAYS") {chkIRArrays(msg); return; }
   if(act=="CHKBATTERY") {chkBattery(msg); return; }
   if(act=="CHKROTATION") {chkRotation(msg); return; }
   if(act=="CHKMAGFIELD") {chkMagField(msg); return; }
@@ -146,6 +147,9 @@ void CSystemMgr::showCommands(){
   if(act=="PINHIGH"){ pinHigh(msg); return;}
   if(act=="PINLOW"){ pinLow(msg); return;}
   if(act=="PINPWM"){ pinPWM(msg); return;}
+
+
+  if(act=="FILLDATA"){ testDataMap(msg); return;}
    
   //if(act=="DATAMAPCLEAR") {pMSG->DataMap.clear();return;}
   if(act=="MESSAGESLISTCLEAR") {pMSG->MessageList.clear();return;}

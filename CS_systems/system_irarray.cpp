@@ -390,8 +390,9 @@ void CIRArray::Output(CMsg &msg){  //Easier to send as long   convert to decimal
   }
   
   CMsg m;
-  m.setTABLE("IR");
-  m.setPANEL(Name());
+
+  m.setKEY(Name());
+  m.setTIME(getTime());
   m.setDATA(imageTable);   ///  CHECK!!#!@#!@#
 
   std::tuple<int, int> XY=getHotSpot();

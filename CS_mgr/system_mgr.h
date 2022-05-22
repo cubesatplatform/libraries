@@ -58,6 +58,7 @@ public:
   void setup();
   void loop();
 
+  void chkIRArrays(CMsg &msg);
   void chkTemperature(CMsg &msg);
   void chkRadio(CMsg &msg);
   void chkBattery(CMsg &msg);
@@ -103,6 +104,8 @@ public:
   void testMotor(CMsg &msg);
   void testTemp(CMsg &msg);
   void testIR(CMsg &msg);
+
+  void testDataMap(CMsg &msg);
   
   void Output(CMsg &msg);
   void sendSerial(const char* cmd);
