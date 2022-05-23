@@ -103,16 +103,18 @@ SX1268 *plora=&radio1;
   bool _sendACK=true;
   bool _waitForACK=false;
   unsigned long _delayTransmit=RADIOTXDELAY;
+  unsigned long _modemChangedOn=0;
   CMessages *pMsgs;
   bool volatile  *_pbFlag;
   bool volatile  *_penableInterrupt;
   bool _bTransmitter=true;
+  bool _bReceiver=true;
   unsigned long _sleepTime=0;
 
   unsigned long _lastTransmit=0;
   unsigned long _lastReceive=0;
 
-  std::string _modem="";
+  std::string _modem="MEDIUMBW";
   
 
 public:
@@ -144,6 +146,9 @@ public:
   void setTransmitter(bool tmp){_bTransmitter=tmp;}
   bool getTransmitter(){return _bTransmitter;}
 
+  void setReceiver(bool tmp){_bReceiver=tmp;}
+  bool getReceiver(){return _bReceiver;}
+
   void resetAck(){mACK.clear();};
   void Update(CMsg &msg); 
   void sleep(bool tmp);
@@ -152,8 +157,14 @@ public:
 
   void setPower(CMsg &m);  
   void setModem(CMsg &m);  
+  void chkModem();
   void callCustomFunctions(CMsg &m);   
   void resetPower(CMsg &m);   
+
+  int getBW();
+  int getSF();
+  int getCR();
+  float getFrequency();
 
   unsigned long getLastTransmit(){return _lastTransmit=0;}
   unsigned long getLastReceive(){return _lastReceive=0;}

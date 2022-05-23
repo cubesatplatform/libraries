@@ -1,9 +1,10 @@
 #pragma once
 
 #define RADIOTXDELAY 100
-#define RADIOWAITFORACK 15000
-#define RADIOWAITFORCOMPLETE 15000
+#define RADIOWAITFORACK 7000
+#define RADIOWAITFORCOMPLETE 7000
 #define SLEEPTIME 15*1000    //1 Orbit  90*60*1000 Min
+#define MODEMCHANGEMAXTIME 90*1000
 
 
 #define PING_INTERVAL             2       // seconds, how much time to wait between PINGs sent from this node

@@ -236,35 +236,26 @@ void CRadio::setup() {
     #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
  
     writeconsole("CUBESAT ... "); writeconsoleln(LORACHIP);
-    //state =  plora->begin(float freq = 434.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX126X_SYNC_WORD_PRIVATE, int8_t power = 10, uint16_t preambleLength = 8, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);
-
-    if(_modem=="HIGHBW")
-      _radioState =  plora->begin(freq, LORA_BANDWIDTHHIGH,  LORA_SPREADING_FACTORHIGH,  LORA_CODING_RATEHIGH,  RADIOLIB_SX127X_SYNC_WORD  , LORA_OUTPUT_POWER,  LORA_PREAMBLE_LENGTH,  2.4,  false);   //RADIOLIB_SX126X_SYNC_WORD_PRIVATE
-    else if(_modem=="MEDIUMBW")
-        _radioState =  plora->begin(freq, LORA_BANDWIDTHMEDIUM,  LORA_SPREADING_FACTORMEDIUM,  LORA_CODING_RATEMEDIUM,  RADIOLIB_SX127X_SYNC_WORD  , LORA_OUTPUT_POWER,  LORA_PREAMBLE_LENGTH,  2.4,  false);   //RADIOLIB_SX126X_SYNC_WORD_PRIVATE
-    else if(_modem=="LOWBW")
-        _radioState =  plora->begin(freq, LORA_BANDWIDTHLOW,  LORA_SPREADING_FACTORLOW,  LORA_CODING_RATELOW,  RADIOLIB_SX127X_SYNC_WORD  , LORA_OUTPUT_POWER,  LORA_PREAMBLE_LENGTH,  2.4,  false);   //RADIOLIB_SX126X_SYNC_WORD_PRIVATE
-    else 
-      _radioState =  plora->begin(freq, LORA_BANDWIDTH,  LORA_SPREADING_FACTOR,  LORA_CODING_RATE,  RADIOLIB_SX127X_SYNC_WORD  , LORA_OUTPUT_POWER,  LORA_PREAMBLE_LENGTH,  2.4,  false);   //RADIOLIB_SX126X_SYNC_WORD_PRIVATE
-
-
+    //state =  plora->begin(float freq = 434.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX126X_SYNC_WORD_PRIVATE, int8_t power = 10, uint16_t preambleLength = 8, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);   
+    _radioState =  plora->begin(getFrequency(), getBW(),  getSF(),  getCR(),  RADIOLIB_SX127X_SYNC_WORD  , LORA_OUTPUT_POWER,  LORA_PREAMBLE_LENGTH,  2.4,  false);   //RADIOLIB_SX126X_SYNC_WORD_PRIVATE
     if (plora->setTCXO(2.4) == RADIOLIB_ERR_INVALID_TCXO_VOLTAGE)    {      writeconsoleln(F("Selected TCXO voltage is invalid for this module!"));    }
     
     #elif defined(TTGO)  
     
     writeconsole("TTGO ... "); writeconsoleln(LORACHIP);
 
-    _radioState =  plora->begin(freq, LORA_BANDWIDTH,  LORA_SPREADING_FACTOR,  LORA_CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);
+    _radioState =  plora->begin(getFrequency(), getBW(),  getSF(),  getCR(), RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);
 
     #elif  defined(TTGO1)
     writeconsole("TTGO1 ... "); writeconsoleln(LORACHIP);
-    _radioState =  plora->begin(freq, LORA_BANDWIDTH,  LORA_SPREADING_FACTOR,  LORA_CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);
+    _radioState =  plora->begin(getFrequency(), getBW(),  getSF(),  getCR(),  LORA_CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);
       
     #elif defined(ESP32_GATEWAY)
     writeconsole("GATEWAY ... "); writeconsoleln(LORACHIP);    
-    _radioState =  plora->begin(434.0, LORA_BANDWIDTH,  LORA_SPREADING_FACTOR,  LORA_CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);
+    _radioState =  plora->begin(getFrequency(), getBW(),  getSF(),  getCR(),  LORA_CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);
     #endif
 
+    _modemChangedOn=getTime();
     if(_radioState == RADIOLIB_ERR_NONE) {
       
     
@@ -411,7 +402,6 @@ void CRadio::receivedLogic(unsigned char *buffer, int len){
     
     if(robj.needACK()&&robj.getTO()==getIAM())  SendAck(robj);
   }
-  //writeconsoleln("Received Logic End");
 }
 
 void CRadio::ReceivedPacket(){
@@ -540,8 +530,9 @@ void CRadio:: checkModeRX(){
   if(*_pbFlag) { // check if the previous operation finished     this is set by interrupt    
     *_penableInterrupt=false; // disable the interrupt service routine when processing the data      
     *_pbFlag=false;
-    if (Mode()=="RX")
+    if ((Mode()=="RX")&&getReceiver()){
       ReceivedPacket();
+    }
     SetRadioReceive();
     return;
   }
@@ -549,6 +540,7 @@ void CRadio:: checkModeRX(){
 
 
 void CRadio::loopRadio(){
+  chkModem();
   checkModeTX();
   checkModeRX();
   
@@ -591,5 +583,70 @@ void CRadio::resetPower(CMsg &m){
 void CRadio::setModem(CMsg &m){
   writeconsoleln("Set Modem");
   _modem=m.getParameter("VAL","");
+  _modemChangedOn=getTime();
   setState("");  
 }
+
+
+void CRadio::chkModem(){
+  if((_modem=="NORMALBW")||(_modem=="")){
+    return;
+  }
+
+  if(getTime()>_modemChangedOn+MODEMCHANGEMAXTIME){
+    CMsg m;
+    m.setVALUE("");
+    setModem(m);
+    writeconsoleln("Times up  Set Modem to Blank");  
+  }
+}
+
+
+float CRadio::getFrequency(){
+  if(Name()=="RADIO2")
+    return LORA_RADIO2_FREQUENCY;
+
+  return LORA_RADIO_FREQUENCY;
+}
+
+int CRadio::getBW(){
+  if (_modem=="HIGHBW")
+    return LORA_BANDWIDTHHIGH;
+
+  if (_modem=="MEDIUMBW")
+    return LORA_BANDWIDTHMEDIUM;
+
+  if (_modem=="LOWBW")
+    return LORA_BANDWIDTHLOW;
+
+  return LORA_BANDWIDTH;
+}
+
+
+int CRadio::getSF(){
+  if (_modem=="HIGHBW")
+    return LORA_SPREADING_FACTORHIGH;
+
+  if (_modem=="MEDIUMBW")
+    return LORA_SPREADING_FACTORMEDIUM;
+
+  if (_modem=="LOWBW")
+    return LORA_SPREADING_FACTORLOW;
+
+  return LORA_SPREADING_FACTOR;
+}
+
+
+int CRadio::getCR(){
+  if (_modem=="HIGHBW")
+    return LORA_CODING_RATEHIGH;
+
+  if (_modem=="MEDIUMBW")
+    return LORA_CODING_RATEMEDIUM;
+
+  if (_modem=="LOWBW")
+    return LORA_CODING_RATELOW;
+
+  return LORA_CODING_RATE;
+}
+
