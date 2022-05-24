@@ -114,7 +114,7 @@ SX1268 *plora=&radio1;
   unsigned long _lastTransmit=0;
   unsigned long _lastReceive=0;
 
-  std::string _modem="MEDIUMBW";
+  std::string _modem="xxx";
   
 
 public:
@@ -157,6 +157,7 @@ public:
 
   void setPower(CMsg &m);  
   void setModem(CMsg &m);  
+  std::string getModem(){return _modem;}
   void chkModem();
   void callCustomFunctions(CMsg &m);   
   void resetPower(CMsg &m);   

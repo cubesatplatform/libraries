@@ -4,7 +4,7 @@
 #define RADIOWAITFORACK 7000
 #define RADIOWAITFORCOMPLETE 7000
 #define SLEEPTIME 15*1000    //1 Orbit  90*60*1000 Min
-#define MODEMCHANGEMAXTIME 90*1000
+#define MODEMCHANGEMAXTIME 100*1000
 
 
 #define PING_INTERVAL             2       // seconds, how much time to wait between PINGs sent from this node
@@ -21,7 +21,7 @@
 #define LORA_CODING_RATE               7       // 4/7 coding
 
 #define LORA_BANDWIDTHHIGH                 500  //125.0   // kHz dual-sideband
-#define LORA_SPREADING_FACTORHIGH          9       // 2^9 chirps
+#define LORA_SPREADING_FACTORHIGH          10       // 2^9 chirps
 #define LORA_CODING_RATEHIGH               7       // 4/7 coding
 
 #define LORA_BANDWIDTHMEDIUM                 250  //125.0   // kHz dual-sideband
@@ -29,7 +29,7 @@
 #define LORA_CODING_RATEMEDIUM               7       // 4/7 coding
 
 #define LORA_BANDWIDTHLOW                 125  //125.0   // kHz dual-sideband
-#define LORA_SPREADING_FACTORLOW          11       // 2^9 chirps
+#define LORA_SPREADING_FACTORLOW          10       // 2^9 chirps
 #define LORA_CODING_RATELOW               7       // 4/7 coding
 
 #define LORA_SYNC_WORD                 0x12    // private network
@@ -53,6 +53,8 @@
 
 
 /*
+HIGHBW, MEDIUMBW, LOWBW, NORMALBW
+
 https://medium.com/home-wireless/testing-lora-radios-with-the-limesdr-mini-part-2-37fa481217ff
 https://www.rfwireless-world.com/calculators/LoRa-Data-Rate-Calculator.html
 
@@ -71,7 +73,29 @@ Bandwidth - Higher bandwidth has higher data rates and is more power-efficient, 
 
 Coding Rate - Increasing the coding rate increases reliability while decreasing data rate.     
 
+SX1272
+int16_t 	setBandwidth (float bw)
+ 	Sets LoRa link bandwidth. Allowed values are 125, 250 and 500 kHz. Only available in LoRa mode. More...
+ 
+int16_t 	setSpreadingFactor (uint8_t sf)
+ 	Sets LoRa link spreading factor. Allowed values range from 6 to 12. Only available in LoRa mode. More...
+ 
+int16_t 	setCodingRate (uint8_t cr)
+ 	Sets LoRa link coding rate denominator. Allowed values range from 5 to 8. Only available in LoRa mode. More...
+ 
+int16_t 	setOutputPower (int8_t power, bool useRfo=false)
+ 	Sets transmission output power. Allowed values range from -1 to 14 dBm (RFO pin) or +2 to +20 dBm (PA_BOOST pin). More...
 
+
+SX126X
+int16_t 	setBandwidth (float bw)
+ 	Sets LoRa bandwidth. Allowed values are 7.8, 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125.0, 250.0 and 500.0 kHz. More...
+ 
+int16_t 	setSpreadingFactor (uint8_t sf)
+ 	Sets LoRa spreading factor. Allowed values range from 5 to 12. More...
+ 
+int16_t 	setCodingRate (uint8_t cr)
+ 	Sets LoRa coding rate denominator. Allowed values range from 5 to 8. More...     
 
 */
 

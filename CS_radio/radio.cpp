@@ -604,7 +604,7 @@ void CRadio::chkModem(){
 
 float CRadio::getFrequency(){
   if(Name()=="RADIO2")
-    return LORA_RADIO2_FREQUENCY;
+    return LORA_RADIO_FREQUENCY;   //LORA_RADIO2_FREQUENCY;
 
   return LORA_RADIO_FREQUENCY;
 }
