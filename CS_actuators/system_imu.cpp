@@ -12,9 +12,6 @@
 #define IMU_OBC_WAKE PinNameToIndex(PJ_9)
 #define IMU_OBC_INT PinNameToIndex(PI_15)
 #define IMU_OBC_RST PinNameToIndex(PI_14)
-
-
-
 #endif
 
 #define IMU_WAIT_TIME 100000
@@ -54,13 +51,15 @@ void CIMU::loop(){
 
 
 void CIMU::test(CMsg &msg){ 
-  std::string mode=msg.getParameter("DATAMODE","GYROROT");
+  std::string mode=msg.getParameter("DATAMODE","ROT");
   int period=msg.getParameter("PERIOD",2000);
   _dataMode=mode;
   setState("");
   Run(period);
     
   if (State()!="ERROR"){  
+    if(_dataMode=="ROT")
+      mode="PRY";
     CMsg m=getDataMap(mode);
     m.writetoconsole();
     addTransmitList(m);   
@@ -86,45 +85,60 @@ void CIMU::GetData(){
   //  writeconsoleln(" --------------------------------------------------------------------------------- GET IMU DATA ---------------------------------------------------------------------------");
 
   _dataUpdatedOn=getTime();
-  PRY.archiveData();
-  Quat.archiveData();
-  Lin.archiveData();
-  Gyro.archiveData();
-  Mag.archiveData();
-  
-  *PRY.pPitch=(myIMU.getPitch()) * 180.0 / PI; // Convert pitch to degrees
-  *PRY.pRoll=(myIMU.getRoll()) * 180.0 / PI; // Convert roll to degrees
-  *PRY.pYaw=(myIMU.getYaw()) * 180.0 / PI; // Convert yaw / heading to degrees
 
   float quatRadianAccuracy;  
+ 
 
-  Mag._changedOn=getTime();
-  Quat._changedOn=getTime();
-  Lin._changedOn=getTime();
-  PRY._changedOn=getTime();  //Pitch, Roll Yaw
-  Gyro._changedOn=getTime();
+  CMsg mGyro,mLin,mMag,mPRY, mQuat,mAccel;
 
-  CMsg mGyro,mLin,mMag,mPRY, mQuat;
+  if(_dataMode=="GYRO"){
+    Gyro.archiveData();
+    myIMU.getGyro(Gyro._fX , Gyro._fY, Gyro._fZ, Gyro.Acc);
+    Gyro._changedOn=getTime();
+    mGyro=Gyro.makeMessage("GYRO");
+    addDataMap(std::string("GYRO"),mGyro);
+  }
 
-  myIMU.getGyro(Gyro._fX , Gyro._fY, Gyro._fZ, Gyro.Acc);
-  mGyro=Gyro.makeMessage("GYRO");
-  addDataMap(std::string("GYRO"),mGyro);
+  if(_dataMode=="LIN"){
+    Lin.archiveData();
+    myIMU.getLinAccel(Lin._fX , Lin._fY, Lin._fZ, Lin.Acc);
+    Lin._changedOn=getTime();
+    mLin=Lin.makeMessage("LIN");
+    addDataMap(std::string("LIN"),mLin);
+  }
+
+  if(_dataMode=="ACCEL"){
+    myIMU.getAccel(Lin._fX , Lin._fY, Lin._fZ, Lin.Acc);
+    Accel._changedOn=getTime();
+    mAccel=Accel.makeMessage("ACCEL");
+    addDataMap(std::string("ACCEL"),mAccel);
+  }
+
+  if(_dataMode=="MAG"){
+    Mag.archiveData();
+    myIMU.getMag(Mag._fX , Mag._fY, Mag._fZ, Mag.Acc);
+    Mag._changedOn=getTime();
+    mMag=Mag.makeMessage("MAG");
+    addDataMap(std::string("MAG"),mMag);
+  }
 
 
-  myIMU.getLinAccel(Lin._fX , Lin._fY, Lin._fZ, Lin.Acc);
-  mLin=Lin.makeMessage("LIN");
-  addDataMap(std::string("LIN"),mLin);
+  if(_dataMode=="ROT"){
+    PRY.archiveData();
+    Quat.archiveData();
+    PRY._changedOn=getTime();  //Pitch, Roll Yaw
+    Quat._changedOn=getTime();
+    myIMU.getQuat(Quat._fX, Quat._fY, Quat._fZ, Quat._fR, quatRadianAccuracy, Quat.Acc);
+    mQuat=Quat.makeMessage("QUAT");
+    addDataMap(std::string("QUAT"),mQuat);
 
-  myIMU.getMag(Mag._fX , Mag._fY, Mag._fZ, Mag.Acc);
-  mMag=Mag.makeMessage("MAG");
-  addDataMap(std::string("MAG"),mMag);
 
-  myIMU.getQuat(Quat._fX, Quat._fY, Quat._fZ, Quat._fR, quatRadianAccuracy, Quat.Acc);
-  mQuat=Quat.makeMessage("QUAT");
-  addDataMap(std::string("QUAT"),mQuat);
-
-  mPRY=PRY.makeMessage("PRY");
-  addDataMap(std::string("PRY"),mPRY);      
+    *PRY.pPitch=(myIMU.getPitch()) * 180.0 / PI; // Convert pitch to degrees
+    *PRY.pRoll=(myIMU.getRoll()) * 180.0 / PI; // Convert roll to degrees
+    *PRY.pYaw=(myIMU.getYaw()) * 180.0 / PI; // Convert yaw / heading to degrees
+    mPRY=PRY.makeMessage("PRY");
+    addDataMap(std::string("PRY"),mPRY);      
+  }
 }    
 
   
@@ -171,17 +185,18 @@ void CIMU::dataMode(std::string option, int period){              //IMPORTANT
   myIMU.enableLinearAccelerometer(50);  // m/s^2 no gravity
   myIMU.enableRotationVector(50);  // quat
   myIMU.enableGyro(50);  // rad/s
-  //myIMU.enableMagnetometer(50);  // cannot be enabled at the same time as RotationVector (will not produce data)
+  
   */
 
   writeconsoleln(option);
   _dataMode=option;
-  if(option==std::string("QUAT")) myIMU.enableRotationVector(period); //Quaternion Send data update every 50ms
+  
+  if(option==std::string("ROT")) myIMU.enableRotationVector(period); //Euler & Quaternion Send data update every 50ms
   if(option==std::string("GYRO"))  myIMU.enableGyro(period); // rad/s  
   if(option==std::string("GYROROT")) myIMU.enableGyroIntegratedRotationVector(period); //Quaternion Send data update every 50ms
-  if(option==std::string("MAG")) myIMU.enableMagnetometer(period);
+  if(option==std::string("MAG")) myIMU.enableMagnetometer(period);   // cannot be enabled at the same time as RotationVector (will not produce data)
   if(option==std::string("ACCEL")) myIMU.enableAccelerometer(period);
-  if(option==std::string("LINACCEL")) myIMU.enableLinearAccelerometer(period);
+  if(option==std::string("LIN")) myIMU.enableLinearAccelerometer(period);
 }
 
 void CIMU::setupSPI(){

@@ -114,7 +114,7 @@ SX1268 *plora=&radio1;
   unsigned long _lastTransmit=0;
   unsigned long _lastReceive=0;
 
-  std::string _modem="xxx";
+  std::string _modem="";
   
 
 public:

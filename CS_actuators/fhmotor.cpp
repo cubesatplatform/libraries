@@ -303,14 +303,14 @@ else if(diff<-40)
 void CMotorController::loopRotation(){
 
   if(_pIMU==NULL) {writeconsoleln("NO IMU!!!!!!!!!!!!!!!!!!!!!");return;}
-  CMsg m;
-
-  _pIMU->runOnce(m);
-  if(_axis=='X')    _Input=*_pIMU->Gyro.pZ;
-  if(_axis=='Y')    _Input=*_pIMU->Gyro.pY;    
-  if(_axis=='Z')    _Input=*_pIMU->Gyro.pX;
-  if(_axis=='R')    _Input=*_pIMU->Gyro.pR;
   
+
+  _pIMU->Run();
+  std::string axis;
+  axis=_axis;
+  CMsg m=getDataMap("PRY");
+
+  _Input=m.getParameter(axis,0);  
   _Output_last=_Output;
   myPID.compute();
  
@@ -329,6 +329,7 @@ void CMotorController::loopRamp(){
 
 void CMotorController::runOnce(CMsg &m){
   writeconsoleln(Mode());
+  if(Mode()=="LOCK"){}
   if(Mode()=="SPEED")
     loopSpeed();
   if(Mode()=="SIMPLE")

@@ -57,14 +57,12 @@ void disableBurnWire(){
 
 
 void enableADCS(){  
-    digitalWrite(MAGMOTORPOWER_ENABLE, HIGH);  
     digitalWrite(ADCS_ENABLE, HIGH);  
     
     delay(200);
     }
 
 void disableADCS(){  
-    digitalWrite(MAGMOTORPOWER_ENABLE, LOW);  
     digitalWrite(ADCS_ENABLE, LOW);  
     
     delay(200);
@@ -116,7 +114,7 @@ void disableADCS(){
     
     }    
 
-    #endif
+#endif
 
 
 

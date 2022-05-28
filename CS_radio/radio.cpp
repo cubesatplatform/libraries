@@ -604,12 +604,19 @@ void CRadio::chkModem(){
 
 float CRadio::getFrequency(){
   if(Name()=="RADIO2")
-    return LORA_RADIO_FREQUENCY;   //LORA_RADIO2_FREQUENCY;
+    return LORA_RADIO2_FREQUENCY;   
 
   return LORA_RADIO_FREQUENCY;
 }
 
 int CRadio::getBW(){
+  
+  if (_modem=="MEGABW")
+    return LORA_BANDWIDTHMEGA;
+
+  if (_modem=="ULTRABW")
+    return LORA_BANDWIDTHULTRA;
+
   if (_modem=="HIGHBW")
     return LORA_BANDWIDTHHIGH;
 
@@ -624,6 +631,13 @@ int CRadio::getBW(){
 
 
 int CRadio::getSF(){
+    
+  if (_modem=="MEGABW")
+    return LORA_SPREADING_FACTORMEGA;
+
+  if (_modem=="ULTRABW")
+    return LORA_SPREADING_FACTORULTRA;
+
   if (_modem=="HIGHBW")
     return LORA_SPREADING_FACTORHIGH;
 
@@ -637,7 +651,13 @@ int CRadio::getSF(){
 }
 
 
-int CRadio::getCR(){
+int CRadio::getCR(){  
+  if (_modem=="MEGABW")
+    return LORA_CODING_RATEMEGA;
+
+  if (_modem=="ULTRABW")
+    return LORA_CODING_RATEULTRA;
+
   if (_modem=="HIGHBW")
     return LORA_CODING_RATEHIGH;
 

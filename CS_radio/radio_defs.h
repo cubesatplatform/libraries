@@ -12,25 +12,39 @@
 
 #define LORA_FREQUENCY             443.0   //FREQUENCY_900M30S
 #define LORA_RADIO_FREQUENCY        443.0   //FREQUENCY_900M30S
-#define LORA_RADIO2_FREQUENCY       445.0   //FREQUENCY_900M30S
+#define LORA_RADIO2_FREQUENCY       443.0   //FREQUENCY_900M30S
 #define LORA_FREQUENCY_400M30S         443.0   // MHz carrier, for E22-400M30S
 #define LORA_FREQUENCY_GATEWAY         443.0   // MHz carrier, for ESP32 single-channel gateway
 
+//443 bps
 #define LORA_BANDWIDTH                 125  //125.0   // kHz dual-sideband
 #define LORA_SPREADING_FACTOR          10       // 2^9 chirps
 #define LORA_CODING_RATE               7       // 4/7 coding
 
-#define LORA_BANDWIDTHHIGH                 500  //125.0   // kHz dual-sideband
-#define LORA_SPREADING_FACTORHIGH          10       // 2^9 chirps
+//5600
+#define LORA_BANDWIDTHMEGA                 500  //125.0   // kHz dual-sideband
+#define LORA_SPREADING_FACTORMEGA          8       // 2^9 chirps
+#define LORA_CODING_RATEMEGA               7       // 4/7 coding
+
+//3200
+#define LORA_BANDWIDTHULTRA                 500  //125.0   // kHz dual-sideband
+#define LORA_SPREADING_FACTORULTRA          9       // 2^9 chirps
+#define LORA_CODING_RATEULTRA               7       // 4/7 coding
+
+//1600
+#define LORA_BANDWIDTHHIGH                 250  //125.0   // kHz dual-sideband
+#define LORA_SPREADING_FACTORHIGH          9       // 2^9 chirps
 #define LORA_CODING_RATEHIGH               7       // 4/7 coding
 
+//888 bps
 #define LORA_BANDWIDTHMEDIUM                 250  //125.0   // kHz dual-sideband
 #define LORA_SPREADING_FACTORMEDIUM          10       // 2^9 chirps
 #define LORA_CODING_RATEMEDIUM               7       // 4/7 coding
 
+//223 bps
 #define LORA_BANDWIDTHLOW                 125  //125.0   // kHz dual-sideband
-#define LORA_SPREADING_FACTORLOW          10       // 2^9 chirps
-#define LORA_CODING_RATELOW               7       // 4/7 coding
+#define LORA_SPREADING_FACTORLOW          11       // 2^9 chirps
+#define LORA_CODING_RATELOW               8       // 4/7 coding
 
 #define LORA_SYNC_WORD                 0x12    // private network
 #define LORA_OUTPUT_POWER              12      // +14 dBm

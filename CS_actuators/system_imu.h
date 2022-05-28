@@ -149,6 +149,7 @@ class CIMU:public CSystemObject{
     CIData PRY;
     CIData Quat;
     CIData Lin;
+    CIData Accel;
     CIData Mag;
     CIData Gyro;
     
@@ -181,6 +182,7 @@ class CIMU:public CSystemObject{
       Gyro.remap(&Gyro._fZ,&Gyro._fX,&Gyro._fY);  
       Mag.remap(&Mag._fZ,&Mag._fX,&Mag._fY);  
       Lin.remap(&Lin._fZ,&Lin._fX,&Lin._fY);  
+      Accel.remap(&Accel._fZ,&Accel._fX,&Accel._fY);  
       Quat.remap(&Quat._fZ,&Quat._fX,&Quat._fY);  
       PRY.remap(&PRY._fZ,&PRY._fX,&PRY._fY);        
     }
