@@ -13,59 +13,59 @@
 
 void enablePhone(){  
     digitalWrite(PHONE_ENABLE, HIGH);
-    delay(200);
+    delay(100);
     }
 
 void disablePhone(){  
     digitalWrite(PHONE_ENABLE, LOW);  
-    delay(200);
+    delay(100);
     }    
 
 
-void enableMagsMotors(){  
+void enable65V(){  
     digitalWrite(MAGMOTORPOWER_ENABLE, HIGH);  
-    
-    delay(200);
+    enableMBLogic();
+    //delay(100);
     }
 
-void disableMagsMotors(){  
+void disable65V(){  
     digitalWrite(MAGMOTORPOWER_ENABLE, LOW);      
-    delay(200);
+    delay(100);
     }    
 
 
 void enableSensors(){  
     digitalWrite(SENSORS_ENABLE, HIGH);      
-    delay(200);
+    delay(100);
     }
 
 void disableSensors(){  
     digitalWrite(SENSORS_ENABLE, LOW);      
-    delay(200);
+    delay(100);
     }    
 
 
 void enableBurnWire(){  
     digitalWrite(BURN_WIRE, HIGH);  
-    delay(200);
+    delay(100);
     }
 
 void disableBurnWire(){  
     digitalWrite(BURN_WIRE, LOW);  
-    delay(200);
+    delay(100);
     }    
 
 
-void enableADCS(){  
+void enableMBLogic(){  
     digitalWrite(ADCS_ENABLE, HIGH);  
     
-    delay(200);
+    delay(100);
     }
 
-void disableADCS(){  
+void disableMBLogic(){  
     digitalWrite(ADCS_ENABLE, LOW);  
     
-    delay(200);
+    delay(100);
     }    
 
     #else
@@ -78,11 +78,11 @@ void disablePhone(){
     }    
 
 
-void enableMagsMotors(){  
+void enable65V(){  
    
     }
 
-void disableMagsMotors(){  
+void disable65V(){  
    
     }    
 
@@ -106,11 +106,11 @@ void disableBurnWire(){
 
 
 
-void enableADCS(){  
+void enableMBLogic(){  
     
     }
 
-void disableADCS(){  
+void disableMBLogic(){  
     
     }    
 

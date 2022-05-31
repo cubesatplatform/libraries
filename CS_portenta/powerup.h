@@ -3,8 +3,8 @@
 void enablePhone();
 void disablePhone();
 
-void enableMagsMotors();
-void disableMagsMotors();
+void enable65V();
+void disable65V();
 
 void enableSensors();
 void disableSensors();
@@ -12,8 +12,8 @@ void disableSensors();
 void enableBurnWire();
 void disableBurnWire();
 
-void enableADCS();
-void disableADCS();
+void enableMBLogic();
+void disableMBLogic();
 
 
 

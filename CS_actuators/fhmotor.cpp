@@ -224,14 +224,14 @@ void CMotorController::writeStats(){
   
 }
 
-void CMotorController::loopPWM(){  
+void CMotorController::loopPWM(CMsg &msg){  
   RPS();
   activateDrive((int)_Setpoint);    
 }
 
 
 
-void CMotorController::loopSpeed(){
+void CMotorController::loopSpeed(CMsg &msg){
 
   _Input =RPS();
   myPID.compute();
@@ -248,7 +248,7 @@ void CMotorController::loopSpeed(){
 
 
 
-void CMotorController::loopSpeedSimple(){
+void CMotorController::loopSpeedSimple(CMsg &msg){
     
   _Input =RPS();
   float diff=_Setpoint-_Input;
@@ -295,16 +295,76 @@ else if(diff<-20)
 else if(diff<-40) 
     _Output-=400;    
 
+ activateDrive((int)_Output);
+  
+}
+
+
+void CMotorController::loopLock(CMsg &msg){
+  if(_pIMU==NULL) {writeconsoleln("NO IMU!!!!!!!!!!!!!!!!!!!!!");return;}
+  
+  _pIMU->Run();
+  std::string axis;
+  axis=_axis;
+  CMsg m=getDataMap("PRY");
+
+  _Input=m.getParameter(axis,0);  
+
+  float diff=_Setpoint-_Input;
+
+  if(diff>40) 
+    _Output+=400;    
+
+  else if(diff>20) 
+    _Output+=200;    
+    
+  else if(diff>10) 
+    _Output+=100;  
+  
+  else if(diff>5) 
+    _Output+=50;      
+
+  else if(diff>3) 
+    _Output+=10;          
+
+  else if(diff>1) 
+    _Output+=3;          
+
+  else if(diff>.1) 
+    _Output+=1;      
+
+    else if(diff<-.1) 
+    _Output-=1;      
+
+else if(diff<-1) 
+    _Output-=3;          
+
+else if(diff<-3) 
+    _Output-=10;          
+
+else if(diff<-5) 
+    _Output-=50;      
+
+else if(diff<-10) 
+    _Output-=100;  
+  
+else if(diff<-20) 
+    _Output-=200;    
+    
+else if(diff<-40) 
+    _Output-=400;    
 
  activateDrive((int)_Output);
   
 }
 
-void CMotorController::loopRotation(){
+
+
+
+void CMotorController::loopRotation(CMsg &msg){
 
   if(_pIMU==NULL) {writeconsoleln("NO IMU!!!!!!!!!!!!!!!!!!!!!");return;}
   
-
   _pIMU->Run();
   std::string axis;
   axis=_axis;
@@ -318,28 +378,29 @@ void CMotorController::loopRotation(){
 } 
 
 
-void CMotorController::loopRamp(){
+void CMotorController::loopRamp(CMsg &msg){
   if(_Setpoint>PWM_MAX) _Setpoint=0;
   _Setpoint+=20;
   activateDrive(_Setpoint);  
-    
   
-
 }
 
-void CMotorController::runOnce(CMsg &m){
+void CMotorController::runOnce(CMsg &msg){
   writeconsoleln(Mode());
-  if(Mode()=="LOCK"){}
-  if(Mode()=="SPEED")
-    loopSpeed();
-  if(Mode()=="SIMPLE")
-    loopSpeedSimple();
-  if(Mode()=="ROTATION")  
-    loopRotation();  
-  if(Mode()=="RAMP")  
-    loopRamp();  
-  if(Mode()=="PWM")  
-    loopPWM();  
+  if(Mode()=="LOCK")
+    loopLock(msg);
+  else if(Mode()=="SPEED")
+    loopSpeed(msg);
+  else if(Mode()=="SIMPLE")
+    loopSpeedSimple(msg);
+  else if(Mode()=="ROTATION")  
+    loopRotation(msg);  
+  else if(Mode()=="RAMP")  
+    loopRamp(msg);  
+  else if(Mode()=="PWM")  
+    loopPWM(msg);  
+  else
+    loopSpeedSimple(msg);
 }
 
 
@@ -405,7 +466,7 @@ Run(50);
 std::list<float> flist; 
 int sspeed=0;  
 
-std::string testMode=msg.getParameter("MODE","PWM");
+std::string testMode=msg.getParameter("MODE","SIMPLE");
 setMode(testMode);  
 
 float setpt=msg.getParameter("SETPOINT",1787.0);

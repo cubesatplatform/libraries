@@ -135,14 +135,17 @@ void CSystemMgr::showCommands(){
   if(act== "MAGDY"){  testMAGDrive(MAG_ADDRESS_Y); return; }
   if(act== "MAGDZ"){  testMAGDrive(MAG_ADDRESS_Z); return; }
 
-  if(act== "ADCSON"){  enableADCS(); return; }
-  if(act== "ADCSOFF"){  disableADCS(); return; }
+  if(act== "MBLOGICON"){  enableMBLogic(); writeconsoleln("Enable MotorBoard Logic"); return; }
+  if(act== "MBLOGICOFF"){  disableMBLogic(); writeconsoleln("Disable MotorBoard Logic"); return; }
 
-  if(act== "SENSORSON"){  enableSensors(); return; }
-  if(act== "SENSORSOFF"){  disableSensors(); return; }
+  if(act== "SENSORSON"){  enableSensors(); writeconsoleln("Enable Sensors"); return; }
+  if(act== "SENSORSOFF"){  disableSensors(); writeconsoleln("Disable Sensors"); return; }
 
-  if(act== "MAGSMOTORSON"){  enableMagsMotors(); return; }
-  if(act== "MAGSMOTORSOFF"){  disableMagsMotors(); return; }
+  if(act== "65VON"){  enable65V();  writeconsoleln("Enable 6.5V"); return; }
+  if(act== "65VOFF"){  disable65V();  writeconsoleln("Disable 6.5V"); return; }
+
+  if(act== "ALLON"){enable65V();    enableSensors();    enableMBLogic();    writeconsoleln("All ON"); return;}
+  if(act== "ALLOFF"){disable65V();    disableSensors();    disableMBLogic();    writeconsoleln("All OFF"); return;}  
 
   if(act=="PINHIGH"){ pinHigh(msg); return;}
   if(act=="PINLOW"){ pinLow(msg); return;}

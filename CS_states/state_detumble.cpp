@@ -18,7 +18,7 @@ void CDetumbleState::setup() {};
 void CDetumbleState::stateMsg(CMsg &msg){_statemsg=msg;};
 
 void CDetumbleState::enter() {
-  enableMagsMotors();
+  enable65V();
   resetSubSystems();
   _detumblecount++;
   CStateObj::enter();
@@ -36,6 +36,6 @@ void CDetumbleState::enter() {
   }
   
 void CDetumbleState::exit() { 
-  disableMagsMotors();
+  disable65V();
   CStateObj::exit();
   }

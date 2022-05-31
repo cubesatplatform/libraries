@@ -438,8 +438,8 @@ void CSystemMgr::burn(){
 
 void CSystemMgr::enableI2C(){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-  enableADCS();
-  enableMagsMotors();  
+  enableMBLogic();
+  enable65V();  
   enableSensors();  
   
 
@@ -457,9 +457,9 @@ void CSystemMgr::enableI2C(){
 
 void CSystemMgr::disableI2C(){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-  disableADCS();
+  disableMBLogic();
   disableSensors();  
-  disableMagsMotors();  
+  disable65V();  
 
   CMsg m;
   m.setSYS("DISABLE I2C");
@@ -492,9 +492,6 @@ void CSystemMgr::testIMU(CMsg &msg){
 
   std::string act=msg.getACT(); 
   CIMU *pTest=(CIMU *)getSystem(act.c_str(),"IMUI2C");
- // enableMagsMotors();        
- if(act=="IMUI2C")
-    enableADCS();
 
   if(pTest!=NULL) {
     writeconsoleln(act);      
@@ -502,10 +499,6 @@ void CSystemMgr::testIMU(CMsg &msg){
   }
   else
     writeconsoleln("Could not find System IMU");  
-
- // disableMagsMotors();  
- if(act=="IMUI2C")
-    disableADCS();
  
 
   return;
@@ -518,16 +511,14 @@ void CSystemMgr::testMotor(CMsg &msg){
   writeconsole("ENTER void CSystemMgr::testMotor(char axis): ");  
   writeconsoleln(s);
   
-  enableMagsMotors();        
-  enableADCS();
+  enable65V();          
 
   CMotorController *pTest=(CMotorController *)getSystem(s.c_str(),"Test Motor");
   if(pTest!=NULL) {
     writeconsoleln("Testing Motor");    
     pTest->test(msg);
   }
-  disableMagsMotors();  
-  disableADCS();
+  disable65V();    
   #endif
 }
 
@@ -536,14 +527,14 @@ void CSystemMgr::testMAG(CMsg &msg){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   writeconsoleln("ENTER void CSystemMgr::testMAGDrive(char addr)");  
   enableSensors();  
-  enableMagsMotors();  
+  enable65V();  
 
   CMDrive *pTest=(CMDrive *)getSystem(s.c_str(),"Test Mag");
   if(pTest!=NULL) {    
     pTest->test(msg);
   }
   
-  disableMagsMotors();
+  disable65V();
   
   writeconsoleln("EXIT void CSystemMgr::testMAGDrive(char addr)");
   #endif
@@ -665,11 +656,11 @@ void CSystemMgr::testMAGDrive(char addr){
 
 
   enableSensors();
-  enableMagsMotors();
+  enable65V();
   
   if (! drv.begin(addr,   &Wire2 )) {
     writeconsoleln("Failed to find DRV8830");
-    disableMagsMotors();
+    disable65V();
     return;
   }
   writeconsoleln("Adafruit DRV8830 found!");
@@ -691,7 +682,7 @@ void CSystemMgr::testMAGDrive(char addr){
 
   drv.run(RELEASE);
   writeconsoleln("Mag test Done");
-  disableMagsMotors();
+  disable65V();
   return;
   #endif
 }
@@ -712,7 +703,7 @@ void CSystemMgr::loopWire(TwoWire *wire,const char * s) {  //I2C2 Sensitive to V
   int nDevices=0;
   int naddress;
   //enableSensors();
-  //enableMagsMotors();  
+  //enable65V();  
   
   CMsg m;
   m.setSYS("LoopWire");
@@ -761,7 +752,7 @@ void CSystemMgr::loopWire(TwoWire *wire,const char * s) {  //I2C2 Sensitive to V
   writeconsoleln(m.serializeout());
   
   addTransmitList(m);
-  //disableMagsMotors();  
+  //disable65V();  
   delay(150);          
 }
 

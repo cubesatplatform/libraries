@@ -255,12 +255,14 @@ void CStateObj::enter(){
 	_statecount++;
 	_startTime = getTime();	
 
-	if(onEnter["DISABLEMAGSMOTORS"]) disableMagsMotors();
+	if(onEnter["DISABLEMBLOGIC"]) disableMBLogic();
+	if(onEnter["DISABLE65V"]) disable65V();
 	if(onEnter["DISABLEBURNWIRE"]) disableBurnWire();
 	if(onEnter["DISABLESENSORS"]) disableSensors();
 	if(onEnter["DISABLEPHONE"]) disablePhone();
 
-	if(onEnter["ENABLEMAGSMOTORS"]) enableMagsMotors();
+	if(onEnter["ENABLEMBLOGIC"]) enableMBLogic();
+	if(onEnter["ENABLE65V"]) enable65V();
 	if(onEnter["ENABLEBURNWIRE"]) enableBurnWire();
 	if(onEnter["ENABLESENSORS"]) enableSensors();
 	if(onEnter["ENABLEPHONE"]) enablePhone();
@@ -275,12 +277,14 @@ void CStateObj::enter(){
 void CStateObj::exit(){
 	_stopTime = getTime();
 
-	if(onExit["DISABLEMAGSMOTORS"]) disableMagsMotors();
+	if(onExit["DISABLEMBLOGIC"]) disableMBLogic();
+	if(onExit["DISABLE65V"]) disable65V();
 	if(onExit["DISABLEBURNWIRE"]) disableBurnWire();
 	if(onExit["DISABLESENSORS"]) disableSensors();
 	if(onExit["DISABLEPHONE"]) disablePhone();
 
-	if(onExit["ENABLEMAGSMOTORS"]) enableMagsMotors();
+	if(onExit["ENABLEMBLOGIC"]) enableMBLogic();
+	if(onExit["ENABLE65V"]) enable65V();
 	if(onExit["ENABLEBURNWIRE"]) enableBurnWire();
 	if(onExit["ENABLESENSORS"]) enableSensors();
 	if(onExit["ENABLEPHONE"]) enablePhone();

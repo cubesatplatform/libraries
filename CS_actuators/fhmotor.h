@@ -89,12 +89,13 @@ public:
   float RPS();
   unsigned long getCount();
   void setIMU(CIMU *pIMU){_pIMU=pIMU;}
-  void runOnce(CMsg &m);
-  void loopSpeed();
-  void loopSpeedSimple();
-  void loopRotation();
-  void loopRamp();
-  void loopPWM();
+  void runOnce(CMsg &msg);
+  void loopLock(CMsg &msg);
+  void loopSpeed(CMsg &msg);
+  void loopSpeedSimple(CMsg &msg);
+  void loopRotation(CMsg &msg);
+  void loopRamp(CMsg &msg);
+  void loopPWM(CMsg &msg);
   void writeStats();
   void Speed(int s=10,unsigned long dur=0){activateDrive(s);}
   void test(CMsg &msg);

@@ -1,4 +1,5 @@
 #include "system_imu.h"
+#include <powerup.h>
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
 #include "pinDefinitions.h"
@@ -52,10 +53,11 @@ void CIMU::loop(){
 
 void CIMU::test(CMsg &msg){ 
   std::string mode=msg.getParameter("DATAMODE","ROT");
-  int period=msg.getParameter("PERIOD",2000);
+  int period=msg.getParameter("PERIOD",10000);
   _dataMode=mode;
   setState("");
   Run(period);
+  writeconsole("IMU Test :");writeconsoleln(Name());
     
   if (State()!="ERROR"){  
     if(_dataMode=="ROT")
@@ -64,6 +66,7 @@ void CIMU::test(CMsg &msg){
     m.writetoconsole();
     addTransmitList(m);   
   } 
+  disableMBLogic();
 }
 
 
@@ -223,19 +226,19 @@ sendError();
 
 
 void CIMU::setupI2C(){
+  enableMBLogic();
   delay(100);
   if(_pWire==NULL)
     config(_address);
   _pWire->flush();
 
+  writeconsoleln("BNO080 I2C Setup");
   for(int retries=0;retries<5;retries++){
     
     if (myIMU.begin(_address) == false) {   
       unsigned int counter=10000;
-      while(_pWire->available()&&counter) {  _pWire->read();counter--;}   //Flushes wire.  Then try again    Wire.flush() should do the same thing
-        
-      incErrorCount();
-    
+      while(_pWire->available()&&counter) {  _pWire->read();counter--;}   //Flushes wire.  Then try again    Wire.flush() should do the same thing        
+      incErrorCount();    
     }  
     else{ 
       dataMode(_dataMode);
