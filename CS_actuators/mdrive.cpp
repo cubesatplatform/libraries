@@ -14,6 +14,12 @@ CMDrive::~CMDrive(){
   //Stop();
   }
 
+
+void CMDrive::loop(){  
+    CMsg m;
+    runOnce(m);  
+  }  
+
 void CMDrive::runOnce(CMsg &m){  
   if(Mode()=="")  {}
 }

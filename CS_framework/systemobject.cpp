@@ -28,7 +28,7 @@ void CSystemObject::init(){
   _stopTime=_startTime+_maxTime;
   
   _minTime=0;
-  _interval=0;  //loop time interval in MicroSeconds,  0 means no delay
+
   
   _loopCount=0;
   _procCount=0;
@@ -40,7 +40,8 @@ void CSystemObject::init(){
   _lastUse=0;
   _retryCount=0;
 
-  _mode="";   //This determines what you are doing   Set to IDLE when done and nothing left to do  When u set new mode need to get it out of IDLE
+  //_interval=0;// Don't clear the Mode on INIT !!!loop time interval in MicroSeconds,  0 means no delay
+  //_mode="";   // Don't clear the Mode on INIT !!!This determines what you are doing   Set to IDLE when done and nothing left to do  When u set new mode need to get it out of IDLE
 }
 
 CSystemObject *getSystem(const char *sys,const char *comment){ 
@@ -207,7 +208,7 @@ void CSystemObject::setState(std::string str) {
   _lastStateTime=getTime(); 
   if(str=="ERROR") _retryCount++;  
   if(str=="PLAY") _retryCount=0;
-  if (!((str=="")||(str=="START")||(str=="STOP")||(str=="PLAY")||(str=="ERROR")||(str=="PAUSE"))){
+  if (!((str=="")||(str=="START")||(str=="STOP")||(str=="PLAY")||(str=="ERROR")||(str=="PAUSE")||(str=="DONE"))){
     for (int count=0;count<20;count++){
       writeconsole("BAD STATE ");      writeconsoleln(str);
       }
@@ -237,15 +238,19 @@ std::string CSystemObject::outputStatus(long val) {
   
 
 void CSystemObject::Run(long runtime){
-  if(runtime>MAXRUNTIME)
+  if(runtime>MAXRUNTIME){
+    writeconsoleln("Runtime exceeds maxtime.  Exiting");
     return;
-  unsigned long endtime=getTime()+runtime;
-
-  while(getTime()<endtime){
-    Run();
   }
+  unsigned long endtime=getTime()+runtime;
+  
+  while(getTime()<endtime){    
+    if((_currentTime+_interval)<getTime())
+      Run();        
+    
+  }
+}  
 
-}    
 void CSystemObject::Run() {
     _procCount++;
     _currentTime = getTime();   
@@ -280,6 +285,10 @@ if (_ostate == "ERROR") {  //if ERROR, have it ertry a few times
 
   if (_ostate == "STOP") { // Pause    
     off();
+    return;
+  }
+
+  if (_ostate == "DONE") { // Do Nothing    
     return;
   }
 }

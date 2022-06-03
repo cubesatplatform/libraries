@@ -96,7 +96,8 @@ if(_pIMU==NULL) {writeconsoleln("NO IMU!!!!!!!!!!!!!!!!!!!!!");setState("ERROR")
   switch (getStep()){
 
   case 0: 
-    _pIMU->dataMode("GYRO", GYROPERIOD);
+    _pIMU->setMode("GYRO");
+    _pIMU->initMode(GYROPERIOD);
     _pIMU->Run(30);
     break;
   case 1:    
@@ -104,7 +105,8 @@ if(_pIMU==NULL) {writeconsoleln("NO IMU!!!!!!!!!!!!!!!!!!!!!");setState("ERROR")
     break;
   case 2:
     deactivate();
-    _pIMU->dataMode("MAG", MAGPERIOD);
+    _pIMU->setMode("MAG");
+    _pIMU->initMode(MAGPERIOD);
     _pIMU->Run(30);
     break;  
   case 3:    

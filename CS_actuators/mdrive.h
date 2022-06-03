@@ -16,6 +16,10 @@ public:
   
   CMDrive();
   ~CMDrive();  
+  void setup(){init();}
+  void loop();
+
+  
   void config(char addr=0x60, TwoWire *twowire=&Wire,int m=0);
   void config(CMsg &msg);
 
@@ -23,6 +27,6 @@ public:
   void runOnce(CMsg &m);
   void init();
   void test(CMsg &msg);
-  void setup(){init();}
+  
   void activateDrive(int val); 
 };

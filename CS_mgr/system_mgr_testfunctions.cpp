@@ -518,7 +518,7 @@ void CSystemMgr::testMotor(CMsg &msg){
     writeconsoleln("Testing Motor");    
     pTest->test(msg);
   }
-  disable65V();    
+  //disable65V();    
   #endif
 }
 

@@ -69,7 +69,6 @@ private:
 
   double _Setpoint=0.0, _Input=0.0, _Output=0.0,_Output_last=0.0;
   char _axis='X';
-  //double Kp=2, Ki=5, Kd=1;
   double _Kp=2.0, _Ki=5.0, _Kd=1.0;
 
   PWMCounter pwmCounter;
@@ -80,27 +79,44 @@ public:
   CMotorController();
   ~CMotorController();
 
+  void setup(){setState("PLAY");}
+  void loop();
+  void off();  
+
   void config(PinName sig, PinName fg,PinName dir);
   void config(CMsg &msg);
-  void configSpeed();
-  void configRotation(CIMU *pIMU);
+
   void init();
+  void initMode(CMsg &msg);
   float RPM();
   float RPS();
   unsigned long getCount();
   void setIMU(CIMU *pIMU){_pIMU=pIMU;}
+
+
   void runOnce(CMsg &msg);
+
+  void configLock(CMsg &msg);
+  void configSpeed(CMsg &msg);
+  void configSpeedSimple(CMsg &msg);
+  void configRotation(CMsg &msg);
+  void configRamp(CMsg &msg);
+  void configPWM(CMsg &msg);
+
   void loopLock(CMsg &msg);
   void loopSpeed(CMsg &msg);
   void loopSpeedSimple(CMsg &msg);
   void loopRotation(CMsg &msg);
   void loopRamp(CMsg &msg);
   void loopPWM(CMsg &msg);
+
+
   void writeStats();
   void Speed(int s=10,unsigned long dur=0){activateDrive(s);}
-  void test(CMsg &msg);
+  
   void setPoint(double sp,unsigned long dur=10000000){_Setpoint=sp; changed();setDuration(dur);}
   
   void activateDrive(int val);
+  void test(CMsg &msg);
 };
 

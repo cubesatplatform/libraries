@@ -61,7 +61,7 @@ void PWMCounter::config(PinName pin)       // create the InterruptIn on the pin 
     
   #else
      attachInterrupt(pin, incrementx, FALLING);      
-  #endif
+  #endif  
 }
 
 
@@ -111,6 +111,7 @@ float PWMCounter::RPM(){
 CMotorController::CMotorController():CBaseDrive(){  
   _channel=channel;
   channel++;
+  setInterval(50);
 };
 
 
@@ -120,8 +121,6 @@ CMotorController::~CMotorController(){
 
 void CMotorController::config(PinName sig, PinName fg,PinName dir){
   init();
-  
-  
   
   PIN_SIGNAL=sig;
   PIN_DIR=dir;
@@ -134,6 +133,7 @@ void CMotorController::config(PinName sig, PinName fg,PinName dir){
   #endif
   pinMode(PIN_DIR, OUTPUT);
   pwmCounter.config(PIN_FG);  
+  setState("PLAY");
 }
 
 
@@ -143,23 +143,21 @@ void CMotorController::config(CMsg &msg){
   std::string strDir=msg.getParameter("PIN_DIR");
   std::string strFG=msg.getParameter("PIN_FG");
   
-
   config(Pins[strSignal],Pins[strDir],Pins[strFG]);
+  setState("PLAY");
 }
-
 
 
 
 void CMotorController::init(){
   CBaseDrive::init();
 
-  _Setpoint=100.0;
+  _Setpoint=2200.0;
   _Input=0.0;
   _Output=0.0;
   _Output_last=0.0;
 
   setState("PLAY");
-  setMode("");
   Speed(0,10000);
 }
   
@@ -176,6 +174,10 @@ unsigned long CMotorController::getCount(){
 }
 
 
+void CMotorController::off(){
+  activateDrive(0);
+  setState("DONE");
+}
 
 void CMotorController::activateDrive(int val){
 
@@ -225,7 +227,7 @@ void CMotorController::writeStats(){
 }
 
 void CMotorController::loopPWM(CMsg &msg){  
-  RPS();
+  _Input =RPS();
   activateDrive((int)_Setpoint);    
 }
 
@@ -250,52 +252,10 @@ void CMotorController::loopSpeed(CMsg &msg){
 
 void CMotorController::loopSpeedSimple(CMsg &msg){
     
-  _Input =RPS();
-  float diff=_Setpoint-_Input;
+  _Input =RPM();
+  float diff=_Input-_Setpoint;
 
-  if(diff>40) 
-    _Output+=400;    
-
-  else if(diff>20) 
-    _Output+=200;    
-    
-  else if(diff>10) 
-    _Output+=100;  
-  
-  else if(diff>5) 
-    _Output+=50;      
-
-  else if(diff>3) 
-    _Output+=10;          
-
-  else if(diff>1) 
-    _Output+=3;          
-
-  else if(diff>.1) 
-    _Output+=1;      
-
-    else if(diff<-.1) 
-    _Output-=1;      
-
-else if(diff<-1) 
-    _Output-=3;          
-
-else if(diff<-3) 
-    _Output-=10;          
-
-else if(diff<-5) 
-    _Output-=50;      
-
-else if(diff<-10) 
-    _Output-=100;  
-  
-else if(diff<-20) 
-    _Output-=200;    
-    
-else if(diff<-40) 
-    _Output-=400;    
-
- activateDrive((int)_Output);
+ activateDrive((int)_Setpoint);
   
 }
 
@@ -359,7 +319,10 @@ else if(diff<-40)
 }
 
 
-
+void CMotorController::loop(){  
+    CMsg m;
+    runOnce(m);  
+  }
 
 void CMotorController::loopRotation(CMsg &msg){
 
@@ -385,27 +348,9 @@ void CMotorController::loopRamp(CMsg &msg){
   
 }
 
-void CMotorController::runOnce(CMsg &msg){
-  writeconsoleln(Mode());
-  if(Mode()=="LOCK")
-    loopLock(msg);
-  else if(Mode()=="SPEED")
-    loopSpeed(msg);
-  else if(Mode()=="SIMPLE")
-    loopSpeedSimple(msg);
-  else if(Mode()=="ROTATION")  
-    loopRotation(msg);  
-  else if(Mode()=="RAMP")  
-    loopRamp(msg);  
-  else if(Mode()=="PWM")  
-    loopPWM(msg);  
-  else
-    loopSpeedSimple(msg);
-}
 
 
-void CMotorController::configRotation(CIMU *pIMU){  
-  setIMU(pIMU);
+void CMotorController::configRotation(CMsg &msg){  
   std::string str=Name();
   if(str.size()){
     char c=str[str.size()-1];
@@ -431,11 +376,11 @@ void CMotorController::configRotation(CIMU *pIMU){
   #endif
   myPID.start();
   Speed(0,10000);
-
+  setState("PLAY");
 
 }
 
-void CMotorController::configSpeed(){      
+void CMotorController::configSpeed(CMsg &msg){      
   _Kp=32.0, _Ki=0.10, _Kd=0.0;
   myPID.begin(&_Input, &_Output, &_Setpoint, _Kp, _Ki, _Kd);
 
@@ -457,45 +402,72 @@ void CMotorController::configSpeed(){
 
   // myController.reset();               // Used for resetting the I and D terms - only use this if you know what you're doing
   // myController.stop();                // Turn off the PID controller (compute() will not do anything until start() is called)
+  setState("PLAY");
   
 }
 
 
 void CMotorController::test(CMsg &msg) {
-Run(50);
+init();
+
 std::list<float> flist; 
 int sspeed=0;  
 
 std::string testMode=msg.getParameter("MODE","SIMPLE");
+testMode="SIMPLE";
 setMode(testMode);  
+initMode(msg);
 
-float setpt=msg.getParameter("SETPOINT",1787.0);
-int duration=msg.getParameter("DURATION",10000);
+Run(10000);   
+off();  
+}
 
-if(testMode=="ROTATION"){
-  CIMU *pIMU=(CIMU *)getSystem("IMUSPI");
-  if(pIMU!=NULL) {       
-    pIMU->test(msg);
+
+
+void CMotorController::runOnce(CMsg &msg){
+  if(Mode()=="LOCK")
+    loopLock(msg);
+  else if(Mode()=="SPEED")
+    loopSpeed(msg);
+  else if(Mode()=="SIMPLE")
+    loopSpeedSimple(msg);
+  else if(Mode()=="ROTATION")  
+    loopRotation(msg);  
+  else if(Mode()=="RAMP")  
+    loopRamp(msg);  
+  else if(Mode()=="PWM")  
+    loopPWM(msg);  
+  else
+    loopSpeedSimple(msg);
+}
+
+
+void CMotorController::initMode(CMsg &msg){  
+  writeconsole("Init Mode..");writeconsoleln(Mode());
+  if(Mode()=="LOCK")
+    configLock(msg);
+  else if(Mode()=="SPEED")
+    configSpeed(msg);
+  else if(Mode()=="SIMPLE")
+    configSpeedSimple(msg);
+  else if(Mode()=="ROTATION")  
+    configRotation(msg);  
+  else if(Mode()=="RAMP")  
+    configRamp(msg);  
+  else if(Mode()=="PWM")  
+    configPWM(msg);  
+  else
+    configSpeedSimple(msg);
+}
+
+
+void CMotorController::configLock(CMsg &msg){setState("PLAY");}
+
+void CMotorController::configSpeedSimple(CMsg &msg){
+  _Setpoint=2200.0;
+  setState("PLAY");
   }
 
-  configRotation(pIMU);
-  
-  setPoint(setpt,duration);
-}
-else{
-  configSpeed();
-  setPoint(setpt,duration);
-}
+void CMotorController::configRamp(CMsg &msg){setState("PLAY");}
 
-
-unsigned long tt=getTime()+duration;
-
-while(getTime()<tt){
-  Run(30);   
-  
-  }
-
-
-Speed(0,10000);
-
-}
+void CMotorController::configPWM(CMsg &msg){setState("PLAY");}

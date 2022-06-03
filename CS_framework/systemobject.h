@@ -77,7 +77,8 @@ public:
   virtual void pause() {setState("PAUSE");}  
   virtual void stop()  {setState("STOP");};  
   virtual void off()  {};  
-  
+  virtual void init();
+
   void restart(){setState("");}
   
   std::string IAM(){return _IAM;}
@@ -86,7 +87,6 @@ public:
  
   void setup(CMsg &msg) { setup(); };
   void loop(CMsg &msg)  {loop();};
-  virtual void init();
   
   void tic(){_lastUse=getTime();if(_ostate=="PAUSE")setState("PLAY");}
   unsigned long lastUsed(){return _lastUse;}
@@ -114,11 +114,11 @@ public:
   std::string State() { return _ostate; }
   std::string lastState() { return _olaststate; }  
   virtual void Update(CMsg &msg);
-
+  virtual void initMode(){};
+  
   void newMsg(CMsg &msg);
   void newMode(CMsg &msg);
-  void sendError();
-  virtual void initMode(){};
+  void sendError();  
 
   void setMode(std::string tmp){_mode=tmp;}
   std::string Mode(){return _mode;}

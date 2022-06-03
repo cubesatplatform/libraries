@@ -53,6 +53,11 @@ void CPWMController::config(CMsg &msg){
 
 void CPWMController::setup(){} //bOn=false;
 
+void CPWMController::loop(){  
+    CMsg m;
+    runOnce(m);  
+  }  
+
 void CPWMController::activateDrive(float val){ 
   writeconsoleln("PWMController ---   ACTIVATE DRIVE !!!!!!!!!!");
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)

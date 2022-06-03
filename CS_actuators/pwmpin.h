@@ -40,6 +40,7 @@ public:
   ~CPWMController();
 
   void setup();
+  void loop();
   void config(PinName sig);
   void config(CMsg &msg);
 
