@@ -85,7 +85,7 @@ return _countx;
 }
 
 
-float PWMCounter::RPS(){
+double PWMCounter::RPS(){
   lastT=millis();   // may want micros
   
   unsigned long diffsec=(lastT-prevT);
@@ -97,13 +97,15 @@ float PWMCounter::RPS(){
     lastCount=curcount;
 
 
-    _rps=1000.0*(float)diffcount/(float)diffsec;  
+    _rps=1000.0*(double)diffcount/(double)diffsec;  
     _rps=_rps/6.0;  //Six pings a rev 
   }
+
+  
   return _rps;   
 };
 
-float PWMCounter::RPM(){
+double PWMCounter::RPM(){
   return 60.0*RPS();   
 }
 
@@ -111,7 +113,7 @@ float PWMCounter::RPM(){
 CMotorController::CMotorController():CBaseDrive(){  
   _channel=channel;
   channel++;
-  setInterval(50);
+  setInterval(500);
 };
 
 
@@ -161,12 +163,19 @@ void CMotorController::init(){
   Speed(0,10000);
 }
   
-float CMotorController::RPM(){
-  return pwmCounter.RPM(); 
+double CMotorController::RPM(){
+  double tmp=pwmCounter.RPM(); 
+
+  if(!getDir())
+    tmp*=-1.0;
+  return tmp;
 }
 
-float CMotorController::RPS(){
-  return pwmCounter.RPS();  
+double CMotorController::RPS(){
+  double tmp=pwmCounter.RPS();  
+  if(!getDir())
+    tmp*=-1.0;
+  return tmp;
 }
 
 unsigned long CMotorController::getCount(){    
@@ -189,12 +198,12 @@ void CMotorController::activateDrive(int val){
   int nVal;
   
   if((val<0)&&(getDir())){
-    setDir(0);              
+    setDir(0);            
     digitalWrite(PIN_DIR,LOW);  
   }
 
   if((val>=0)&&(!getDir())){  
-    setDir(1);
+    setDir(1);    
     digitalWrite(PIN_DIR,HIGH);
   }
 
@@ -205,24 +214,21 @@ void CMotorController::activateDrive(int val){
 
   writeconsole("      nVal: ");
   writeconsoleln(nVal);
-    
-      
+          
   sendPWM(nVal);
-
 }
 
 void CMotorController::writeStats(){
-  writeconsole(PIN_SIGNAL);
-  writeconsole(Name());  writeconsole(" ");
-  writeconsole(Mode());  writeconsole(" ");
-  writeconsole("   Setpoint: ");
-  writeconsole((float)_Setpoint);  
-  writeconsole("Input:  ");      
-  writeconsole(_Input);  
-  writeconsole("      Output: ");
-  writeconsoleln((float)_Output);
+ 
+  CMsg m;
 
-  
+  m.setParameter("Name",Name());
+  m.setParameter("Mode",Mode());
+  m.setParameter("Direction",getDir());
+  m.setParameter(" Setpoint",_Setpoint);
+  m.setParameter(" Input",_Input);
+  m.setParameter(" Output",_Output);
+  m.writetoconsole(); 
   
 }
 
@@ -253,66 +259,36 @@ void CMotorController::loopSpeed(CMsg &msg){
 void CMotorController::loopSpeedSimple(CMsg &msg){
     
   _Input =RPM();
-  float diff=_Input-_Setpoint;
 
- activateDrive((int)_Setpoint);
+  double diff=_Setpoint-_Input;
+
+  _Output+=(diff/4.0);
+
+  
+  if(_Output>4000.0) _Output=4000.0;
+  if(_Output<-4000.0) _Output=-4000.0;
+
+ activateDrive((int)_Output);
   
 }
 
 
 void CMotorController::loopLock(CMsg &msg){
   if(_pIMU==NULL) {writeconsoleln("NO IMU!!!!!!!!!!!!!!!!!!!!!");return;}
+  writeconsoleln("!!!!!!!!!!!!!!!!!!!!!  LOOOP LOCK   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   
   _pIMU->Run();
-  std::string axis;
-  axis=_axis;
-  CMsg m=getDataMap("PRY");
+  std::string axis="GYRO_";
+  axis+=_axis;
 
-  _Input=m.getParameter(axis,0);  
+  writeconsole("Axis: "); writeconsoleln(axis);
+  CMsg m=getDataMap("GYRO");
+  m.writetoconsole();
 
-  float diff=_Setpoint-_Input;
+  _Input=m.getParameter(axis,0.0);  
 
-  if(diff>40) 
-    _Output+=400;    
-
-  else if(diff>20) 
-    _Output+=200;    
-    
-  else if(diff>10) 
-    _Output+=100;  
-  
-  else if(diff>5) 
-    _Output+=50;      
-
-  else if(diff>3) 
-    _Output+=10;          
-
-  else if(diff>1) 
-    _Output+=3;          
-
-  else if(diff>.1) 
-    _Output+=1;      
-
-    else if(diff<-.1) 
-    _Output-=1;      
-
-else if(diff<-1) 
-    _Output-=3;          
-
-else if(diff<-3) 
-    _Output-=10;          
-
-else if(diff<-5) 
-    _Output-=50;      
-
-else if(diff<-10) 
-    _Output-=100;  
-  
-else if(diff<-20) 
-    _Output-=200;    
-    
-else if(diff<-40) 
-    _Output-=400;    
+  double diff=_Setpoint-_Input;
+  _Output=1000.0*diff;
 
  activateDrive((int)_Output);
   
@@ -329,9 +305,13 @@ void CMotorController::loopRotation(CMsg &msg){
   if(_pIMU==NULL) {writeconsoleln("NO IMU!!!!!!!!!!!!!!!!!!!!!");return;}
   
   _pIMU->Run();
-  std::string axis;
-  axis=_axis;
-  CMsg m=getDataMap("PRY");
+  std::string axis="GYRO_";
+  axis+=_axis;
+
+  writeconsoleln(axis);
+  CMsg m=getDataMap("GYRO");
+
+  m.writetoconsole();
 
   _Input=m.getParameter(axis,0);  
   _Output_last=_Output;
@@ -410,21 +390,23 @@ void CMotorController::configSpeed(CMsg &msg){
 void CMotorController::test(CMsg &msg) {
 init();
 
-std::list<float> flist; 
+std::list<double> flist; 
 int sspeed=0;  
 
 std::string testMode=msg.getParameter("MODE","SIMPLE");
-testMode="SIMPLE";
+testMode="LOCK";
 setMode(testMode);  
 initMode(msg);
+  
+setPoint(0.0 );
+Run(20000);  
 
-Run(10000);   
-off();  
+//off();  
 }
 
 
 
-void CMotorController::runOnce(CMsg &msg){
+void CMotorController::runOnce(CMsg &msg){  
   if(Mode()=="LOCK")
     loopLock(msg);
   else if(Mode()=="SPEED")
@@ -461,10 +443,19 @@ void CMotorController::initMode(CMsg &msg){
 }
 
 
-void CMotorController::configLock(CMsg &msg){setState("PLAY");}
+void CMotorController::configLock(CMsg &msg){
+  CIMU *pTmp=(CIMU *)getSystem("IMUI2C","IMUI2C");
+  if(pTmp==NULL)
+    return;
+  setIMU(pTmp);
+  pTmp->setMode("GYRO"); 
+  setPoint(0.0);
+  setState("PLAY");
+  }
 
 void CMotorController::configSpeedSimple(CMsg &msg){
-  _Setpoint=2200.0;
+  setPoint(-1630.0);
+  _Output=500.0;
   setState("PLAY");
   }
 

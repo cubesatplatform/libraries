@@ -42,7 +42,7 @@ private:
 //need to fix  see this
     PinName _interrupt;
     char _axis='X';
-    float _rps=0.0;
+    double _rps=0.0;
 
     unsigned long lastCount=0;
     unsigned long prevT=0;
@@ -58,8 +58,8 @@ public:
     unsigned long read();
 
     unsigned long getCount();
-    float RPM();
-    float RPS();
+    double RPM();
+    double RPS();
 };
 
 
@@ -88,8 +88,8 @@ public:
 
   void init();
   void initMode(CMsg &msg);
-  float RPM();
-  float RPS();
+  double RPM();
+  double RPS();
   unsigned long getCount();
   void setIMU(CIMU *pIMU){_pIMU=pIMU;}
 

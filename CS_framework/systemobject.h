@@ -134,9 +134,9 @@ public:
   void timeStamp();
  
   void stats(CMsg &ms);
-  void Run(long runtime);                    
+  void Run(unsigned long runtime);                    
   void Run();          
-  void Run(CMsg &m){long runtime=m.getParameter("RUNTIME",10); Run(runtime);}                                                                               //Next state calls State Transition Functions
+  void Run(CMsg &m){unsigned long runtime=m.getParameter("RUNTIME",10); Run(runtime);}                                                                               //Next state calls State Transition Functions
   void setState(std::string str);        //Only set the state  Dont call any functions.  The Next state should take care of that
   void Name(const char* s) { std::string str= s; Name(str); }
   void Name(std::string s);

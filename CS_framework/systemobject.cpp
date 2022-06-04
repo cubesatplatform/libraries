@@ -2,6 +2,10 @@
 #include "systemobject.h"
 #include "messages.h"
 
+#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+  #include "mbed.h"
+#endif
+
 
 int CSystemObject::sid=0;
 
@@ -237,7 +241,7 @@ std::string CSystemObject::outputStatus(long val) {
 }
   
 
-void CSystemObject::Run(long runtime){
+void CSystemObject::Run(unsigned long runtime){
   if(runtime>MAXRUNTIME){
     writeconsoleln("Runtime exceeds maxtime.  Exiting");
     return;
@@ -245,8 +249,12 @@ void CSystemObject::Run(long runtime){
   unsigned long endtime=getTime()+runtime;
   
   while(getTime()<endtime){    
-    if((_currentTime+_interval)<getTime())
+    if((_currentTime+_interval)<getTime()){
+      #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+        mbed::Watchdog::get_instance().kick();   
+      #endif
       Run();        
+    }
     
   }
 }  
@@ -257,14 +265,14 @@ void CSystemObject::Run() {
        
 
   if (_currentTime<_startTime) return;   //Do nothing as it shouldnt be activated yet
-//timeSinceStateChange()  // Can use this to progress states
-if (_ostate == "ERROR") {  //if ERROR, have it ertry a few times
+
+if (_ostate == "ERROR") {  //if ERROR, have it retry a few times
     if(_interval<570) {
          _interval+=5;
       } 
     else {
         _ostate ="";     
-        writeconsoleln(outputStatus(0));
+        //writeconsoleln(outputStatus(0));
     }        
     return;
   }
