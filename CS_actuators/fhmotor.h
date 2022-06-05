@@ -3,7 +3,11 @@
 #include "basedrive.h"
 #include <consoleio.h>
 #include <system_imu.h>
+#include <consoleio.h>
 #include <ArduPID.h>
+
+#define PWM_MAX 4000
+
 
 
 
@@ -64,8 +68,7 @@ public:
 
 
 class CMotorController:public CBaseDrive{
-private:
-  CIMU *_pIMU=NULL;
+private:  
 
   double _Setpoint=0.0, _Input=0.0, _Output=0.0,_Output_last=0.0;
   char _axis='X';
@@ -79,7 +82,7 @@ public:
   CMotorController();
   ~CMotorController();
 
-  void setup(){setState("PLAY");}
+  void setup();
   void loop();
   void off();  
 
@@ -90,9 +93,7 @@ public:
   void initMode(CMsg &msg);
   double RPM();
   double RPS();
-  unsigned long getCount();
-  void setIMU(CIMU *pIMU){_pIMU=pIMU;}
-
+  unsigned long getCount();  
 
   void runOnce(CMsg &msg);
 

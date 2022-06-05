@@ -80,10 +80,11 @@ CSystemObject *getIMU(const char *tmp){
   CSystemObject *pIMU=getSystem(tmp,"CSystemObject *getIMU(const char *tmp)");
 
   if(pIMU==NULL){
-    pIMU=getSystem("IMUI2C");
+    pIMU=getSystem("IMUSPI");
   }
 
   if(pIMU==NULL){
+    writeconsoleln("NO IMUs !!!!");
   }
   return(pIMU);  
 }
@@ -239,7 +240,11 @@ std::string CSystemObject::outputStatus(long val) {
   }
   return str;     
 }
-  
+
+
+void CSystemObject::reboot(){
+  while(1){}
+}
 
 void CSystemObject::Run(unsigned long runtime){
   if(runtime>MAXRUNTIME){

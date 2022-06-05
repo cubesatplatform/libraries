@@ -62,19 +62,19 @@ void CMagTorquer::deactivate(){
 }
 
 
-void CMagTorquer::getGyroData(){
-  _pIMU->Run(30);
-  _gyroX=*_pIMU->Gyro.pZ;
-  _gyroY=*_pIMU->Gyro.pY;    
-  _gyroZ=*_pIMU->Gyro.pX;
+void CMagTorquer::getGyroData(){  
+  CMsg m=getDataMap("GYRO");
+  _gyroX=m.getParameter("GYRO_X",0.0);
+  _gyroY=m.getParameter("GYRO_Y",0.0);
+  _gyroZ=m.getParameter("GYRO_Z",0.0);
 }
 
 
 void CMagTorquer::getMagData(){
-  _pIMU->Run(30);
-  _gyroX=*_pIMU->Mag.pZ;
-  _gyroY=*_pIMU->Mag.pY;    
-  _gyroZ=*_pIMU->Mag.pX;
+  CMsg m=getDataMap("MAG");
+  _gyroX=m.getParameter("MAG_X",0.0);
+  _gyroY=m.getParameter("MAG_Y",0.0);
+  _gyroZ=m.getParameter("MAG_Z",0.0);
 }
 
 
@@ -160,8 +160,9 @@ void CMagTorquer::newCMD(CMsg &msg){
   
 
 void CMagTorquer::loop(){ 
+  if(_pIMU!=NULL) _pIMU->Run();
   if (Mode()=="CUSTOM"){   //Do some control
-    if(_pIMU!=NULL) _pIMU->Run();
+    
     if(_pMagX!=NULL) _pMagX->Run();
     if(_pMagY!=NULL) _pMagY->Run();
     if(_pMagZ!=NULL) _pMagZ->Run();

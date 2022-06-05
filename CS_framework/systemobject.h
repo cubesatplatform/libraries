@@ -181,6 +181,7 @@ public:
   std::string outputStatus(long val=100000);
   unsigned long getReceivedTimestamp();
   void transmitError(const char *tmp);
+  void reboot();
 };
 
 extern std::map<std::string,CSystemObject *> SysMap;
@@ -191,7 +192,7 @@ std::string getSatState();
 void switchRadios();
 
 CSystemObject *getSystem(const char *sys, const char *comment="");
-CSystemObject *getIMU(const char *sys="IMU");
+CSystemObject *getIMU(const char *sys="IMUI2C");
 
 
 

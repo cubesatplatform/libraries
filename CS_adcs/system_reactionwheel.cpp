@@ -80,9 +80,9 @@ void CRW::setup()
  _pMotorY=(CMotorController *)getSystem("MOTORY");
  _pMotorZ=(CMotorController *)getSystem("MOTORZ");
 
-  if(_pMotorX!=NULL) {_pMotorX->setIMU(_pIMU); _pMotorX->Speed(0,10000);}
-  if(_pMotorY!=NULL) {_pMotorY->setIMU(_pIMU); _pMotorY->Speed(0,10000);}
-  if(_pMotorZ!=NULL) {_pMotorZ->setIMU(_pIMU); _pMotorZ->Speed(0,10000);}
+  if(_pMotorX!=NULL) { _pMotorX->Speed(0,10000);}
+  if(_pMotorY!=NULL) { _pMotorY->Speed(0,10000);}
+  if(_pMotorZ!=NULL) { _pMotorZ->Speed(0,10000);}
   
   
   setForever();

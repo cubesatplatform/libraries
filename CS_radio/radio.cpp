@@ -507,6 +507,14 @@ bool CRadio::readyToTransmit(){
   }
 
 
+void CRadio::incBadInterrupt(){
+  _badInterruptCount++;
+  if(_badInterruptCount>0){
+    writeconsoleln("Radio Interrupt did not fire.  May reset entire system");
+    delay(2000);
+    reboot();
+  }
+}
 
 void CRadio::checkModeTX(){   //Puts radio back to receive Mode if stuck in Transmit Mode
   if (Mode()=="TX"){    
@@ -521,6 +529,7 @@ void CRadio::checkModeTX(){   //Puts radio back to receive Mode if stuck in Tran
     if(getTime()>_completedTransmit){
       writeconsoleln("   CheckMode:  getTime()>completedTransmit    Transmission did not fire flag.  Finishing anyway!");
       SetRadioReceive();
+      incBadInterrupt();
       return;
     }
   }    

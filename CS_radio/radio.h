@@ -114,6 +114,8 @@ SX1268 *plora=&radio1;
   unsigned long _lastTransmit=0;
   unsigned long _lastReceive=0;
 
+  int _badInterruptCount=0;
+
   std::string _modem="";
   
 
@@ -142,6 +144,7 @@ public:
   bool readyToTransmit();
   void checkModeTX();
   void checkModeRX();
+  void incBadInterrupt();
   void setACK(bool tmp){_sendACK=tmp;}
   void setTransmitter(bool tmp){_bTransmitter=tmp;}
   bool getTransmitter(){return _bTransmitter;}
