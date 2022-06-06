@@ -90,26 +90,27 @@ public:
   void config(CMsg &msg);
 
   void init();
-  void initMode(CMsg &msg);
   double RPM();
   double RPS();
   unsigned long getCount();  
 
   void runOnce(CMsg &msg);
+  void newMode(CMsg &msg);
+  void newMode(std::string tmp){CMsg m; m.setMODE(tmp);newMode(m);}
 
-  void configLock(CMsg &msg);
-  void configSpeed(CMsg &msg);
-  void configSpeedSimple(CMsg &msg);
-  void configRotation(CMsg &msg);
-  void configRamp(CMsg &msg);
-  void configPWM(CMsg &msg);
+  void setupLock();
+  void setupSpeed();
+  void setupSpeedSimple();
+  void setupRotation();
+  void setupRamp();
+  void setupPWM();
 
-  void loopLock(CMsg &msg);
-  void loopSpeed(CMsg &msg);
-  void loopSpeedSimple(CMsg &msg);
-  void loopRotation(CMsg &msg);
-  void loopRamp(CMsg &msg);
-  void loopPWM(CMsg &msg);
+  void loopLock();
+  void loopSpeed();
+  void loopSpeedSimple();
+  void loopRotation();
+  void loopRamp();
+  void loopPWM();
 
 
   void writeStats();

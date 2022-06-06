@@ -22,9 +22,7 @@ class CStateObj:public CSystemObject {
 
 
   	
-protected:
-	void processMsg(CMsg &msg);
-  	
+protected:	  	
 	CMsg _statemsg;
 
 public:
@@ -39,8 +37,6 @@ public:
 	virtual void de_init() {};
 	void loop();
 
-	void newMsg(CMsg &msg); 
-	void filterMsg(CMsg &msg);	
 	
   	void addSystem(CMsg &msg);
 	void addSystem(CSystemObject* psys);
@@ -55,6 +51,7 @@ public:
 	bool outOfTime();
 	void Output(CMsg &msg);
 	void resetSubSystems();
+	void callCustomFunctions(CMsg &msg);
 	CSystemObject* FindNameInSubsystems(std::string str);
 	CSystemObject* FindCIDInSubsystems(std::string str);
 };

@@ -151,7 +151,7 @@ void CIMU::setup(){
   if(Name()=="IMUI2C") setupI2C();
   
   if(State()=="PLAY"){  
-    initMode();
+    setPeriod();
   
   }
 }
@@ -181,7 +181,7 @@ void CIMU::config(CMsg &msg){
   }
 }
 
-void CIMU::initMode(int period){              //IMPORTANT
+void CIMU::setPeriod(int period){              //IMPORTANT
   /*
   myIMU.enableLinearAccelerometer(50);  // m/s^2 no gravity
   myIMU.enableRotationVector(50);  // quat

@@ -1,52 +1,41 @@
 #include "fhmotor.h"
 
 
-void CMotorController::initMode(CMsg &msg){  
-  
-  writeconsole("Init Mode..");writeconsoleln(Mode());
-  if(Mode()=="LOCK")
-    configLock(msg);
-  else if(Mode()=="SPEED")
-    configSpeed(msg);
-  else if(Mode()=="SIMPLE")
-    configSpeedSimple(msg);
-  else if(Mode()=="ROTATION")  
-    configRotation(msg);  
-  else if(Mode()=="RAMP")  
-    configRamp(msg);  
-  else if(Mode()=="PWM")  
-    configPWM(msg);  
-
+void CMotorController::newMode(CMsg &msg){
+  std::string mode=msg.getMODE();
+  setMode(mode);  
+  setup();
 }
+
 
 
 
 void CMotorController::runOnce(CMsg &msg){  
   if(Mode()=="LOCK")
-    loopLock(msg);
+    loopLock();
   else if(Mode()=="SPEED")
-    loopSpeed(msg);
+    loopSpeed();
   else if(Mode()=="SIMPLE")
-    loopSpeedSimple(msg);
+    loopSpeedSimple();
   else if(Mode()=="ROTATION")  
-    loopRotation(msg);  
+    loopRotation();  
   else if(Mode()=="RAMP")  
-    loopRamp(msg);  
+    loopRamp();  
   else if(Mode()=="PWM")  
-    loopPWM(msg);  
+    loopPWM();  
   else
-    loopSpeedSimple(msg);
+    loopSpeedSimple();
 }
 
 
 
-void CMotorController::loopPWM(CMsg &msg){  
+void CMotorController::loopPWM(){  
   _Input =RPS();
-  activateDrive((int)_Setpoint);    
+  activateDrive((int)_Output);    
 }
 
 
-void CMotorController::loopSpeed(CMsg &msg){
+void CMotorController::loopSpeed(){
   _Input =RPS();
   myPID.compute();
   if(_Output<20 ) _Output=20;
@@ -61,7 +50,7 @@ void CMotorController::loopSpeed(CMsg &msg){
 
 
 
-void CMotorController::loopSpeedSimple(CMsg &msg){    
+void CMotorController::loopSpeedSimple(){    
   _Input =RPM();
 
   double diff=_Setpoint-_Input;
@@ -76,7 +65,7 @@ void CMotorController::loopSpeedSimple(CMsg &msg){
 }
 
 
-void CMotorController::loopLock(CMsg &msg){
+void CMotorController::loopLock(){
   std::string axis="GYRO_";
   axis+=_axis;
 
@@ -90,13 +79,11 @@ void CMotorController::loopLock(CMsg &msg){
   _Output=1000.0*diff;
 
  activateDrive((int)_Output);
-  
 }
 
 
 
-void CMotorController::loopRotation(CMsg &msg){
-  
+void CMotorController::loopRotation(){  
   std::string axis="GYRO_";
   axis+=_axis;
 
@@ -113,7 +100,7 @@ void CMotorController::loopRotation(CMsg &msg){
 } 
 
 
-void CMotorController::loopRamp(CMsg &msg){
+void CMotorController::loopRamp(){
   if(_Setpoint>PWM_MAX) _Setpoint=0;
   _Setpoint+=20;
   activateDrive(_Setpoint);  
@@ -122,7 +109,7 @@ void CMotorController::loopRamp(CMsg &msg){
 
 
 
-void CMotorController::configRotation(CMsg &msg){  
+void CMotorController::setupRotation(){  
   std::string str=Name();
   if(str.size()){
     char c=str[str.size()-1];
@@ -152,7 +139,7 @@ void CMotorController::configRotation(CMsg &msg){
 
 }
 
-void CMotorController::configSpeed(CMsg &msg){      
+void CMotorController::setupSpeed(){      
   _Kp=32.0, _Ki=0.10, _Kd=0.0;
   myPID.begin(&_Input, &_Output, &_Setpoint, _Kp, _Ki, _Kd);
 
@@ -171,32 +158,27 @@ void CMotorController::configSpeed(CMsg &msg){
   Speed(0,10000);
 
   setState("PLAY");
-  
 }
 
 
 
-void CMotorController::configLock(CMsg &msg){ 
+void CMotorController::setupLock(){ 
   setPoint(0.0);
   setState("PLAY");
   }
 
-void CMotorController::configSpeedSimple(CMsg &msg){
+void CMotorController::setupSpeedSimple(){
   setPoint(-1630.0);
   _Output=500.0;
   setState("PLAY");
   }
 
-void CMotorController::configRamp(CMsg &msg){setState("PLAY");}
+void CMotorController::setupRamp(){setState("PLAY");}
 
-void CMotorController::configPWM(CMsg &msg){setState("PLAY");}
-
-
-
-
-
-
-
+void CMotorController::setupPWM(){
+  _Output=_cmsg.getParameter("V",_Output);
+  setState("PLAY");
+  }
 
 /////////////////
 
@@ -208,8 +190,7 @@ int sspeed=0;
 
 std::string testMode=msg.getParameter("MODE","SIMPLE");
 testMode="LOCK";
-setMode(testMode);  
-initMode(msg);
+newMode(testMode);  
 
   
 CIMU *pIMU=(CIMU *)getIMU();

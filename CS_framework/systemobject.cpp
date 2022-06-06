@@ -125,9 +125,8 @@ void CSystemObject::Name(std::string s) {
  }
 
 void CSystemObject::newMode(CMsg &msg){
-  _cmsg=msg;
-  _mode=msg.getACT();
-  initMode();
+  std::string mode=msg.getMODE();
+  setMode(mode);  
 }
 
 void CSystemObject::stats(CMsg &msg){    
@@ -165,9 +164,8 @@ void CSystemObject::newMsg(CMsg &msg){
   std::string act=msg.getACT();
 
   writeconsole(Name());writeconsoleln(":  Message received");
-  if ((act!="MODEM") &&(act.substr(0,4)=="MODE")) { newMode(msg); return;} //Updates a parameter in the Subsystem
-  //if (act == "SETMODE") { newMode(msg); return;} //Updates a parameter in the Subsystem
-
+  if (act=="NEWMODE") { newMode(msg); return;} //Updates a parameter in the Subsystem
+  
   if (act == "PLAY") {play();return;}
   if (act == "START") {start();return;}
   if (act == "OFF") {off();return;}
@@ -189,7 +187,7 @@ void CSystemObject::newMsg(CMsg &msg){
   if(act=="ADDDATAMAP") {std::string key=msg.getKEY(); addDataMap(key,msg);return;}
   if(act=="ADDTRANSMITLIST") {addTransmitList(msg);return;}
 
-  writeconsoleln("cllCustomFunctions");
+  writeconsoleln("callCustomFunctions");
   callCustomFunctions(msg);
 }
 

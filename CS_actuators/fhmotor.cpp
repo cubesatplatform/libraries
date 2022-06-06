@@ -236,10 +236,19 @@ void CMotorController::loop(){
 
 
 void CMotorController::setup(){
-  CMsg m;
-  initMode(m);
 
-  setState("PLAY");
+  writeconsole("Setup    Mode:");writeconsoleln(Mode());
+  if(Mode()=="LOCK")
+    setupLock();
+  else if(Mode()=="SPEED")
+    setupSpeed();
+  else if(Mode()=="SIMPLE")
+    setupSpeedSimple();
+  else if(Mode()=="ROTATION")  
+    setupRotation();  
+  else if(Mode()=="RAMP")  
+    setupRamp();  
+  else if(Mode()=="PWM")  
+    setupPWM();  
+ setState("PLAY");
 }
-
-

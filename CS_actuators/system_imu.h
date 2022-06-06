@@ -166,7 +166,7 @@ class CIMU:public CSystemObject{
 
     void GetData();
     
-    void initMode(int period=30);
+    void setPeriod(int period=30);
     CMsg fillData(){
       CMsg m;
       return m;

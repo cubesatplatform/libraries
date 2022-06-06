@@ -114,13 +114,12 @@ public:
   std::string State() { return _ostate; }
   std::string lastState() { return _olaststate; }  
   virtual void Update(CMsg &msg);
-  virtual void initMode(){};
   
   void newMsg(CMsg &msg);
-  void newMode(CMsg &msg);
+  virtual void newMode(CMsg &msg);
   void sendError();  
 
-  void setMode(std::string tmp){_mode=tmp;}
+  virtual void setMode(std::string tmp){_mode=tmp;}
   std::string Mode(){return _mode;}
 
   unsigned long startTime(){return _startTime;};

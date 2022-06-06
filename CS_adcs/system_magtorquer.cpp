@@ -97,7 +97,7 @@ if(_pIMU==NULL) {writeconsoleln("NO IMU!!!!!!!!!!!!!!!!!!!!!");setState("ERROR")
 
   case 0: 
     _pIMU->setMode("GYRO");
-    _pIMU->initMode(GYROPERIOD);
+    _pIMU->setPeriod(GYROPERIOD);
     _pIMU->Run(30);
     break;
   case 1:    
@@ -106,7 +106,7 @@ if(_pIMU==NULL) {writeconsoleln("NO IMU!!!!!!!!!!!!!!!!!!!!!");setState("ERROR")
   case 2:
     deactivate();
     _pIMU->setMode("MAG");
-    _pIMU->initMode(MAGPERIOD);
+    _pIMU->setPeriod(MAGPERIOD);
     _pIMU->Run(30);
     break;  
   case 3:    

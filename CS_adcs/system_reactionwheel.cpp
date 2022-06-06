@@ -14,8 +14,7 @@
 
 CRW::CRW():CSystemObject(){
   init();
-  Name("RW");
-   
+  Name("RW");   
 }
 
 

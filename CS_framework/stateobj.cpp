@@ -122,23 +122,12 @@ CSystemObject* CStateObj::FindCIDInSubsystems(std::string str) {
 	return nullptr;
 }
 
-void CStateObj::newMsg(CMsg &msg) {
-	filterMsg(msg);	
-	};
 
-void CStateObj::filterMsg(CMsg &msg){		
-	std::string str = msg.getSYS();
-	if(str==Name())			//Only want messages for this State
-    	processMsg(msg);   
-	}
-
-
-void CStateObj::processMsg(CMsg &msg) { 
+void CStateObj::callCustomFunctions(CMsg &msg){
 	std::string sys = msg.getSYS();
 	std::string act = msg.getACT();
 	
 	if ((Name()!="CORE") && (act == "ADDSYSTEM")) { addSystem(msg) ; return;}
-	CSystemObject::newMsg(msg);	
 };
 
 
@@ -154,6 +143,7 @@ void CStateObj::addSystem(CSystemObject* psys){
  }
 
 void CStateObj::addSystem(CMsg &msg){
+  writeconsoleln("------------------------- AddSYstem -------------------");
   std::string sys = msg.getVALUE();  
   CSystemObject* psys=nullptr;
   psys=FindNameInSubsystems(sys);
