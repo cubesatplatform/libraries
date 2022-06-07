@@ -108,7 +108,7 @@ double PWMCounter::RPM(){
 CMotorController::CMotorController():CBaseDrive(){  
   _channel=channel;
   channel++;
-  setInterval(5);
+  setInterval(25);
 };
 
 
@@ -152,6 +152,7 @@ void CMotorController::init(){
   _Setpoint=2200.0;
   _Input=0.0;
   _Output=0.0;
+  _Setpoint_last=0.0;
   _Output_last=0.0;
 
   setState("PLAY");
@@ -214,6 +215,9 @@ void CMotorController::activateDrive(int val){
 }
 
 void CMotorController::writeStats(){
+  if(getTime()<_lastStats+1000)
+  return;
+  _lastStats=getTime();
  
   CMsg m;
 
@@ -221,6 +225,8 @@ void CMotorController::writeStats(){
   m.setParameter("Mode",Mode());
   m.setParameter("Direction",getDir());
   m.setParameter(" Setpoint",_Setpoint);
+  m.setParameter(" Setpoint Last",_Setpoint_last);
+  m.setParameter(" Duration",_Output_duration);
   m.setParameter(" Input",_Input);
   m.setParameter(" Output",_Output);
   m.writetoconsole(); 

@@ -70,9 +70,10 @@ public:
 class CMotorController:public CBaseDrive{
 private:  
 
-  double _Setpoint=0.0, _Input=0.0, _Output=0.0,_Output_last=0.0;
+  double _Setpoint=0.0, _Input=0.0, _Output=0.0,_Setpoint_last=0.0,_Output_last=0.0;
   char _axis='X';
   double _Kp=2.0, _Ki=5.0, _Kd=1.0;
+  unsigned long _lastStats=0L,_Output_duration=0L;
 
   PWMCounter pwmCounter;
 

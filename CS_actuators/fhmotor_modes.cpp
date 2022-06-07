@@ -2,9 +2,22 @@
 
 
 void CMotorController::newMode(CMsg &msg){
+  writeconsoleln("-------------NEW MODE ---------------");
+
   std::string mode=msg.getMODE();
   setMode(mode);  
   setup();
+  
+  _Output_duration=msg.getParameter("DURATION",0);
+  if(_Output_duration>0){
+    _Setpoint_last=_Setpoint;
+    _Output_duration+=getTime();
+  }
+  else
+    setup();
+  _Setpoint=msg.getParameter("SETPOINT",_Setpoint);
+  msg.writetoconsole();
+  
 }
 
 
@@ -29,8 +42,16 @@ void CMotorController::runOnce(CMsg &msg){
 
 
 
+
 void CMotorController::loopPWM(){  
   _Input =RPS();
+  if(_Output_duration){
+    if(_Output_duration<getTime()){
+      _Output_duration=0;
+      _Setpoint=_Setpoint_last;
+    }
+  }
+  _Output=_Setpoint;
   activateDrive((int)_Output);    
 }
 
