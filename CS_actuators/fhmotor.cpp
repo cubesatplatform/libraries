@@ -186,16 +186,16 @@ void CMotorController::off(){
 
 
 void CMotorController::echoData(CMsg &msg){
-  CMsg m;
+  CMsg m=getDataMap("GYRO");
 
   m.setParameter("Name",Name());
   m.setParameter("Mode",Mode());
-  m.setParameter("Direction",getDir());
-  m.setParameter(" Setpoint",_Setpoint);
-  m.setParameter(" Setpoint Last",_Setpoint_last);
-  m.setParameter(" Duration",_Output_duration);
-  m.setParameter(" Input",_Input);
-  m.setParameter(" Output",_Output);
+  m.setParameter("Dir",getDir());
+  m.setParameter(" SP",_Setpoint);
+  m.setParameter(" SP Last",_Setpoint_last);
+  m.setParameter(" Dur",_Output_duration);
+  m.setParameter(" In",_Input);
+  m.setParameter(" Out",_Output);
   m.setParameter(" Kp",_Kp);
   m.setParameter(" Ki",_Ki);
   m.setParameter(" Kd",_Kd);
