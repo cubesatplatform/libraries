@@ -27,38 +27,7 @@ CMotorController *CRW::getMotorAxis(char axis){
 }
 
 void CRW::newCMD(CMsg &msg){
-  setMode(msg.getParameter("MODE",Mode()));
-  std::string xMode=msg.getParameter("XMODE","");
-  float xsetpoint=msg.getParameter("XSETPOINT",0.0);
-  int xduration=msg.getParameter("XDURATION",10000);
-
-  std::string yMode=msg.getParameter("YMODE","");
-  float ysetpoint=msg.getParameter("YSETPOINT",0.0);
-  int yduration=msg.getParameter("YDURATION",10000);
-
-  std::string zMode=msg.getParameter("ZMODE","");
-  float zsetpoint=msg.getParameter("ZSETPOINT",0.0);
-  int zduration=msg.getParameter("ZDURATION",10000);
-
-  
-  if(xMode.size()){
-    if(_pMotorX!=NULL) {
-     _pMotorX->setMode(xMode);
-     _pMotorX->setPoint(xsetpoint,xduration);
-    }
-  }
-  if(yMode.size()){
-    if(_pMotorY!=NULL) {
-     _pMotorY->setMode(yMode);
-     _pMotorY->setPoint(ysetpoint,yduration);
-    }
-  }
-  if(zMode.size()){
-    if(_pMotorZ!=NULL) {
-     _pMotorZ->setMode(zMode);
-     _pMotorZ->setPoint(zsetpoint,zduration);
-    }
-  }   
+ 
 }
 
 

@@ -28,5 +28,6 @@ public:
   void init();
   void test(CMsg &msg);
   
+  void echoData(CMsg &msg);
   void activateDrive(int val); 
 };

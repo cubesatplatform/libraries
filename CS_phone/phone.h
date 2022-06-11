@@ -87,5 +87,5 @@ class CPhone:public CSystemObject {
     void init();
     void ready();    
 	  void getData(CMsg &msg);
-    void callCustomFunctions(CMsg &msg);
+    void callCustomFunctions(CMsg &msg) override;
 };

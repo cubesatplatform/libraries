@@ -23,6 +23,6 @@ class CRW:public CSystemObject{
     void loop();    
     void newCMD(CMsg &msg);
 
-    void callCustomFunctions(CMsg &msg);
+    void callCustomFunctions(CMsg &msg) override;
     CMotorController *getMotorAxis(char axis);
 };

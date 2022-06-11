@@ -162,7 +162,7 @@ public:
   void setModem(CMsg &m);  
   std::string getModem(){return _modem;}
   void chkModem();
-  void callCustomFunctions(CMsg &m);   
+  void callCustomFunctions(CMsg &m)override;   
   void resetPower(CMsg &m);   
 
   int getBW();

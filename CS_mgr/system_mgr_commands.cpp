@@ -79,6 +79,29 @@ void CSystemMgr::initCommands(){  //SYS:MGR~ACT:COMMAND~CMD:CMD_BEACON
   addMessageList(m);
 }
 
+
+void CSystemMgr::newEchoData(CMsg &msg){
+  std::string sys=msg.getVALUE();
+  long interval=msg.getParameter("INTERVAL",5000L);
+  if (interval<1000) interval=1000;
+
+  long stop=msg.getParameter("INTERVAL",60000L);
+
+  if (sys.size()<=0)
+    return;
+
+  CMsg m;  
+  std::list<CMsg> ml;
+  m.setSYS(sys);
+  m.setACT("ECHODATA");
+  m.setParameter("START",0L);
+  m.setParameter("STOP",stop);
+  m.setParameter("INTERVAL",interval);   
+  ml.push_back(m);
+  Commands[std::string("CMD_ECHO")+sys]=ml;
+   
+}
+
 void CSystemMgr::showScheduler(CMsg &msg){
   writeconsoleln("");
   writeconsoleln("ShowScheduler xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");  
@@ -151,6 +174,7 @@ void CSystemMgr::showCommands(){
   if(act=="PINLOW"){ pinLow(msg); return;}
   if(act=="PINPWM"){ pinPWM(msg); return;}
 
+  if(act=="NEWECHODATA"){ newEchoData(msg); return;}
 
   if(act=="FILLDATA"){ testDataMap(msg); return;}
    

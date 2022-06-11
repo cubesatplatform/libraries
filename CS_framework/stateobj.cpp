@@ -139,7 +139,7 @@ void CStateObj::addSystem(CSystemObject* psys){
 	m.setTABLE("STATUS");
 	m.setINFO("addSystem(CSystemObject* psys)   Success  push back");
 	writeconsoleln(m.serializeout()); 
-	//addTransmitList(m);
+
  }
 
 void CStateObj::addSystem(CMsg &msg){
@@ -154,7 +154,7 @@ void CStateObj::addSystem(CMsg &msg){
 	m.setTABLE("STATUS");
 	m.setINFO("addSystem(CSystemObject* psys)   Already exists");
 	writeconsoleln(m.serializeout());
-	//addTransmitList(m);
+
 	
      psys->start();
      return;
@@ -167,7 +167,7 @@ void CStateObj::addSystem(CMsg &msg){
 		m.setTABLE("STATUS");
 		m.setINFO("addSystem(CSystemObject* psys)   Error  Too many objects");
 		writeconsoleln(m.serializeout());
-		//addTransmitList(m);
+		
       return; //Prevents from too many things running and blowing up system memory
     }
   

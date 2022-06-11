@@ -51,7 +51,7 @@ public:
 	bool outOfTime();
 	void Output(CMsg &msg);
 	void resetSubSystems();
-	void callCustomFunctions(CMsg &msg);
+	void callCustomFunctions(CMsg &msg) override;
 	CSystemObject* FindNameInSubsystems(std::string str);
 	CSystemObject* FindCIDInSubsystems(std::string str);
 };

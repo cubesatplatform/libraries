@@ -46,10 +46,7 @@ void CTemperatureObject::loop(){
 
 void CTemperatureObject::test(CMsg &msg){
   Run(50);
-  if (State()!="ERROR"){
-    CMsg m=getDataMap(std::string(Name()));
-    addTransmitList(m);
-  }
+  echoData(msg);
 }
 
 
@@ -94,3 +91,11 @@ void CTemperatureObject::runOnce(CMsg &m){
 return;
 }
 
+
+
+void CTemperatureObject::echoData(CMsg &msg){
+  if (State()!="ERROR"){
+    CMsg m=getDataMap(std::string(Name()));
+    addTransmitList(m);
+  }
+}

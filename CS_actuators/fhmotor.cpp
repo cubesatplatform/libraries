@@ -149,14 +149,14 @@ void CMotorController::config(CMsg &msg){
 void CMotorController::init(){
   CBaseDrive::init();
 
-  _Setpoint=2200.0;
+  _Setpoint=0.0;
   _Input=0.0;
   _Output=0.0;
   _Setpoint_last=0.0;
   _Output_last=0.0;
 
   setState("PLAY");
-  Speed(0,10000);
+   activateDrive((int)_Output);  
 }
   
 double CMotorController::RPM(){
@@ -182,6 +182,33 @@ unsigned long CMotorController::getCount(){
 void CMotorController::off(){
   activateDrive(0);
   setState("DONE");
+}
+
+
+void CMotorController::echoData(CMsg &msg){
+  CMsg m;
+
+  m.setParameter("Name",Name());
+  m.setParameter("Mode",Mode());
+  m.setParameter("Direction",getDir());
+  m.setParameter(" Setpoint",_Setpoint);
+  m.setParameter(" Setpoint Last",_Setpoint_last);
+  m.setParameter(" Duration",_Output_duration);
+  m.setParameter(" Input",_Input);
+  m.setParameter(" Output",_Output);
+  m.setParameter(" Kp",_Kp);
+  m.setParameter(" Ki",_Ki);
+  m.setParameter(" Kd",_Kd);
+  
+  addTransmitList(m);
+};
+
+
+
+void CMotorController::newGains(CMsg &msg){
+  _Kd=msg.getParameter("KD",_Kd);
+  _Ki=msg.getParameter("KI",_Ki);
+  _Kp=msg.getParameter("KP",_Kp);
 }
 
 void CMotorController::activateDrive(int val){
@@ -258,3 +285,11 @@ void CMotorController::setup(){
     setupPWM();  
  setState("PLAY");
 }
+
+
+ void CMotorController::callCustomFunctions(CMsg &msg){
+  std::string act=msg.getACT(); 
+  
+  writeconsoleln("CMotorController CallCustomFunctions :  ");
+  if(act=="NEWGAINS") {newGains(msg); return; }
+ }

@@ -364,8 +364,7 @@ void CSystemMgr::pinsOn(){
     digitalWrite(x.second, HIGH);    
     delay(250);
   }
-  writeconsoleln(m.serializeout());
-  addTransmitList(m);
+  writeconsoleln(m.serializeout());  
 }
 
 void CSystemMgr::pinsOff(){
@@ -377,8 +376,7 @@ void CSystemMgr::pinsOff(){
     digitalWrite(x.second, LOW);    
     delay(250);
   }  
-  writeconsoleln(m.serializeout());
-  addTransmitList(m);
+  writeconsoleln(m.serializeout());  
 }
 
 
@@ -550,7 +548,7 @@ std::string key="KEY_";
     CMsg m;
     m.setParameter("VAL","0123456789QWERTYUIOP[]ASDFGHJKL;ZXCVBNM,./qwertyuiop[]asdfghjkl;zxcvbnm,./0123456789QWERTYUIOP[]ASDFGHJKL;ZXCVBNM,./qwertyuiop[]asdfghjkl;zxcvbnm,");
     addDataMap(key1,m);
-    //addTransmitList(m);
+    
     writeconsoleln(count);
     delay(50);
   }
@@ -669,16 +667,16 @@ void CSystemMgr::testMAGDrive(char addr){
    writeconsoleln("Forward");
   drv.run(FORWARD);
   drv.setSpeed(255);
-  delay(15000);
+  delay(10000);
 
   writeconsoleln("Release");
   drv.run(RELEASE);
-  delay(5000);
+  delay(2000);
 
   writeconsoleln("Backward");
   drv.run(BACKWARD);
   drv.setSpeed(255);
-  delay(15000);
+  delay(10000);
 
   drv.run(RELEASE);
   writeconsoleln("Mag test Done");

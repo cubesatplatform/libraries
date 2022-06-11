@@ -114,6 +114,7 @@ public:
   std::string State() { return _ostate; }
   std::string lastState() { return _olaststate; }  
   virtual void Update(CMsg &msg);
+  virtual void echoData(CMsg &msg){}
   
   void newMsg(CMsg &msg);
   virtual void newMode(CMsg &msg);

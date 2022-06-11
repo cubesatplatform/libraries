@@ -111,12 +111,25 @@ void CMDrive::test(CMsg &msg){
   Run(50);
   Speed(PWM_MAX); 
   
-  delay(10000);
+  delay(7000);
   
   Speed(-PWM_MAX);
   
-  delay(10000);
+  delay(7000);
   
   
   Speed(0.0);
 }
+
+
+void CMDrive::echoData(CMsg &msg){
+  CMsg m;
+
+  m.setParameter("Name",Name());
+  m.setParameter("Mode",Mode());
+  m.setParameter("Direction",getDir());
+  m.setParameter(" Set Speed",getSetSpeed());
+  m.setParameter(" Motor Speed",getMSpeed());  
+  m.setParameter(" Time",getTime());
+  addTransmitList(m);
+};

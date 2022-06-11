@@ -14,7 +14,7 @@ public:
 	void high(CMsg &msg);
 	void low(CMsg &msg);
 	void pwm(CMsg &msg);
-	void callCustomFunctions(CMsg &msg);
+	void callCustomFunctions(CMsg &msg) override;
 	int digitalReadOutputPin(PinName pin);
 	void loop();
 

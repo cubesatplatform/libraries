@@ -16,5 +16,5 @@ public:
 	void loop();
 	void setMsg(CMsg &msg);
 	void getMsg(CMsg &msg);
-	void callCustomFunctions(CMsg &msg);
+	void callCustomFunctions(CMsg &msg)override;
 };

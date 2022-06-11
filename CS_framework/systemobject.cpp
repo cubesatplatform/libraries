@@ -170,6 +170,7 @@ void CSystemObject::newMsg(CMsg &msg){
   if (act == "START") {start();return;}
   if (act == "OFF") {off();return;}
   if (act == "STATS") {stats(msg);return;}
+  if (act == "ECHODATA") {echoData(msg);return;}
 
   if ((Name()!="RADIO")&&(Name()!="RADIO2")){
     if (act == "PAUSE") {pause();return;}

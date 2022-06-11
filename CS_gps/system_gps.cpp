@@ -113,5 +113,10 @@ void CGPS::fillData(){  //Easier to send as long   convert to decimal when recei
  }
 
 
+void CGPS::echoData(CMsg &msg){
+  CMsg m=getDataMap("GPS");  
+  addTransmitList(m);   
+}
+
 
 #endif 

@@ -98,6 +98,7 @@ public:
   void runOnce(CMsg &msg);
   void newMode(CMsg &msg);
   void newMode(std::string tmp){CMsg m; m.setMODE(tmp);newMode(m);}
+  void newGains(CMsg &msg);
 
   void setupLock();
   void setupSpeed();
@@ -115,11 +116,13 @@ public:
 
 
   void writeStats();
+  void echoData(CMsg &msg);
   void Speed(int s=10,unsigned long dur=0){activateDrive(s);}
   
   void setPoint(double sp,unsigned long dur=10000000){_Setpoint=sp; changed();setDuration(dur);}
   
   void activateDrive(int val);
   void test(CMsg &msg);
+  void callCustomFunctions(CMsg &msg) override;
 };
 

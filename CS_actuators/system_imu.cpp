@@ -55,13 +55,7 @@ void CIMU::test(CMsg &msg){
   setMode(mode);    
   Run(period);  
   
-  if (State()!="ERROR"){  
-    if(Mode()=="ROT")
-      mode="PRY";
-    CMsg m=getDataMap(mode);
-    m.writetoconsole();
-    addTransmitList(m);   
-  } 
+  echoData(msg);
   disableMBLogic();
 }
 
@@ -240,3 +234,17 @@ void CIMU::setupI2C(){
     }
     sendError(); 
   }
+
+
+void CIMU::echoData(CMsg &msg){
+  std::string mode=Mode();
+
+  if(mode=="ROT")
+    mode="PRY";
+  CMsg m=getDataMap(mode);  
+  addTransmitList(m);   
+};
+
+
+void CIMU::callCustomFunctions(CMsg &msg){
+}

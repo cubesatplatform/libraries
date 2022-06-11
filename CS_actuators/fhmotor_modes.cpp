@@ -13,8 +13,7 @@ void CMotorController::newMode(CMsg &msg){
     _Setpoint_last=_Setpoint;
     _Output_duration+=getTime();
   }
-  else
-    setup();
+  
   _Setpoint=msg.getParameter("SETPOINT",_Setpoint);
   msg.writetoconsole();
   
@@ -54,6 +53,43 @@ void CMotorController::loopPWM(){
   _Output=_Setpoint;
   activateDrive((int)_Output);    
 }
+
+
+
+
+
+
+void CMotorController::loopRamp(){
+  //writeconsoleln("Ramp ................");
+  _Input =RPS();
+  if(_Output_duration){
+    if(_Output_duration<getTime()){
+      _Output_duration=0;
+      _Setpoint=_Setpoint_last;
+      _Output=_Setpoint;
+    }
+    else{
+      if(_Output<_Setpoint){
+        _Output+=5;
+        if(_Output>_Setpoint)
+          _Output=_Setpoint;
+      }
+
+      if(_Output>_Setpoint){
+        _Output-=5;
+        if(_Output<_Setpoint)
+          _Output=_Setpoint;
+      }
+    }
+  }
+  activateDrive((int)_Output);    
+}
+
+
+
+
+
+
 
 
 void CMotorController::loopSpeed(){
@@ -120,13 +156,6 @@ void CMotorController::loopRotation(){
   activateDrive((int)_Output);  
 } 
 
-
-void CMotorController::loopRamp(){
-  if(_Setpoint>PWM_MAX) _Setpoint=0;
-  _Setpoint+=20;
-  activateDrive(_Setpoint);  
-  
-}
 
 
 

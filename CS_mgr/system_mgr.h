@@ -106,10 +106,11 @@ public:
   void testIR(CMsg &msg);
 
   void testDataMap(CMsg &msg);
+  void newEchoData(CMsg &msg);
   
   void Output(CMsg &msg);
   void sendSerial(const char* cmd);
-  void callCustomFunctions(CMsg &msg);
+  void callCustomFunctions(CMsg &msg) override;
   void SendCmdToScheduler(CMsg &msg);
 };
 
