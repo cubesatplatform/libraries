@@ -21,6 +21,8 @@
 SDMMCBlockDevice block_device;
 mbed::FATFileSystem fs("fs");
 
+#define FSPATH "/fs/"
+
 
 void mountFS() {
 
@@ -83,7 +85,13 @@ void readCharsFromFile(const char * path)
 {
   writeconsole("readCharsFromFile: "); writeconsole(path);
 
-  FILE *file = fopen(path, "r");
+    if(path==NULL)
+    return;
+
+ std::string strPath=FSPATH;
+    strPath+=path;
+
+  FILE *file = fopen(strPath.c_str(), "r");
 
   if (file)
   {
@@ -118,7 +126,7 @@ std::string readFile(const char * path)
   writeconsole("Reading file: "); writeconsole(path);
 if(path==NULL)
     return str;
-   std::string strPath="/fs/";
+   std::string strPath=FSPATH;
     strPath+=path;
 
   FILE *file = fopen(strPath.c_str(), "r");
@@ -152,7 +160,7 @@ if(path==NULL)
 
 void writeFile(const char * path, const char * message, size_t messageSize)
 {
-    std::string strPath="/fs/";
+    std::string strPath=FSPATH;
     strPath+=path;
   writeconsole("Writing file: "); writeconsole(strPath.c_str());
   if(path==NULL)
@@ -188,7 +196,7 @@ void appendFile(const char * path, const char * message, size_t messageSize)
   if(path==NULL)
     return;
 
- std::string strPath="/fs/";
+ std::string strPath=FSPATH;
     strPath+=path;
 
   FILE *file = fopen(strPath.c_str(), "a");
@@ -219,7 +227,13 @@ void deleteFile(const char * path)
 {
   writeconsole("Deleting file: "); writeconsole(path);
 
-  if (remove(path) == 0)
+    if(path==NULL)
+    return;
+
+ std::string strPath=FSPATH;
+    strPath+=path;
+
+  if (remove(strPath.c_str()) == 0)
   {
     writeconsoleln(" => OK");
   }
@@ -252,9 +266,15 @@ void testFileIO(const char * path)
     #define BUFF_SIZE  512
     #define FILE_SIZE_KB  64
 
+      if(path==NULL)
+    return;
+
+ std::string strPath=FSPATH;
+    strPath+=path;
+
   static uint8_t buf[BUFF_SIZE];
 
-  FILE *file = fopen(path, "w");
+  FILE *file = fopen(strPath.c_str(), "w");
 
   if (file)
   {
