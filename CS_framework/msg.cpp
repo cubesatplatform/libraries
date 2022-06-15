@@ -1,5 +1,6 @@
 #include "msg.h"
 #include "consoleio.h"
+#include "sdfs.h"
 
 int CMsg::_ID = 0;
 
@@ -183,4 +184,28 @@ for (auto it = Parameters.begin(); it != Parameters.end(); ++it) {
     Parameters.erase(it);   //Check to make sure this works			 
   }
   }				
+}
+
+std::string CMsg::serializeFile(){
+  std::string str=serialize();
+  std::string strID=tostring(getStaticID());
+  std::string strSys=getSYS();
+
+  std::string strFN=strSys;
+  strFN+=std::string("_");
+  strFN+=strID;
+  strFN+=std::string(".msg");
+
+  writeFile(strFN.c_str(), str.c_str(), str.size());
+  return strFN;
+
+}
+
+
+void CMsg::deserializeFile(const char * path){
+
+  std::string str=readFile(path);
+  if(str.size()){
+    decompose(str.c_str());
+  }
 }

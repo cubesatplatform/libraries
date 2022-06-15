@@ -27,13 +27,15 @@ public:
   CMsg(const char* s) { _str = s; _tc=getTime(); deserialize(); _ID++;}
   CMsg(const char* s, float frssi , float fsnr = 0.0) { _str = s; _tc=getTime(); deserialize();  _rssi = frssi; fsnr = fsnr; _ID++;}
   
-  void decompose(const char* s){ _str = s; }
+  void decompose(const char* s){ _str = s; deserialize();}
   void clear(){_str="";_rssi = 0.0;_snr = 0.0; _tc=getTime();Parameters.clear();byteVector.clear();}
   
   std::string serialize();
   std::string serializeout();
   void writetoconsole();
   void deserialize();
+  std::string serializeFile();
+  void deserializeFile(const char * path);
   int serialSize(){std::string s=serialize();return(s.size());}
   
   std::string getMsg() {return _str;}
