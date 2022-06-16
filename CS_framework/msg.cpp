@@ -186,16 +186,22 @@ for (auto it = Parameters.begin(); it != Parameters.end(); ++it) {
   }				
 }
 
-std::string CMsg::serializeFile(){
+std::string CMsg::serializeFile(const char * path){
+  std::string strFN;
+  
+  if(path==NULL){
+    std::string strID=tostring(getStaticID());
+    std::string strSys=getSYS();
+
+    strFN=strSys;
+    strFN+=std::string("_");
+    strFN+=strID;
+    strFN+=std::string(".msg");
+  }
+  else
+    strFN=path;
+
   std::string str=serialize();
-  std::string strID=tostring(getStaticID());
-  std::string strSys=getSYS();
-
-  std::string strFN=strSys;
-  strFN+=std::string("_");
-  strFN+=strID;
-  strFN+=std::string(".msg");
-
   writeFile(strFN.c_str(), str.c_str(), str.size());
   return strFN;
 
@@ -203,9 +209,10 @@ std::string CMsg::serializeFile(){
 
 
 void CMsg::deserializeFile(const char * path){
-
+writeconsoleln(path);
   std::string str=readFile(path);
   if(str.size()){
+    writeconsoleln(str);
     decompose(str.c_str());
   }
 }

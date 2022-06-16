@@ -23,13 +23,11 @@ void CDetumbleState::enter() {
   _detumblecount++;
   CStateObj::enter();
   
-    #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
-    CFS fs;
+  CMsg m;
+  m.setSYS("SAT");
+  m.setACT("WRITECOUNTS");
+  addMessageList(m);
 
-    fs.setFilename(DETUMBLE_FILE);
-    fs.deleteFile();
-    fs.writeFile(_detumblecount);    
-    #endif
   setState("PLAY");
   CSystemObject *pMT=getSystem("MT");
   if (pMT!=NULL) pMT->setState("");  //Reset MT and gets it restarting detumbling

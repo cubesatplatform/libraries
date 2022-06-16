@@ -34,7 +34,7 @@ public:
   std::string serializeout();
   void writetoconsole();
   void deserialize();
-  std::string serializeFile();
+  std::string serializeFile(const char * path=NULL);
   void deserializeFile(const char * path);
   int serialSize(){std::string s=serialize();return(s.size());}
   

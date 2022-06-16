@@ -24,6 +24,20 @@ mbed::FATFileSystem fs("fs");
 #define FSPATH "/fs/"
 
 
+std::string getFullPath(const char * path){
+  std::string str;
+  writeconsole("File: "); writeconsoleln(path);
+  if(path==NULL)
+    return str;
+  std::string strPath=FSPATH;
+  strPath+=path;
+
+  writeconsole("Reading file: "); writeconsoleln(strPath);
+  return strPath;
+}
+
+
+
 void mountFS() {
 
   writeconsoleln("Mounting SDCARD...");
@@ -33,18 +47,14 @@ void mountFS() {
     // this should only happen on the first boot
     writeconsoleln("No filesystem found, please check on computer and manually format");
     
-  }
-  else
-    writeconsoleln("Filesystem mounted");
+  }  else    writeconsoleln("Filesystem mounted");
   
   
 }
 
 void formatFS() {
     int err = fs.reformat(&block_device);  // seriously don't want to format good data
-    if (err) {
-        writeconsoleln("Could not Format Filesystem");
-    }
+    if (err) {        writeconsoleln("Could not Format Filesystem");    }
 }
   
 
@@ -67,14 +77,8 @@ void listDir(std::list<std::string> *plist){
       dirIndex++;
     }
     closedir (dir);
-  } else {
-    // Could not open directory
-    writeconsoleln("Error opening SDCARD\n");
-    return;
-  }
-  if(dirIndex == 0) {
-    writeconsoleln("Empty SDCARD");
-  }
+  } else {       writeconsoleln("Error opening SDCARD\n");    return;  }
+  if(dirIndex == 0) {    writeconsoleln("Empty SDCARD");  }
  writeconsoleln("------------------------- Done --------------------------------"); 
 }
 
@@ -93,15 +97,7 @@ void readCharsFromFile(const char * path)
 
   FILE *file = fopen(strPath.c_str(), "r");
 
-  if (file)
-  {
-    writeconsoleln(" => Open OK");
-  }
-  else
-  {
-    writeconsoleln(" => Open Failed");
-    return;
-  }
+  if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return;  }
 
   char c;
 
@@ -122,24 +118,12 @@ void readCharsFromFile(const char * path)
 
 std::string readFile(const char * path)
 {
-  std::string str;
-  writeconsole("Reading file: "); writeconsole(path);
-if(path==NULL)
-    return str;
-   std::string strPath=FSPATH;
-    strPath+=path;
+  
+  std::string str,strPath=getFullPath(path);
 
   FILE *file = fopen(strPath.c_str(), "r");
 
-  if (file)
-  {
-    writeconsoleln(" => Open OK");
-  }
-  else
-  {
-    writeconsoleln(" => Open Failed");
-    return str;
-  }
+  if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return str;  }
 
   char c;
   uint32_t numRead = 1;
@@ -160,23 +144,10 @@ if(path==NULL)
 
 void writeFile(const char * path, const char * message, size_t messageSize)
 {
-    std::string strPath=FSPATH;
-    strPath+=path;
-  writeconsole("Writing file: "); writeconsole(strPath.c_str());
-  if(path==NULL)
-    return;
-
+  std::string strPath=getFullPath(path);
   FILE *file = fopen(strPath.c_str(), "w");
 
-  if (file)
-  {
-    writeconsoleln(" => Open OK");
-  }
-  else
-  {
-    writeconsoleln(" => Open Failed");
-    return;
-  }
+  if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return;  }
 
   if (fwrite((uint8_t *) message, 1, messageSize, file))
   {
@@ -192,71 +163,31 @@ void writeFile(const char * path, const char * message, size_t messageSize)
 
 void appendFile(const char * path, const char * message, size_t messageSize)
 {
-  writeconsole("Appending file: "); writeconsole(path);
-  if(path==NULL)
-    return;
-
- std::string strPath=FSPATH;
-    strPath+=path;
+  std::string strPath=getFullPath(path);
 
   FILE *file = fopen(strPath.c_str(), "a");
 
-  if (file)
-  {
-    writeconsoleln(" => Open OK");
-  }
-  else
-  {
-    writeconsoleln(" => Open Failed");
-    return;
-  }
+  if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return;  }
 
-  if (fwrite((uint8_t *) message, 1, messageSize, file))
-  {
-    writeconsoleln("* Appending OK");
-  }
-  else
-  {
-    writeconsoleln("* Appending failed");
-  }
+  if (fwrite((uint8_t *) message, 1, messageSize, file))   {    writeconsoleln("* Appending OK");  }  else  {    writeconsoleln("* Appending failed");  }
 
   fclose(file);
 }
 
 void deleteFile(const char * path)
 {
-  writeconsole("Deleting file: "); writeconsole(path);
+  std::string strPath=getFullPath(path);
 
-    if(path==NULL)
-    return;
-
- std::string strPath=FSPATH;
-    strPath+=path;
-
-  if (remove(strPath.c_str()) == 0)
-  {
-    writeconsoleln(" => OK");
-  }
-  else
-  {
-    writeconsoleln(" => Failed");
-    return;
-  }
+  if (remove(strPath.c_str()) == 0)  {    writeconsoleln(" => OK");  }  else  {    writeconsoleln(" => Failed");    return;  }
 }
 
 void renameFile(const char * path1, const char * path2)
 {
-  writeconsole("Renaming file: "); writeconsole(path1);writeconsole(" to: "); writeconsole(path2);
+  std::string strPath1=getFullPath(path1);
+  std::string strPath2=getFullPath(path2);
 
-  if (rename(path1, path2) == 0)
-  {
-    //writeconsoleln(" => OK");
-  }
-  else
-  {
-    writeconsoleln(" => Failed");
-    return;
-  }
+  if (rename(strPath1.c_str(), strPath2.c_str()) == 0)  {    //writeconsoleln(" => OK");
+  }  else  {    writeconsoleln(" => Failed");    return;  }
 }
 
 void testFileIO(const char * path)
@@ -265,26 +196,13 @@ void testFileIO(const char * path)
 
     #define BUFF_SIZE  512
     #define FILE_SIZE_KB  64
-
-      if(path==NULL)
-    return;
-
- std::string strPath=FSPATH;
-    strPath+=path;
+  std::string strPath=getFullPath(path);
 
   static uint8_t buf[BUFF_SIZE];
 
   FILE *file = fopen(strPath.c_str(), "w");
 
-  if (file)
-  {
-    writeconsoleln(" => Open OK");
-  }
-  else
-  {
-    writeconsoleln(" => Open Failed");
-    return;
-  }
+ if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return;  }
 
   size_t i;
   writeconsoleln("- writing" );
@@ -442,8 +360,65 @@ void printFileTest() {
   fclose(myFile);
   delay(30000);
 
+}
+
+
+void readMsgList(const char * path,std::list<CMsg *> *pMList ){
+  std::list<CMsg> ml;  
+  std::string str,strPath=getFullPath(path);
+
+  FILE *file = fopen(strPath.c_str(), "r");
+
+  if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return;  }
+
+  char c;
+  uint32_t numRead = 1;
+
+  while (numRead)
+  {
+    numRead = fread((uint8_t *) &c, sizeof(c), 1, file);
+
+    if (numRead){
+     //writeconsole(c);
+     if(c==char(13)){
+       CMsg *pM=new CMsg(str);  
+       pMList->push_back(pM);
+       str="";
+     }
+     str+=c;
+    }
+  }
+
+  fclose(file);
+
+  if(str.size()){
+    CMsg *pM=new CMsg(str);  
+       pMList->push_back(pM);
+       str="";
+  }
+
+  return;
+}
+
+
+void writeMsgList(const char * path,std::list<CMsg *> *pMList ){
+
+ std::string strPath=getFullPath(path);
+  FILE *file = fopen(strPath.c_str(), "w");
+
+  if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return;  }
+
+  for(auto pm:*pMList){
+    std::string str=pm->serialize();
+    str+=char(13);
+    if (fwrite((uint8_t *) str.c_str(), 1, str.size(), file)){    writeconsoleln("* Writing OK");  }  else  {    writeconsoleln("* Writing failed");  }
+  }
+
+
+  fclose(file);
 
 }
+
 
 #else
 void mountFS(){}
@@ -458,4 +433,7 @@ void printFileTest(){}
 
 void testFS(){}
 void testFileIO(const char * path){}
+std::list<CMsg> readMsgList(const char * path){}
+void writeMsgList(const char * path,std::list<CMsg *> *pMList );
+void readMsgList(const char * path,std::list<CMsg *> *pMList );
 #endif

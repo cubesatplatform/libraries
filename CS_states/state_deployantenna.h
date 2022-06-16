@@ -15,20 +15,14 @@ public:
 	~CDeployAntennaState() {};
 
 	void enter() { 
+		CStateObj::enter();
+		resetSubSystems();
+		_burncount++;
 	
-	CStateObj::enter();
-	resetSubSystems();
-
-	_burncount++;
-  
-  	#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
-		CFS fs;
-		
-		fs.deleteFile();
-		fs.writeFile(_burncount);  
-  	#endif
-  
-
-  }
+		CMsg m;
+		m.setSYS("SAT");
+		m.setACT("WRITECOUNTS");
+		addMessageList(m);
+		}
 
 };

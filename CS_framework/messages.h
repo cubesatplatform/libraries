@@ -5,6 +5,7 @@
 #include <map>
 #include "msg.h"
 #include "systemobject.h"
+#include <sdfs.h>
 
 
 #define MAXLISTSIZE 50
@@ -31,6 +32,8 @@ public:
   CMsg findwRemove(std::string str,std::string field="SYS");
   void clear();
   void prune();
+  void serializeFile(const char * path){ writeMsgList(path,&MList );}
+  void deserializeFile(const char * path){readMsgList(path,&MList );}
 
 };
 
