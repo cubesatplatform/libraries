@@ -124,37 +124,7 @@ if(_pIMU==NULL) {writeconsoleln("NO IMU!!!!!!!!!!!!!!!!!!!!!");setState("ERROR")
 
 void CMagTorquer::newCMD(CMsg &msg){
   setMode(msg.getParameter("MODE",Mode()));
-  std::string xMode=msg.getParameter("XMODE","");
-  float xsetpoint=msg.getParameter("XSETPOINT",0.0);
-  int xduration=msg.getParameter("XDURATION",10000);
-
-  std::string yMode=msg.getParameter("YMODE","");
-  float ysetpoint=msg.getParameter("YSETPOINT",0.0);
-  int yduration=msg.getParameter("YDURATION",10000);
-
-  std::string zMode=msg.getParameter("ZMODE","");
-  float zsetpoint=msg.getParameter("ZSETPOINT",0.0);
-  int zduration=msg.getParameter("ZDURATION",10000);
-
   
-  if(xMode.size()){
-    if(_pMagX!=NULL) {
-      _pMagX->Speed(xsetpoint);      
-      _pMagX->setDuration(xduration);
-    }
-  }
-  if(yMode.size()){
-    if(_pMagY!=NULL) {
-      _pMagY->Speed(ysetpoint);      
-      _pMagY->setDuration(yduration);    
-    }
-  }
-  if(zMode.size()){
-    if(_pMagY!=NULL) {
-      _pMagZ->Speed(zsetpoint);     
-      _pMagZ->setDuration(zduration);     
-    }
-  }   
 }
 
   

@@ -29,9 +29,9 @@ void CPhone::getData(CMsg &msg) {  //Send message to phone to get stuff
 
 void  CPhone::callCustomFunctions(CMsg &msg){
   std::string act=msg.getACT();
-  
-  
+    
 	if((act=="GET")) {getData(msg);  return;}
+  if((act=="SENDSERIAL")) {std::string str=msg.getParameter("SERIAL"); sendSerial(str.c_str());  return;}
   
   if(act.size()>1)  commandQueue.push(msg);
 }

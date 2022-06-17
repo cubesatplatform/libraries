@@ -1098,3 +1098,90 @@ float TEMPERATURE_INFO::readTemp4(void)
 {
   return temp4;
 }
+
+    
+CMsg TEMPERATURE_INFO::read(){
+  CMsg m;
+  m.setParameter("TEMP1",temp1);
+  m.setParameter("TEMP2",temp2);
+  m.setParameter("TEMP3",temp3);
+  m.setParameter("TEMP4",temp4);
+
+  return m;
+ }
+
+
+CMsg AXIS_INFO::read(){
+  CMsg m;
+
+  m.setParameter("VOLTAGE",voltage);
+  m.setParameter("CURRENTM",current_m);
+  m.setParameter("CURRENTP",current_p);
+  return m;
+ }
+
+
+void CEPS::callCustomFunctions(CMsg &msg){
+  std::string act=msg.getACT();  
+  int val=msg.getParameter("V",0); 
+  
+	//if((act=="GET")) {getData(msg);  return;}
+  if (act=="READBATTERYVOLTAGE") transmitResult(act,tostring(readBatteryVoltage()));
+  if (act=="READBATTERYCRNT") transmitResult(act,tostring(readBatteryCurrent()));
+  if (act=="READBCRVOLTAGE") transmitResult(act,tostring(readBCRVoltage()));
+
+  if (act=="READBCRCURRENT") transmitResult(act,tostring(readBCRCurrent()));
+  if (act=="READ3V3CURRENT") transmitResult(act,tostring(read3V3Current()));
+  if (act=="READ5VCURRENT") transmitResult(act,tostring(read5VCurrent()));
+
+  if (act=="READLUP3V3") transmitResult(act,tostring(readLUP3V3()));
+  if (act=="READLUP5V") transmitResult(act,tostring(readLUP5V()));
+
+  if (act=="READMCUTEMP") transmitResult(act,tostring(readMCUTemp()));
+  if (act=="READINPUTCONDITIONS") transmitResult(act,tostring(readInputConditions()));
+  if (act=="READOUTPUTCONDITIONS") transmitResult(act,tostring(readOutputConditions()));
+  if (act=="READOUTPUTCONDITIONS2") transmitResult(act,tostring(readOutputConditions2()));
+  
+  if (act=="READPOWERONCYCLES") transmitResult(act,tostring(readPowerONCycles()));
+  if (act=="READVUNDERVOLT") transmitResult(act,tostring(readVUnderVoltage()));
+  if (act=="READVSHORTCIRCUIT") transmitResult(act,tostring(readVShortCircuit()));
+  if (act=="READVOVERTEMP") transmitResult(act,tostring(readVOverTemperature()));
+  if (act=="READSOFTWAREVERSION") transmitResult(act,tostring(readSoftwareVersion()));
+  
+  if (act=="READDEAFAULTS1") transmitResult(act,tostring(readDefaults1()));
+  if (act=="READDEAFAULTS12") transmitResult(act,tostring(readDefaults12()));
+  if (act=="READCHARGECYCLES") transmitResult(act,tostring(readChargeCycles()));
+
+
+  if (act=="WRITESWSELFLOCK") {writeSWSelflock(val);}
+
+  if (act=="WRITEVBATEN") {writeVBATEN(val);}
+  if (act=="WRITEBCROUTEN") {writeBCROutEN(val);}
+  if (act=="WRITESHD3V3") {writeSHD3V3(val);}
+  if (act=="WRITE5V") {write5V(val);}
+  if (act=="WRITELUP3V3") {writeLUP3V3(val);}
+  if (act=="WRITELUP5V") {writeLUP5V(val);}
+  if (act=="WRITESHDCHRG") {writeSHDChrg(val);}
+  if (act=="WRITECHRGI1") {writeChrgI1(val);}
+  if (act=="WRITECHRGI2") {writeChrgI2(val);}
+  if (act=="WRITEOUT1") {writeOut1(val);}
+  if (act=="WRITEOUT2") {writeOut2(val);}
+  if (act=="WRITEOUT3") {writeOut3(val);}
+  if (act=="WRITEOUT4") {writeOut4(val);}
+  if (act=="WRITEOUT5") {writeOut5(val);}
+  if (act=="WRITEOUT6") {writeOut6(val);}
+  if (act=="WRITEHEATER1") {writeHeater1(val);}
+  if (act=="WRITEHEATER2") {writeHeater2(val);}
+  if (act=="WRITEHEATER3") {writeHeater3(val);}
+
+  if (act=="READXAXISINFO") transmitResult(act,readXAxisInfo().read());
+  if (act=="READYAXISINFO") transmitResult(act,readYAxisInfo().read());
+  if (act=="READZAXISINFO") transmitResult(act,readZAxisInfo().read());
+
+  if (act=="READBATTERYTEMPERATURE") transmitResult(act,readBatteryTemperature().read());
+  if (act=="READMAXTEMPERATURE") transmitResult(act,readMaxTemperature().read());
+  if (act=="READMINTEMPERATURE") transmitResult(act,readMinTemperature().read());
+  if (act=="READTEMPERATURESENSOR") transmitResult(act,readTemperatureSensor().read());
+
+
+}

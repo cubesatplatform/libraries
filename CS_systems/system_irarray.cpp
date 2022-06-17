@@ -405,3 +405,13 @@ void CIRArray::Output(CMsg &msg){  //Easier to send as long   convert to decimal
   addTransmitList(m); 
 }
 
+
+
+void CIRArray::callCustomFunctions(CMsg &msg){   //Calls a specific function directly
+  std::string act=msg.getParameter("ACT");  
+  
+  if (act=="FILLPIXEL") fillPixel();
+  if (act=="FILLGREY") fillGrey();
+  if (act=="FILLASCII")  fillAscii();
+
+}

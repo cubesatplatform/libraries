@@ -182,6 +182,10 @@ public:
   unsigned long getReceivedTimestamp();
   void transmitError(const char *tmp);
   void reboot();
+
+  void transmitResult(std::string act,std::string result);
+  void transmitResult(std::string act,CMsg msg);
+
 };
 
 extern std::map<std::string,CSystemObject *> SysMap;

@@ -288,8 +288,15 @@ void CMotorController::setup(){
 
 
  void CMotorController::callCustomFunctions(CMsg &msg){
+   writeconsoleln("CMotorController CallCustomFunctions :  ");
+  CBaseDrive::callCustomFunctions(msg);
   std::string act=msg.getACT(); 
-  
-  writeconsoleln("CMotorController CallCustomFunctions :  ");
-  if(act=="NEWGAINS") {newGains(msg); return; }
+  int val=msg.getParameter("V",0); 
+
+  if(act=="NEWGAINS") newGains(msg); 
+  if(act=="RPM")  transmitResult(act,tostring(RPM()));
+  if(act=="RPS")  transmitResult(act,tostring(RPS()));
+  if(act=="GETCOUNT")  transmitResult(act,tostring(getCount()));
+
+  if(act=="ACTIVATEDRIVE")  activateDrive( val);
  }

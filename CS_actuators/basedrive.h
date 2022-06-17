@@ -13,10 +13,6 @@ class CBaseDrive:public CSystemObject{   //Speed PWM 0-1000
   int _setSpeed=1.0;
   int _PWMSpeed=0;
 
-
-
- 
-
   unsigned long _driveStartTime=0;
   unsigned long _maxRunTime=10000;
   unsigned long _driveInterval=0;
@@ -49,7 +45,7 @@ public:
   
   void sendPWM(int nVal);
 
-  int Speed(){return _mspeed;};
+  int getSpeed(){return _mspeed;};
   void TestMotor(); 
   void loop();
   void stopActuator();

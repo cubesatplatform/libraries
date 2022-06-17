@@ -429,3 +429,20 @@ void CSystemObject::goLowPowerState(){
     addMessageList(m);
   }
 }
+
+
+void CSystemObject::transmitResult(std::string act,std::string result){
+  writeconsoleln("Transmitting Result");
+  CMsg msg;
+  msg.setSYS(Name());
+  msg.setParameter(act,result);
+  
+  addTransmitList(msg);
+}
+
+void CSystemObject::transmitResult(std::string act,CMsg msg){
+  writeconsoleln("Transmitting Result");
+  msg.setParameter("FUNC",act);
+  
+  addTransmitList(msg);
+}

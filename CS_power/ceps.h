@@ -162,6 +162,7 @@ class AXIS_INFO
     float readVoltage(void);
     float readCurrentM(void);
     float readCurrentP(void);
+    CMsg read();
 };
 
 class TEMPERATURE_INFO
@@ -180,6 +181,7 @@ class TEMPERATURE_INFO
     float readTemp2(void);
     float readTemp3(void);
     float readTemp4(void);
+    CMsg read();
 };
 
 class CEPS:public CSystemObject
@@ -239,6 +241,7 @@ class CEPS:public CSystemObject
     
 
     void output();
+
     void writeSWSelflock(uint8_t state);
     void writeVBATEN(uint8_t state);
     void writeBCROutEN(uint8_t state);
@@ -258,6 +261,8 @@ class CEPS:public CSystemObject
     void writeHeater1(uint8_t state);
     void writeHeater2(uint8_t state);
     void writeHeater3(uint8_t state);
+
+    void callCustomFunctions(CMsg &msg);
 
     
   

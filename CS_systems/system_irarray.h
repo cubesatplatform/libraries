@@ -42,5 +42,7 @@ public:
   void consoleOutTemp();
   void runOnce(CMsg &msg);
   void Output(CMsg &msg);
+
+  void callCustomFunctions(CMsg &msg);
 };
 
