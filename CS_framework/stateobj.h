@@ -47,7 +47,7 @@ public:
 	
 	CMsg stats();
 	virtual void start();
-	void Cleanup();  
+	void cleanup();  
 	bool outOfTime();
 	void Output(CMsg &msg);
 	void resetSubSystems();

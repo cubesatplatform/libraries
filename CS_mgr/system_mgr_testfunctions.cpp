@@ -43,7 +43,6 @@ m.setParameter("PINSON","PINSON");
 m.setParameter("PINSOFF","PINSOFF");
 m.setParameter("PHONEON","PHONEON");
 m.setParameter("PHONEOFF","PHONEOFF");
-m.setParameter("BURN","BURN");
 m.setParameter("IMUSPI","IMUSPI");
 m.setParameter("IMU0","IMU0");
 m.setParameter("IMU1","IMU1");
@@ -416,20 +415,6 @@ void CSystemMgr::sendSerial(const char* cmd) {    //Send to Phone
 }
 
 
-void CSystemMgr::burn(){
-  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-  
-  enableBurnWire();
-  delay(10000);
-  disableBurnWire();
-  CMsg m;
-  m.setSYS("BURN");
-  m.setINFO("ACTIVATED");
-  writeconsoleln(m.serializeout());
-  
-  addTransmitList(m);
-  #endif
-}
 
 
 

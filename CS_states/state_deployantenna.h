@@ -1,7 +1,6 @@
 #pragma once
 
 #include "state_defs.h"
-#include <portentafs.h>
 #include <powerup.h>
 
 
@@ -17,6 +16,10 @@ public:
 	void enter() { 
 		CStateObj::enter();
 		resetSubSystems();
+
+		enableBurnWire();
+  		delay(10000);
+		disableBurnWire();
 		_burncount++;
 	
 		CMsg m;
@@ -24,5 +27,5 @@ public:
 		m.setACT("WRITECOUNTS");
 		addMessageList(m);
 		}
-
+	void exit()  {}
 };

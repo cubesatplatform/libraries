@@ -55,31 +55,39 @@ void mountFS() {
 void formatFS() {
     int err = fs.reformat(&block_device);  // seriously don't want to format good data
     if (err) {        writeconsoleln("Could not Format Filesystem");    }
+    CMsg m;
 }
   
 
-void listDir(std::list<std::string> *plist){
+CMsg listDir(std::list<std::string> *plist){
   DIR *dir;
   struct dirent *ent;
   int dirIndex = 0;
+  CMsg m;
+  std::string val;
 
+  m.setSYS("DIRECTORY");
   writeconsoleln("List SDCARD content: ");
 
   if ((dir = opendir("/fs")) != NULL) {
     // Print all the files and directories within directory (not recursively)
     while ((ent = readdir (dir)) != NULL) {
       writeconsoleln(ent->d_name);
+      std::string str;
+      str=ent->d_name;
       if(plist!=NULL){
-          std::string str;
-          str=ent->d_name;
+         
           plist->push_back(str);
       }
+      val=tostring(dirIndex);
+      m.setParameter(val,str);
       dirIndex++;
     }
     closedir (dir);
-  } else {       writeconsoleln("Error opening SDCARD\n");    return;  }
-  if(dirIndex == 0) {    writeconsoleln("Empty SDCARD");  }
+  } else {   m.setERROR("Error opening SDCARD");    writeconsoleln("Error opening SDCARD\n");  return m;  }
+  if(dirIndex == 0) {    m.setERROR("Empty SDCARD"); writeconsoleln("Empty SDCARD");  }
  writeconsoleln("------------------------- Done --------------------------------"); 
+ return m;
 }
 
 
@@ -144,6 +152,8 @@ std::string readFile(const char * path)
 
 void writeFile(const char * path, const char * message, size_t messageSize)
 {
+  if(!messageSize)
+    return;
   std::string strPath=getFullPath(path);
   FILE *file = fopen(strPath.c_str(), "w");
 
@@ -163,6 +173,8 @@ void writeFile(const char * path, const char * message, size_t messageSize)
 
 void appendFile(const char * path, const char * message, size_t messageSize)
 {
+  if(!messageSize)
+    return;
   std::string strPath=getFullPath(path);
 
   FILE *file = fopen(strPath.c_str(), "a");
@@ -419,12 +431,17 @@ void writeMsgList(const char * path,std::list<CMsg *> *pMList ){
 
 }
 
+void appendFile(const char * path, const char * path1){
+  std::string str=readFile(path1);
+  appendFile(path,str.c_str(),str.size());
+}
 
 #else
 void mountFS(){}
 void renameFile(const char * path1, const char * path2){}
 void deleteFile(const char * path){}
 void appendFile(const char * path, const char * message, size_t messageSize){}
+void appendFile(const char * path, const char * path1){}
 void writeFile(const char * path, const char * message, size_t messageSize){}
 std::string readFile(const char * path){}
 void readCharsFromFile(const char * path){}

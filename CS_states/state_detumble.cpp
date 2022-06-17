@@ -1,7 +1,6 @@
 
 #include "state_defs.h"
 #include "state_detumble.h"
-#include <portentafs.h>
 #include <powerup.h>
 
 

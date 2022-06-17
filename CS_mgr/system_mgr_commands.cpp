@@ -197,8 +197,7 @@ void CSystemMgr::showCommands(){
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   if(act== "PHONEON") { phone();    return;  }
-  if(act== "PHONEOFF") { disablePhone();    return;  }
-  if(act== "BURN") {  burn();    return;  }
+  if(act== "PHONEOFF") { disablePhone();    return;  }  
   if((act== "MOTORX") || (act== "MOTORY") || (act== "MOTORZ") ){  testMotor(msg);  return;}
   if((act== "IRX1") || (act== "IRX2") ||  (act== "IRY1") || (act== "IRY2") ||  (act== "IRZ1") || (act== "IRZ2") ){  testIR(msg);  return;}
   if((act== "MAGX") || (act== "MAGY") || (act== "MAGZ") ){testMAG(msg);return;}

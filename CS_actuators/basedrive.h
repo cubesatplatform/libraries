@@ -88,5 +88,5 @@ public:
   void setMotor(int tmp){_motor=tmp;};
   int getMotor(){return _motor;};
 
-  void callNewFunction(CMsg &msg);  
+  void callCustomFunctions(CMsg &msg) override;  
 };

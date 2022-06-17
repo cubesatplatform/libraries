@@ -138,8 +138,7 @@ void CSystemObject::stats(CMsg &msg){
   m.setParameter("name",_name);
   m.setParameter("cid",_cid);
   m.setParameter("sid",_sid);
-  m.setParameter("lastStateT",_lastStateTime);
-  m.setParameter("createdT",_createdTime);
+  m.setParameter("lastStateT",_lastStateTime);  
   m.setParameter("currentT",_currentTime);
 
   m.setParameter("prevT",_prevTime);
@@ -308,7 +307,7 @@ if (_ostate == "ERROR") {  //if ERROR, have it retry a few times
 bool CSystemObject :: outOfTime() {
   if (_forever)
     return false;
-  if (((_currentTime - _createdTime) > _maxTime)&&((_currentTime - _createdTime) > _minTime)) {   //Play ->Out of Time
+  if (((_currentTime - _startTime) > _maxTime)&&((_currentTime - _startTime) > _minTime)) {   //Play ->Out of Time
     writeconsole("Forever: ");
     writeconsoleln(_forever);
     CMsg m;

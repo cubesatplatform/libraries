@@ -112,7 +112,14 @@ void CRadio::init(){
 
 
 
+/*
+// controlled via two pins (RX enable, TX enable)
+// to enable automatic control of the switch,
+// call the following method
+// RX enable: 4   R1_RXEN
+// TX enable: 5   R1_TXEN
 
+//radio.setRfSwitchPins(R1_RXEN, R1_TXEN);
 
 
 // function to set RF mode to transmit or receive
@@ -182,7 +189,7 @@ void CRadio::enableTX(){
   #endif
 }
 
-
+*/
 
 void  CRadio::Update(CMsg &msg){
   CSystemObject::Update(msg);
@@ -269,6 +276,7 @@ void CRadio::setup() {
         plora->setDio0Action(setFlag2);
       #else
         plora->setDio1Action(setFlag2);
+        plora->setRfSwitchPins(R2_RXEN, R2_TXEN);
       #endif
       }
       else {
@@ -280,6 +288,7 @@ void CRadio::setup() {
         plora->setDio0Action(setFlag);
       #else
         plora->setDio1Action(setFlag);
+        plora->setRfSwitchPins(R1_RXEN, R1_TXEN);
       #endif
       }
 
@@ -354,7 +363,7 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
   memcpy(buffer,buf,254);
     
   // set mode to transmission
-  enableTX();//setRfMode(true);
+  //~enableTX();//setRfMode(true);
 
   
   *_penableInterrupt=false;
@@ -444,7 +453,7 @@ void CRadio::TransmitCmd(){
 
 
 void CRadio::SetRadioReceive(){
-  enableRX();
+  //~enableRX();
 
   *_pbFlag=false;
   

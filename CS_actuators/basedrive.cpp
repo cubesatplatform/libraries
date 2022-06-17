@@ -103,10 +103,11 @@ void CBaseDrive::loop(){
   runOnce(m);
 }
 
-void CBaseDrive::callNewFunction(CMsg &msg){   //Calls a specific function directly
+void CBaseDrive::callCustomFunctions(CMsg &msg){   //Calls a specific function directly
   std::string act=msg.getParameter("ACT");  
   int speed=msg.getParameter("SPEED",1000);
   unsigned long duration=msg.getParameter("DURATION",0);
+  int val=msg.getParameter("v",0);
 
   writeconsoleln(msg.serializeout());
   //std::string callback=msg.getParameter("CALLBACK");
@@ -117,4 +118,14 @@ void CBaseDrive::callNewFunction(CMsg &msg){   //Calls a specific function direc
   if (act=="STOP") stopActuator();
   if (act=="SPEED") Speed(speed,duration);
   if (act=="START") Forward(speed,duration);
+  if (act=="SENDPWM") sendPWM(speed);
+  if (act=="SETSETSPEED") setSetSpeed(speed);
+  if (act=="SETPWMSPEED") setPWMSpeed(speed);
+  if (act=="SETMSPEED") setMSpeed(speed);
+  if (act=="SETDURATION") setDuration(duration);
+  if (act=="SETMAXRUNTIME") setMaxRunTime(duration);
+  if (act=="SETMODIFIEDTIME") setModifiedTime(duration);
+  if (act=="SETDIR") setDir(val);
+  if (act=="SETDRIVEINTERVAL") setDriveInterval(val);
+  if (act=="SETDRIVESTARTTIME") setDriveStartTime(val);
 }

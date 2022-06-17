@@ -62,7 +62,7 @@ void CStateObj::resetSubSystems(){
 
 }
 
-void CStateObj::Cleanup(){
+void CStateObj::cleanup(){
 	_lastcleanuptime=getTime();
 	for (auto it = subsystems.begin(); it != subsystems.end(); it++) {
 	CSystemObject* psys;
@@ -128,6 +128,11 @@ void CStateObj::callCustomFunctions(CMsg &msg){
 	std::string act = msg.getACT();
 	
 	if ((Name()!="CORE") && (act == "ADDSYSTEM")) { addSystem(msg) ; return;}
+	if (act == "ENTER")  enter();
+	if (act == "EXIT")  exit();
+	if (act == "RESETSUBSYSTEMS")  resetSubSystems();
+	if (act == "CLEANUP")  cleanup();
+	if (act == "INIT")  init();
 };
 
 

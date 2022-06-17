@@ -88,7 +88,6 @@ public:
   void resetWire(TwoWire *wire, const char* s);
   void enableI2C();
   void disableI2C();
-  void burn();
   void phone();
   void pinsOn();
   void pinsOff();
