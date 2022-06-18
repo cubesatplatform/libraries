@@ -390,16 +390,15 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
 
 //Packet received.  Place in Rcvd queue.
 
-std::string CRadio::isBinary(unsigned char *buffer, int len){
+std::string CRadio::isBinary(unsigned char *buffer, int len){  
   std::string str;
   if(len<20)
-    return str;
-  if(  (buffer[0]=' ')&&(buffer[1]=' ')&&(buffer[2]=' ')  ){  
+    return str;    
+  if(  (buffer[0]==' ')&&(buffer[1]==' ')&&(buffer[2]==' ')  ){  
     for(int count=3;count<20;count++)    {
-      str+=buffer[count];
+      str+=buffer[count];      
     }
-  }
-  
+  }  
   return str;
 }
 
@@ -414,6 +413,7 @@ void CRadio::receivedLogic(unsigned char *buffer, int len){
 
   CMsg robj(tmpstr.c_str(), plora->getRSSI(), plora->getSNR());
   if(filename.size()){
+    writeconsoleln(filename);
     robj.setParameter("FILENAME",filename);
     robj.setParameter("WRITE","1");
     robj.initArray(buffer+20,len-20);
