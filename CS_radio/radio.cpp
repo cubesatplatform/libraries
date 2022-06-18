@@ -394,15 +394,12 @@ std::string CRadio::isBinary(unsigned char *buffer, int len){
   std::string str;
   if(len<20)
     return str;
-  if(
-  (buffer[0]=' ')&&(buffer[1]=' ')&&(buffer[2]=' ')
-  ){}
-  else
-    return str;
-
-  for(int count=3;count<20;count++)    
-    str+=buffer[count];
-
+  if(  (buffer[0]=' ')&&(buffer[1]=' ')&&(buffer[2]=' ')  ){  
+    for(int count=3;count<20;count++)    {
+      str+=buffer[count];
+    }
+  }
+  
   return str;
 }
 

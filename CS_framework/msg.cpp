@@ -202,7 +202,12 @@ std::string CMsg::serializeFile(const char * path){
     strFN=path;
 
   std::string str=serialize();
-  writeFile(strFN.c_str(), str.c_str(), str.size());
+  if(vectorLen()){
+    writeFile(strFN.c_str(), str.c_str(), str.size());
+  }
+  else{
+    writeFile(strFN.c_str(), byteVector.data(), vectorLen());
+  }
   return strFN;
 
 }
@@ -219,5 +224,9 @@ writeconsoleln(path);
 
 void CMsg::saveFile(){
   writeconsoleln("Call to Write File");
-  serializeFile();
+  std::string filename=getParameter("FILENAME");
+  if(filename.size())
+    serializeFile(filename.c_str());
+  else
+    serializeFile();
 }
