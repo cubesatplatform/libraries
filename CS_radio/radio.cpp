@@ -389,13 +389,40 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
 
 
 //Packet received.  Place in Rcvd queue.
+
+std::string CRadio::isBinary(unsigned char *buffer, int len){
+  std::string str;
+  if(len<20)
+    return str;
+  if(
+  (buffer[0]=' ')&&(buffer[1]=' ')&&(buffer[2]=' ')
+  ){}
+  else
+    return str;
+
+  for(int count=3;count<20;count++)    
+    str+=buffer[count];
+
+  return str;
+}
+
+
 void CRadio::receivedLogic(unsigned char *buffer, int len){
+  std::string filename=isBinary(buffer,  len);
   std::string tmpstr; 
-  for (int count=0;count<len;count++) tmpstr+=buffer[count];              //Convert byte buffer to string
+
+  if(!filename.size()){
+    for (int count=0;count<len;count++) tmpstr+=buffer[count];              //Convert byte buffer to string
+  }
 
   CMsg robj(tmpstr.c_str(), plora->getRSSI(), plora->getSNR());
-  robj.setParameter("RSSI",plora->getRSSI());
-  robj.setParameter("S/N",plora->getSNR());
+  if(filename.size()){
+    robj.setParameter("FILENAME",filename);
+    robj.setParameter("WRITE","1");
+    robj.initArray(buffer+20,len-20);
+  }
+  //robj.setParameter("RSSI",plora->getRSSI());
+  //robj.setParameter("S/N",plora->getSNR());
   writeconsole("Received by: ");writeconsoleln(Name());
   robj.writetoconsole();
   
@@ -407,7 +434,10 @@ void CRadio::receivedLogic(unsigned char *buffer, int len){
     }
   }
   else{
-    addReceivedList(robj);
+    if(!filename.size())
+      addReceivedList(robj);
+    else
+      robj.saveFile();
     
     if(robj.needACK()&&robj.getTO()==getIAM())  SendAck(robj);
   }

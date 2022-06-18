@@ -216,3 +216,8 @@ writeconsoleln(path);
     decompose(str.c_str());
   }
 }
+
+void CMsg::saveFile(){
+  writeconsoleln("Call to Write File");
+  serializeFile();
+}

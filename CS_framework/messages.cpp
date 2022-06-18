@@ -8,8 +8,11 @@ void CMessages::moveReceived() {
   while (ReceivedList.size()){
     CMsg m=ReceivedList.back(); 
     ReceivedList.pop_front();
-    
-    MessageList.push_back(m);    
+    if(m.getParameter("WRITE")=="1"){
+      m.saveFile();
+    }
+    else
+      MessageList.push_back(m);    
   }  
 }
 

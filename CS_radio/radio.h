@@ -128,6 +128,7 @@ public:
   void enableRX();
   void enableTX();
   void receivedLogic(unsigned char *buffer, int len);
+  std::string isBinary(unsigned char *buffer, int len);
   void setup();
   bool isTransmitTime();
   void TransmitCmd();
