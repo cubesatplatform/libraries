@@ -203,10 +203,16 @@ std::string CMsg::serializeFile(const char * path){
 
   std::string str=serialize();
   if(vectorLen()){
-    writeFile(strFN.c_str(), str.c_str(), str.size());
+    bool flag=false;
+    for(auto count=0;count<strFN.size();count++){
+      if(strFN[count]=='.') flag=true;
+    }
+    if(!flag) strFN+=".bin";
+    writeFile(strFN.c_str(), byteVector.data(), vectorLen());
   }
   else{
-    writeFile(strFN.c_str(), byteVector.data(), vectorLen());
+    writeFile(strFN.c_str(), str.c_str(), str.size());
+    
   }
   return strFN;
 

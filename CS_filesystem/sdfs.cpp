@@ -124,6 +124,51 @@ void readCharsFromFile(const char * path)
   fclose(file);
 }
 
+int readFileBinary(const char * path,std::vector<char> *pbyteVector){
+  bool isBinary=false;
+
+  std::string str,strPath=getFullPath(path);
+  if(strPath.find(".bin")) isBinary=true;
+
+  if(!isBinary){
+    return 0;
+  }
+
+
+  FILE *file = fopen(strPath.c_str(), "r");
+
+  if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return 0;  }
+
+  char c;
+  uint32_t numRead = 1;
+  int count=0;
+
+  
+  
+
+  fseek ( file , 0 , SEEK_END );
+  long size=ftell (file);
+
+  fseek ( file , 0 , SEEK_SET );
+
+  pbyteVector->reserve(size);
+
+  while (numRead)
+  {
+    numRead = fread((uint8_t *) &c, sizeof(c), 1, file);
+
+    if (numRead){
+     pbyteVector->push_back(c);
+     str+=c;
+     count++;
+    }
+  }
+
+  fclose(file);
+  pbyteVector->shrink_to_fit();
+  return numRead;
+}
+
 std::string readFile(const char * path)
 {
   
@@ -159,16 +204,37 @@ void writeFile(const char * path, const char * message, size_t messageSize)
 
   if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return;  }
 
-  if (fwrite((uint8_t *) message, 1, messageSize, file))
-  {
-    writeconsoleln("* Writing OK");
-  }
-  else
-  {
-    writeconsoleln("* Writing failed");
-  }
+  if (fwrite((uint8_t *) message, 1, messageSize, file))  {    writeconsoleln("* Writing OK");  }
+  else  {    writeconsoleln("* Writing failed");  }
 
   fclose(file);
+}
+
+void appendFileBinary(const char * path, const char * path1){
+  std::string strPath=getFullPath(path);
+  std::string strPath1=getFullPath(path);
+
+  FILE *file = fopen(strPath.c_str(), "a");
+  FILE *file1 = fopen(strPath1.c_str(), "r");
+
+  if (file)  {    writeconsoleln(" => File Open OK");  }  else  {    writeconsoleln(" => File Open Failed");    return;  }
+
+  if (file1)  {    writeconsoleln(" => File 1 Open OK");  }  else  {    writeconsoleln(" => File 1 Open Failed");    return;  }
+
+  char c;
+  uint32_t numRead = 1;
+
+  while (numRead)
+  {
+    numRead = fread((uint8_t *) &c, sizeof(c), 1, file1);
+
+    if (numRead){
+     fwrite((uint8_t *) &c, 1, 1, file);
+    }
+  }
+fclose(file);
+fclose(file1);
+
 }
 
 void appendFile(const char * path, const char * message, size_t messageSize)
@@ -186,12 +252,28 @@ void appendFile(const char * path, const char * message, size_t messageSize)
   fclose(file);
 }
 
+
+
 void deleteFile(const char * path)
 {
   std::string strPath=getFullPath(path);
 
   if (remove(strPath.c_str()) == 0)  {    writeconsoleln(" => OK");  }  else  {    writeconsoleln(" => Failed");    return;  }
 }
+
+
+void deleteFiles(const char * path){
+CMsg m=listDir();
+
+  for (auto x:m.Parameters){
+    std::string str;
+    str=x.second;
+
+    if(str.find(path))
+      deleteFile(str.c_str());
+  }
+}
+
 
 void renameFile(const char * path1, const char * path2)
 {
