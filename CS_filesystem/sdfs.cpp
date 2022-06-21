@@ -59,15 +59,16 @@ void formatFS() {
 }
   
 
-CMsg listDir(std::list<std::string> *plist){
+CMsg listDir(const char * path,std::list<std::string> *plist){
   DIR *dir;
   struct dirent *ent;
   int dirIndex = 0;
   CMsg m;
-  std::string val;
+  std::string spath,val;
 
   m.setSYS("DIRECTORY");
   writeconsoleln("List SDCARD content: ");
+  spath=path;
 
   if ((dir = opendir("/fs")) != NULL) {
     // Print all the files and directories within directory (not recursively)
@@ -75,18 +76,35 @@ CMsg listDir(std::list<std::string> *plist){
       writeconsoleln(ent->d_name);
       std::string str;
       str=ent->d_name;
-      if(plist!=NULL){
-         
+      
+      if (!spath.size()){
+      
+        if(plist!=NULL){       
           plist->push_back(str);
+          }
+      
+        val=tostring(dirIndex);
+        m.setParameter(val,str);
+        dirIndex++;
       }
-      val=tostring(dirIndex);
-      m.setParameter(val,str);
-      dirIndex++;
+
+      else{
+      
+        if(plist!=NULL){
+          if(str.find(path)!=std::string::npos)          
+            plist->push_back(str);
+        }
+      
+        if(str.find(path)!=std::string::npos){      
+          val=tostring(dirIndex);
+          m.setParameter(val,str);
+          dirIndex++;
+        }      
+      }
     }
     closedir (dir);
   } else {   m.setERROR("Error opening SDCARD");    writeconsoleln("Error opening SDCARD\n");  return m;  }
-  if(dirIndex == 0) {    m.setERROR("Empty SDCARD"); writeconsoleln("Empty SDCARD");  }
- writeconsoleln("------------------------- Done --------------------------------"); 
+  if(dirIndex == 0) {   m.setERROR("Empty SDCARD"); writeconsoleln("Empty SDCARD");  } 
  return m;
 }
 
@@ -97,7 +115,7 @@ void readCharsFromFile(const char * path)
 {
   writeconsole("readCharsFromFile: "); writeconsole(path);
 
-    if(path==NULL)
+  if(path==NULL)
     return;
 
  std::string strPath=FSPATH;
@@ -128,7 +146,7 @@ int readFileBinary(const char * path,std::vector<char> *pbyteVector){
   bool isBinary=false;
 
   std::string str,strPath=getFullPath(path);
-  if(strPath.find(".bin")) isBinary=true;
+  if(strPath.find(".bin")!=std::string::npos) isBinary=true;
 
   if(!isBinary){
     return 0;
@@ -263,14 +281,15 @@ void deleteFile(const char * path)
 
 
 void deleteFiles(const char * path){
+writeconsole(" deleteFiles");   writeconsoleln(path);
 CMsg m=listDir();
 
   for (auto x:m.Parameters){
     std::string str;
     str=x.second;
-
-    if(str.find(path))
+    if(str.find(path)!=std::string::npos){     
       deleteFile(str.c_str());
+    }
   }
 }
 

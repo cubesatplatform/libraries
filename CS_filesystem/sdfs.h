@@ -20,7 +20,7 @@ int readFileBinary(const char * path, std::vector<char> *pbyteVector);
 void readMsgList(const char * path,std::list<CMsg *> *pMList );
 void writeMsgList(const char * path,std::list<CMsg *> *pMList );
 void readCharsFromFile(const char * path);
-CMsg listDir(std::list<std::string> *plist=NULL);
+CMsg listDir(const char * path=NULL,std::list<std::string> *plist=NULL);
 void printFileTest();
 
 void test();
