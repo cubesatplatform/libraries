@@ -19,7 +19,7 @@ class CMsg  {
 protected:
   
 public:
-  std::vector<char> byteVector;
+  std::vector<unsigned char> byteVector;
   std::map<std::string, std::string> Parameters;
 
   CMsg() {_tc=getTime();_ID++;};
@@ -131,7 +131,7 @@ public:
     byteVector.reserve(byteCount);
     byteVector.insert(byteVector.begin(), myRawArray, myRawArray + byteCount);    
   }
-  char *vectorData(){return byteVector.data();};
+  unsigned char *vectorData(){return byteVector.data();};
   int vectorLen(){return byteVector.size();}
   void cleanup();
 

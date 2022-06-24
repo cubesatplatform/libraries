@@ -157,7 +157,7 @@ int readFileBinary(const char * path,std::vector<char> *pbyteVector){
 
   if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return 0;  }
 
-  char c;
+  unsigned char c;
   uint32_t numRead = 1;
   int count=0;
 
@@ -173,7 +173,7 @@ int readFileBinary(const char * path,std::vector<char> *pbyteVector){
 
   while (numRead)
   {
-    numRead = fread((uint8_t *) &c, sizeof(c), 1, file);
+    numRead = fread( &c, sizeof(c), 1, file);
 
     if (numRead){
      pbyteVector->push_back(c);
@@ -196,12 +196,12 @@ std::string readFile(const char * path)
 
   if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return str;  }
 
-  char c;
+  unsigned char c;
   uint32_t numRead = 1;
 
   while (numRead)
   {
-    numRead = fread((uint8_t *) &c, sizeof(c), 1, file);
+    numRead = fread( &c, sizeof(c), 1, file);
 
     if (numRead){
      //writeconsole(c);
@@ -213,7 +213,7 @@ std::string readFile(const char * path)
   return str;
 }
 
-void writeFile(const char * path, const char * message, size_t messageSize)
+void writeFile(const char * path, const unsigned char * message, size_t messageSize)
 {
   if(!messageSize)
     return;
@@ -222,7 +222,7 @@ void writeFile(const char * path, const char * message, size_t messageSize)
 
   if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return;  }
 
-  if (fwrite((uint8_t *) message, 1, messageSize, file))  {    writeconsoleln("* Writing OK");  }
+  if (fwrite( message, 1, messageSize, file))  {    writeconsoleln("* Writing OK");  }
   else  {    writeconsoleln("* Writing failed");  }
 
   fclose(file);
@@ -239,15 +239,15 @@ void appendFileBinary(const char * path, const char * path1){
 
   if (file1)  {    writeconsoleln(" => File 1 Open OK");  }  else  {    writeconsoleln(" => File 1 Open Failed");    return;  }
 
-  char c;
+  unsigned char c;
   uint32_t numRead = 1;
 
   while (numRead)
   {
-    numRead = fread((uint8_t *) &c, sizeof(c), 1, file1);
+    numRead = fread( &c, sizeof(c), 1, file1);
 
     if (numRead){
-     fwrite((uint8_t *) &c, 1, 1, file);
+     fwrite( &c, 1, 1, file);
     }
   }
 fclose(file);
@@ -255,7 +255,7 @@ fclose(file1);
 
 }
 
-void appendFile(const char * path, const char * message, size_t messageSize)
+void appendFile(const char * path, const unsigned char * message, size_t messageSize)
 {
   if(!messageSize)
     return;
@@ -265,7 +265,7 @@ void appendFile(const char * path, const char * message, size_t messageSize)
 
   if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return;  }
 
-  if (fwrite((uint8_t *) message, 1, messageSize, file))   {    writeconsoleln("* Appending OK");  }  else  {    writeconsoleln("* Appending failed");  }
+  if (fwrite( message, 1, messageSize, file))   {    writeconsoleln("* Appending OK");  }  else  {    writeconsoleln("* Appending failed");  }
 
   fclose(file);
 }
@@ -484,12 +484,12 @@ void readMsgList(const char * path,std::list<CMsg *> *pMList ){
 
   if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return;  }
 
-  char c;
+  unsigned char c;
   uint32_t numRead = 1;
 
   while (numRead)
   {
-    numRead = fread((uint8_t *) &c, sizeof(c), 1, file);
+    numRead = fread( &c, sizeof(c), 1, file);
 
     if (numRead){
      //writeconsole(c);
@@ -541,9 +541,9 @@ void appendFile(const char * path, const char * path1){
 void mountFS(){}
 void renameFile(const char * path1, const char * path2){}
 void deleteFile(const char * path){}
-void appendFile(const char * path, const char * message, size_t messageSize){}
+void appendFile(const char * path, const unsigned char * message, size_t messageSize){}
 void appendFile(const char * path, const char * path1){}
-void writeFile(const char * path, const char * message, size_t messageSize){}
+void writeFile(const char * path, const unsigned char * message, size_t messageSize){}
 std::string readFile(const char * path){}
 void readCharsFromFile(const char * path){}
 void listDir(){}

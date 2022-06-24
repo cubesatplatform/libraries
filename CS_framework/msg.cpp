@@ -211,7 +211,7 @@ std::string CMsg::serializeFile(const char * path){
     writeFile(strFN.c_str(), byteVector.data(), vectorLen());
   }
   else{
-    writeFile(strFN.c_str(), str.c_str(), str.size());
+    writeFile(strFN.c_str(), (const unsigned char *)str.c_str(), str.size());
     
   }
   return strFN;

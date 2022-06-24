@@ -350,7 +350,7 @@ void CRadio::TransmitPacket(std::string str, bool bAck){
 }
 
 void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
-  unsigned char buffer[300];
+  char buffer[300];
 
   writeconsole("Radio Transmitting :  ");writeconsoleln(Name());
 
