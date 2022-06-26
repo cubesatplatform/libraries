@@ -386,8 +386,10 @@ unsigned long CSystemObject::getReceivedTimestamp(){
 
   
 void CSystemObject::addTransmitList(CMsg &m ){
+   writeconsoleln(m.vectorLen());
   CMessages* pM = getMessages();  
   fillMetaMSG(&m);    
+  writeconsoleln(m.vectorLen());
   pM->addTransmitList(m);
   
 }

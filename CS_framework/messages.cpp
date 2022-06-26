@@ -198,6 +198,10 @@ void CMessages::addReceivedList(CMsg &s,std::string strIAM){
 
 void CMessages::_addTransmit(CMsg &m){     
     _lastTransmit=getTime();
+    if(m.vectorLen()){   //Not setting pwd or anything   need some logic in there
+      TransmitList.push_back(m);  
+      return;
+    }
     
     m.setPWD();
 
@@ -306,7 +310,12 @@ std::list<CMsg> CMessages::splitMsgData(CMsg &m){
 
 
 void CMessages::addTransmitList(CMsg &m){
-
+  if(m.vectorLen()){
+    _addTransmit(m);
+    return;
+  }
+  writeconsoleln("xxxxxxxxxxxxxxxxxxxxxx");
+  writeconsoleln(m.vectorLen());
 std::list<CMsg> lMD;
 
 lMD=splitMsgData(m);

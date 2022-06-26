@@ -125,7 +125,7 @@ void readCharsFromFile(const char * path)
 
   if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return;  }
 
-  char c;
+  unsigned char c;
 
   while (true)
   {
@@ -142,7 +142,7 @@ void readCharsFromFile(const char * path)
   fclose(file);
 }
 
-int readFileBinary(const char * path,std::vector<char> *pbyteVector){
+int readFileBinary(const char * path,std::vector<unsigned char> *pbyteVector){
   bool isBinary=false;
 
   std::string str,strPath=getFullPath(path);
@@ -204,7 +204,7 @@ std::string readFile(const char * path)
     numRead = fread( &c, sizeof(c), 1, file);
 
     if (numRead){
-     //writeconsole(c);
+     writeconsole(c);
      str+=c;
     }
   }
@@ -215,6 +215,7 @@ std::string readFile(const char * path)
 
 void writeFile(const char * path, const unsigned char * message, size_t messageSize)
 {
+  writeconsole(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  writeFile >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"); writeconsoleln((int)messageSize);
   if(!messageSize)
     return;
   std::string strPath=getFullPath(path);
@@ -401,7 +402,7 @@ void test(){
   char fileName2[] = "/fs/hello2.txt";
 
   //char message[]  = "Hello from " BOARD_NAME "\n";
-  char message[]  = "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
+  unsigned char message[]  = "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
   
   writeFile(fileName1, message, sizeof(message));
 
@@ -534,7 +535,7 @@ void writeMsgList(const char * path,std::list<CMsg *> *pMList ){
 
 void appendFile(const char * path, const char * path1){
   std::string str=readFile(path1);
-  appendFile(path,str.c_str(),str.size());
+  appendFile(path,(unsigned char *)str.c_str(),str.size());
 }
 
 #else

@@ -16,10 +16,13 @@
 #define LORA_FREQUENCY_400M30S         443.0   // MHz carrier, for E22-400M30S
 #define LORA_FREQUENCY_GATEWAY         443.0   // MHz carrier, for ESP32 single-channel gateway
 
-//443 bps
-#define LORA_BANDWIDTH                 125  //125.0   // kHz dual-sideband
-#define LORA_SPREADING_FACTOR          10       // 2^9 chirps
-#define LORA_CODING_RATE               7       // 4/7 coding
+
+// Keep TIME OF FLIGHT below 1.5-2 Seconds!!!!
+
+//813 bps   
+#define LORA_BANDWIDTH                 250  //125.0   // kHz dual-sideband  //Large packets would casue errors!!@#!@#! at 125
+#define LORA_SPREADING_FACTOR          10       // 2^9 chirps  10
+#define LORA_CODING_RATE               8       // 4/7 coding
 
 //5600
 #define LORA_BANDWIDTHMEGA                 500  //125.0   // kHz dual-sideband

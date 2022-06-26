@@ -143,6 +143,8 @@ void CMsg::deserialize() {
 
 
 bool CMsg::checkPWD(){
+  if(vectorLen())
+    return true;
   std::string key;
 
   key=getSYS();  
@@ -236,3 +238,15 @@ void CMsg::saveFile(){
   else
     serializeFile();
 }
+
+void CMsg::initArray(unsigned char* myRawArray, int byteCount) {
+  writeconsoleln("Init Arraying  vvvvvvvvvvvv");
+    for(int count=0;count<byteCount;count++){
+     // byteVector.push_back(buffer[count]);
+      unsigned char c=myRawArray[count];
+      byteVector.push_back(c);       
+      writeconsole((char)myRawArray[count]);
+  }
+    
+  
+  }

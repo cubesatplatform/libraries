@@ -127,8 +127,8 @@ public:
   void setRfMode(bool transmit);// function to set RF mode to transmit or receive
   void enableRX();
   void enableTX();
-  void receivedLogic(unsigned char *buffer, int len);
-  std::string isBinary(unsigned char *buffer, int len);
+  void receivedLogic( unsigned char *buffer, int len);
+  std::string isBinary( unsigned char *buffer, int len);
   void setup();
   bool isTransmitTime();
   void TransmitCmd();

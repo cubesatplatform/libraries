@@ -322,11 +322,9 @@ void CRadio::SendAck(CMsg &m){
 }
 
 
-void CRadio::TransmitPacket(CMsg &m){ 
-  writeconsoleln("----------------------------------------------- TransmitPacket(CMessage m) ------------------------------------------");
+void CRadio::TransmitPacket(CMsg &m){   
   if(m.vectorLen()) {
-      TransmitPacket(m.vectorData(),m.vectorLen());
-      writeconsoleln("----------------------------------------------- TransmitVVVVEctor(CMessage m) ------------------------------------------");
+      TransmitPacket(m.vectorData(),m.vectorLen());      
   }
   else  {
     CMsg tm=m;    
@@ -334,7 +332,7 @@ void CRadio::TransmitPacket(CMsg &m){
     if(m.needACK()){
       _waitForACK=true;
       _delayTransmit=RADIOWAITFORACK;
-      writeconsoleln("----------------------------------------------- need ACK ---------------------------------------------------- ");
+      //writeconsoleln("----------------------------------------------- need ACK ---------------------------------------------------- ");
       
     }
     else
@@ -350,13 +348,10 @@ void CRadio::TransmitPacket(std::string str, bool bAck){
 }
 
 void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
-  char buffer[300];
-
-  writeconsole("Radio Transmitting :  ");writeconsoleln(Name());
+  unsigned char buffer[300];
 
   if(len>255) {
-    writeconsole("ERROR ERROR Sending   Packet too big! :");    writeconsoleln(len);    
-   
+    writeconsole("ERROR ERROR Sending   Packet too big! :");    writeconsoleln(len);     
     len=254;
   }
 
@@ -364,14 +359,13 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
     
   // set mode to transmission
   //~enableTX();//setRfMode(true);
-
   
   *_penableInterrupt=false;
   
-
   setMode("TX");
   _waitForACK=bAck;
-  _radioState = plora->startTransmit((uint8_t*)buffer,len);  //Asynch  Comes right back and sends on its own
+  writeconsole(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  Starting Transmission  :"); writeconsoleln(Name());
+  _radioState = plora->startTransmit(buffer,len);  //Asynch  Comes right back and sends on its own
   if (_radioState!=RADIOLIB_ERR_NONE){
     writeconsoleln("ERROR in Transmission");
     incErrorCount();  //Reset
@@ -382,28 +376,34 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
   
   _completedTransmit=getTime()+RADIOWAITFORCOMPLETE;   //Put a time that it should have finished by
   _lastPing = getTime();
-  _lastTransmit= getTime();
-  
+  _lastTransmit= getTime();  
 }
 
 
 
 //Packet received.  Place in Rcvd queue.
 
-std::string CRadio::isBinary(unsigned char *buffer, int len){  
+std::string CRadio::isBinary( unsigned char *buffer, int len){  
   std::string str;
   if(len<20)
     return str;    
-  if(  (buffer[0]==' ')&&(buffer[1]==' ')&&(buffer[2]==' ')  ){  
-    for(int count=3;count<20;count++)    {
-      str+=buffer[count];      
+
+  if(  (buffer[17]==32)&&(buffer[18]==32)&&(buffer[19]==32)  ){    //32 is space
+      writeconsoleln("Definitely a Binary");  
+  
+    for(int count=0;count<20;count++)  {  
+      char c=(char)buffer[count];      
+      if (c==' ')
+        break;
+      str+=c;
     }
+
   }  
   return str;
 }
 
 
-void CRadio::receivedLogic(unsigned char *buffer, int len){
+void CRadio::receivedLogic( unsigned char *buffer, int len){
   std::string filename=isBinary(buffer,  len);
   std::string tmpstr; 
 
@@ -413,10 +413,17 @@ void CRadio::receivedLogic(unsigned char *buffer, int len){
 
   CMsg robj(tmpstr.c_str(), plora->getRSSI(), plora->getSNR());
   if(filename.size()){
-    writeconsoleln(filename);
+    writeconsoleln("ReceivedLogic   isBinary  Has Filename  Initarray");
     robj.setParameter("FILENAME",filename);
     robj.setParameter("WRITE","1");
-    robj.initArray(buffer+20,len-20);
+    robj.initArray(buffer+20,len);
+    unsigned char *pData=robj.vectorData();
+
+    for(int count=0;count<len;count++){
+      unsigned char c=pData[count];
+      writeconsole(c);
+    }
+
   }
   //robj.setParameter("RSSI",plora->getRSSI());
   //robj.setParameter("S/N",plora->getSNR());
@@ -442,9 +449,7 @@ void CRadio::receivedLogic(unsigned char *buffer, int len){
 
 void CRadio::ReceivedPacket(){
   tic();
-  writeconsoleln("Received packet!");
-
-  unsigned char buffer[300]={0};
+  unsigned char buffer[500]={0};
 
   int len=plora->getPacketLength();
   _radioState = plora->readData(buffer,len);
@@ -473,6 +478,7 @@ void CRadio::TransmitCmd(){
       writeconsole("List Size:");      writeconsoleln((long)pMsgs->TransmitList.size());
         
       TransmitPacket(tObj);
+
       pMsgs->TransmittedList.push_front(tObj);
     }  
   }
@@ -490,7 +496,7 @@ void CRadio::SetRadioReceive(){
   if (_radioState == RADIOLIB_ERR_NONE) {    
     setMode("RX");
   
-    writeconsoleln("Listening Started successfully!____________________________");
+    writeconsoleln(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  Listening Started successfully!____________________________");
     if(_waitForACK){
       _nextTransmit=getTime()+_delayTransmit;
     }
@@ -529,7 +535,6 @@ bool CRadio::readyToTransmit(){
   
                
   void CRadio::callCustomFunctions(CMsg &msg){   //Calls a specific function directly
-  writeconsoleln("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
   writeconsoleln("void CRadio::callCustomFunctions(CMsg &msg)");
   msg.writetoconsole();
     std::string act=msg.getParameter("ACT");

@@ -8,6 +8,7 @@
 
 
 
+
 class CMsg  {
   std::string _str;
 
@@ -127,24 +128,27 @@ public:
    
   
 
-  void initArray(unsigned char* myRawArray, int byteCount) {
-    byteVector.reserve(byteCount);
-    byteVector.insert(byteVector.begin(), myRawArray, myRawArray + byteCount);    
-  }
+  void initArray(unsigned char* myRawArray, int byteCount);
+
   unsigned char *vectorData(){return byteVector.data();};
+  
   int vectorLen(){return byteVector.size();}
   void cleanup();
 
 
   CMsg operator+=(const CMsg& b) {
     //writeconsole("ALERT  Not copying Byte Vector");
-    
+      //for(auto s:b.byteVector){
+      //  byteVector.push_back(s);
+      //}
+
 
     for(auto s:b.Parameters){
       setParameter(s.first,s.second);
     }
 
-    
+  
+
     return *this;
   }
 };
