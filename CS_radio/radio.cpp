@@ -293,8 +293,12 @@ void CRadio::setup() {
       }
 
       setState("PLAY");
-      writeconsoleln("Radio success!   success!   success!   success!   success!   success!   success!   success!    success!   success!   success!");
-      delay(3000);
+      writeconsole("Radio success!   success!   success!   success!   success!   success!   Time on Air:");
+      #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+        writeconsole(plora->getTimeOnAir(250));
+      #endif
+      writeconsoleln("");
+      delay(1000);
       SetRadioReceive();          
      return;
       } else {
@@ -336,7 +340,7 @@ void CRadio::TransmitPacket(CMsg &m){
       
     }
     else
-      _delayTransmit=RADIOTXDELAY;
+      _delayTransmit=getTXDelay();
   }
 
 }
@@ -377,6 +381,7 @@ void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
   _completedTransmit=getTime()+RADIOWAITFORCOMPLETE;   //Put a time that it should have finished by
   _lastPing = getTime();
   _lastTransmit= getTime();  
+
 }
 
 
@@ -431,9 +436,9 @@ void CRadio::receivedLogic( unsigned char *buffer, int len){
   robj.writetoconsole();
   
   if(robj.getACK()=="1"){// This is an acknowledgement of a requested ACK.  No need to push to reeceived list
-    if((_nextTransmit>(getTime()+RADIOTXDELAY)) ||(_delayTransmit>(getTime()+RADIOTXDELAY))){    //No need to wait longer as we got the ack
-      _nextTransmit=getTime()+RADIOTXDELAY;
-      _delayTransmit=RADIOTXDELAY;
+    if((_nextTransmit>(getTime()+getTXDelay())) ||(_delayTransmit>(getTime()+getTXDelay()))){    //No need to wait longer as we got the ack
+      _nextTransmit=getTime()+getTXDelay();
+      _delayTransmit=getTXDelay();
       
     }
   }
@@ -464,8 +469,8 @@ void CRadio::ReceivedPacket(){
   }
   _lastPing = getTime();  //Added new to push out Ack send -----------------------------------------------------
   _lastReceive=getTime();
-  if(_nextTransmit<(getTime()+RADIOTXDELAY)){
-    _nextTransmit=getTime()+RADIOTXDELAY;
+  if(_nextTransmit<(getTime()+getTXDelay())){
+    _nextTransmit=getTime()+getTXDelay();
   }
 
 }
@@ -493,6 +498,9 @@ void CRadio::SetRadioReceive(){
 
   _radioState = plora->startReceive();
   writeconsoleln("");
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)   
+   writeconsole("Data Rate BPS: "); writeconsoleln(plora->getDataRate());
+  #endif
   if (_radioState == RADIOLIB_ERR_NONE) {    
     setMode("RX");
   
@@ -500,8 +508,8 @@ void CRadio::SetRadioReceive(){
     if(_waitForACK){
       _nextTransmit=getTime()+_delayTransmit;
     }
-    if(_nextTransmit<getTime()+RADIOTXDELAY){
-      _nextTransmit=getTime()+RADIOTXDELAY;
+    if(_nextTransmit<getTime()+getTXDelay()){
+      _nextTransmit=getTime()+getTXDelay();
     }
   }
  
@@ -718,5 +726,25 @@ int CRadio::getCR(){
     return LORA_CODING_RATELOW;
 
   return LORA_CODING_RATE;
+}
+
+
+int CRadio::getTXDelay(){  
+  if (_modem=="MEGABW")
+    return LORA_TXDELAYMEGA;
+
+  if (_modem=="ULTRABW")
+    return LORA_TXDELAYULTRA;
+
+  if (_modem=="HIGHBW")
+    return LORA_TXDELAYHIGH;
+
+  if (_modem=="MEDIUMBW")
+    return LORA_TXDELAYMEDIUM;
+
+  if (_modem=="LOWBW")
+    return LORA_TXDELAYLOW;
+
+  return LORA_TXDELAY;
 }
 

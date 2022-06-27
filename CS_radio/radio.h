@@ -169,6 +169,7 @@ public:
   int getBW();
   int getSF();
   int getCR();
+  int getTXDelay();
   float getFrequency();
 
   unsigned long getLastTransmit(){return _lastTransmit=0;}

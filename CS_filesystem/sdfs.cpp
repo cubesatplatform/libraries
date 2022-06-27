@@ -73,7 +73,7 @@ CMsg listDir(const char * path,std::list<std::string> *plist){
   if ((dir = opendir("/fs")) != NULL) {
     // Print all the files and directories within directory (not recursively)
     while ((ent = readdir (dir)) != NULL) {
-      writeconsoleln(ent->d_name);
+      writeconsoleln(ent->d_name);   //No easy way to get filesize without opening file
       std::string str;
       str=ent->d_name;
       
@@ -538,6 +538,37 @@ void appendFile(const char * path, const char * path1){
   appendFile(path,(unsigned char *)str.c_str(),str.size());
 }
 
+CMsg fileSize(const char * path){
+  CMsg m;
+
+  m.setSYS("FS");
+  m.setParameter("PATH",path);
+
+  std::string str,strPath=getFullPath(path);
+
+  FILE *file = fopen(strPath.c_str(), "r");
+
+  if (file)  {    writeconsoleln(" => Open OK");  }  else  {    writeconsoleln(" => Open Failed");    return str;  }
+
+  long size=0;
+  uint32_t numRead = 1;
+  
+  unsigned char c;
+
+  while (numRead)
+  {
+    numRead = fread( &c, sizeof(c), 1, file);
+
+    if (numRead){
+     size++;
+    }
+  }
+
+  fclose(file);
+  m.setParameter("SIZE",size);
+  return m;
+}
+
 #else
 void mountFS(){}
 void renameFile(const char * path1, const char * path2){}
@@ -555,4 +586,5 @@ void testFileIO(const char * path){}
 std::list<CMsg> readMsgList(const char * path){}
 void writeMsgList(const char * path,std::list<CMsg *> *pMList );
 void readMsgList(const char * path,std::list<CMsg *> *pMList );
+CMsg fileSize(const char * path){}
 #endif

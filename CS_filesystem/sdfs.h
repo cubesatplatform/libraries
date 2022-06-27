@@ -21,6 +21,7 @@ void readMsgList(const char * path,std::list<CMsg *> *pMList );
 void writeMsgList(const char * path,std::list<CMsg *> *pMList );
 void readCharsFromFile(const char * path);
 CMsg listDir(const char * path=NULL,std::list<std::string> *plist=NULL);
+CMsg fileSize(const char * path);
 void printFileTest();
 
 void test();
