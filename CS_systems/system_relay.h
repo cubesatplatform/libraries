@@ -8,7 +8,7 @@
 //This moves a certain type of data to TransmitList
 //
 class CRelay :public CSystemObject {
-	CMessageList RelayList; 
+	long _msgcount=0;
 public:
 	CRelay();
 	~CRelay() {}

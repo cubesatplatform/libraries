@@ -122,14 +122,3 @@ void CMDrive::test(CMsg &msg){
 }
 
 
-void CMDrive::echoData(CMsg &msg){
-  CMsg m;
-
-  m.setParameter("Name",Name());
-  m.setParameter("Mode",Mode());
-  m.setParameter("Direction",getDir());
-  m.setParameter(" Set Speed",getSetSpeed());
-  m.setParameter(" Motor Speed",getMSpeed());  
-  m.setParameter(" Time",getTime());
-  addTransmitList(m);
-};

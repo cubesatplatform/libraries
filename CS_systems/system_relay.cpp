@@ -11,19 +11,20 @@ void CRelay::loop() {
 }
 
 void CRelay::setMsg(CMsg &msg) {
-	 RelayList.push_back(msg);
+	_msgcount++;
+	std::string name;
+	name = RELAYKEY;
+	name += "_";
+	name += tostring(_msgcount);
+	
+	msg.setNAME(name);
+	addDataMap(msg.getNAME(),msg);
 }
 
-void CRelay::getMsg(CMsg &msg) {
-	std::string to=msg.getto();
-	CMsg m=RelayList.findwRemove(to,"to");
-	if(m.getVALUE().size())
-		addTransmitList(m);
-}
+
 
 void CRelay::callCustomFunctions(CMsg &msg){
 	std::string act=msg.getACT();
 
-	if((act=="")||(act=="SEND")) setMsg(msg);  
-	if((act=="GET")) getMsg(msg);  
+	if((act=="")||(act=="SEND")) setMsg(msg);  	
 }

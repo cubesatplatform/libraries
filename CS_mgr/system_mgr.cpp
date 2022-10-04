@@ -44,8 +44,7 @@ void CSystemMgr::Output(CMsg &msg){
 
   }
   CMsg cM;
-  cM.setDATA(logfinal);
-  cM.setTABLE("MGR");
+  cM.setDATA(logfinal);  
   addTransmitList(cM);  
 }
 
@@ -185,37 +184,6 @@ void CSystemMgr::newState(const char *str){
   
 
   
-
-void CSystemMgr::pinHigh(CMsg &msg) {
-  std::string str=msg.getParameter("PIN",""); 
-  PinName  n = Pins[str];
-  digitalWrite(n, HIGH);
-}
-
-void CSystemMgr::pinLow(CMsg &msg) {
-  std::string str=msg.getParameter("PIN",""); 
-  PinName  n = Pins[str];
-  digitalWrite(n, LOW);
-}
-
-void CSystemMgr::pinPWM(CMsg &msg) {
-  std::string str=msg.getParameter("PIN",""); 
-  int val=msg.getParameter("VALUE",0); 
-  PinName  n = Pins[str];
-
-  
-  if (pwmPins.find(str) != pwmPins.end()) {
-  
-    #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
-      analogWriteResolution(n,PIN_RESOLUTION);   
-    #endif
-    
-      analogWrite(n,val);
-      writeconsole("PWM: ");
-      writeconsoleln(val);    
-    }
-
-  }  
 
 
 

@@ -12,10 +12,11 @@
 #define MAXDATALEN 170
 
 
-class CMessageList{
+class CMessageList {
 private:
   std::list<CMsg *> MList; 
   int _maxsize=MAXLISTSIZE;
+  unsigned int _mid;   //Used to make sure we don't get a duplicate db entry and to combine entries when u need to split fields
 public:   
   CMessageList();
   ~CMessageList();
@@ -37,7 +38,11 @@ public:
 
 };
 
-class CMessages {
+
+
+
+class CMessages:public CSystemObject {
+private:
   void _addTransmit(CMsg &m);
 
   unsigned long _lastReceived=0;
@@ -59,7 +64,7 @@ public:
   //std::chrono::time_point<std::chrono::system_clock> starttime;
   
 
-  CMessages(){TransmittedList.maxSize(5);};
+  CMessages(){Name("MESSAGES");TransmittedList.maxSize(5);};
   ~CMessages(){};
 
   void moveReceived();                        //Need to make a subsystem that moved data to transmitlist data based on requests
@@ -82,6 +87,7 @@ public:
   
   void prune();
   void displayList(int option);  
+  void loop();
 };
 
-CMessages *getMessages();
+CMessages *getMessages();  //This needs to be instatiated in main App    //CMessages* getMessages(){return &bs.MSG;}

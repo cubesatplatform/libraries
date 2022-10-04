@@ -18,6 +18,37 @@
 #define STOPTASKLIMIT 1234567890 
 #define STOPTASKMAX   2147483647
 
+#define RELAYKEY "RELAY"
+#define TEMPERATUREKEY "TEMPERATURE"
+
+
+
+struct CTimeStruct {
+  bool bOn=false;
+  unsigned long _createdTime=0;
+  unsigned long _currentTime=0;
+  unsigned long _startTime=0;
+  unsigned long _stopTime=0;
+  unsigned long _maxTime=5000;
+  unsigned long _minTime=0;
+  unsigned long _modifiedTime=0;  
+  unsigned long _prevTime=0;
+  unsigned long _lastUse=0;
+
+  unsigned long _enter_time;
+	unsigned long _exit_time;	
+	unsigned long _starttimeoffset = 0;
+	unsigned long _lastcleanuptime=0;
+
+  bool outOfTime(){
+   	if ( ((_currentTime - _startTime) > _maxTime)&&((_currentTime - _startTime) > _minTime)) {   //Play ->Out of Time
+    	return true;
+  	}
+    return false;
+  }
+  
+};
+
 
 class CSystemObject {  
   bool success;  //true,false
@@ -30,32 +61,28 @@ class CSystemObject {
   static unsigned long _lastLowPowerMsg;
   int _sid;
   
-  unsigned long _modifiedTime=0;  
-  unsigned long _prevTime=0;
-  unsigned long _interval=0;  //loop time interval in MicroSeconds,  0 means no delay  
+
+  unsigned long _interval=10;  //loop time interval in MicroSeconds,  0 means no delay  
   unsigned long _loopCount=0;
   unsigned long _procCount=0;
+
 
   std::string _ostate;   //"" || "START","PLAY","PAUSE","STOP","ERROR" 
   std::string _olaststate;
 
   unsigned long _lastStateTime=0;  
-  unsigned long _lastUse=0;
   int _retryCount=0;
-  bool _forever = false;
+  bool _forever = true;
   int _step=0;
   std::string _mode;   //This determines what you are doing   Set to IDLE when done and nothing left to do  When u set new mode need to get it out of IDLE
   int _errorCount=0;
   int _errorThreshold=5;
 
+
 protected:
-  
-  unsigned long _createdTime=0;
-  unsigned long _currentTime=0;
-  unsigned long _startTime=0;
-  unsigned long _stopTime=0;
-  unsigned long _maxTime=5000;
-  unsigned long _minTime=0;
+  CTimeStruct _obj;
+  CTimeStruct _echo;  
+
   std::map<std::string, std::string> Callback;  
   CMsg _cmsg;
   
@@ -88,8 +115,8 @@ public:
   void setup(CMsg &msg) { setup(); };
   void loop(CMsg &msg)  {loop();};
   
-  void tic(){_lastUse=getTime();if(_ostate=="PAUSE")setState("PLAY");}
-  unsigned long lastUsed(){return _lastUse;}
+  void tic(){_obj._lastUse=getTime();if(_ostate=="PAUSE")setState("PLAY");}
+  unsigned long lastUsed(){return _obj._lastUse;}
 
   void setForever(bool tmp=true){  _forever=tmp;}
   bool getForever(){ return _forever;}
@@ -104,8 +131,8 @@ public:
   bool getStep(){ return _step;}
   bool incStep(){ _step++;}
 
-  void setMaxTime(unsigned long tmp){_maxTime=tmp;}
-  unsigned long getMaxTime(){return(_maxTime);}
+  void setMaxTime(unsigned long tmp){_obj._maxTime=tmp;}
+  unsigned long getMaxTime(){return(_obj._maxTime);}
 
   void setInterval(unsigned long tmp){_interval=tmp;}
   unsigned long getInterval(){return _interval;}
@@ -114,7 +141,7 @@ public:
   std::string State() { return _ostate; }
   std::string lastState() { return _olaststate; }  
   virtual void Update(CMsg &msg);
-  virtual void echoData(CMsg &msg){}
+
   
   void newMsg(CMsg &msg);
   virtual void newMode(CMsg &msg);
@@ -123,11 +150,11 @@ public:
   virtual void setMode(std::string tmp){_mode=tmp;}
   std::string Mode(){return _mode;}
 
-  unsigned long startTime(){return _startTime;};
-  void startTime(unsigned long tmp){_startTime=tmp;};
-  unsigned long stopTime(){return _stopTime;};
-  void stopTime(unsigned long tmp){_stopTime=tmp;};
-  unsigned long modifiedTime(){return _modifiedTime;};
+  unsigned long startTime(){return _obj._startTime;};
+  void startTime(unsigned long tmp){_obj._startTime=tmp;};
+  unsigned long stopTime(){return _obj._stopTime;};
+  void stopTime(unsigned long tmp){_obj._stopTime=tmp;};
+  unsigned long modifiedTime(){return _obj._modifiedTime;};
   
   virtual void callCustomFunctions(CMsg &msg){};   //Override to calls any system specific function directly
   
@@ -143,9 +170,10 @@ public:
  
   void addTransmitList(CMsg &m );
   void addDataMap(std::string key, CMsg &m); 
+  CMsg getDataMap(std::string key); 
   void addMessageList(CMsg &m );
   void addReceivedList(CMsg &m );
-  CMsg getDataMap(std::string key); 
+  
     
   //void statusUpdate(CMsg &m);
   void fillMetaMSG(CMsg *m);
@@ -155,14 +183,14 @@ public:
 
   int getRetryCount(){return _retryCount; }
   void clearRetryCount(){_retryCount=0; }
-  unsigned long getCreatedTime() {return _createdTime;}
-  unsigned long getModifiedTime(){return _modifiedTime=0;}
-  unsigned long getCurrentTime() {return _currentTime;}
-  unsigned long getPrevTime(){return _prevTime;}
-  void setModifiedTime(unsigned long tmp){_modifiedTime=tmp;}
+  unsigned long getCreatedTime() {return _obj._createdTime;}
+  unsigned long getModifiedTime(){return _obj._modifiedTime=0;}
+  unsigned long getCurrentTime() {return _obj._currentTime;}
+  unsigned long getPrevTime(){return _obj._prevTime;}
+  void setModifiedTime(unsigned long tmp){_obj._modifiedTime=tmp;}
   
-  unsigned long StartTime(){return _startTime=0;}
-  unsigned long StopTime(){return _stopTime=0;}
+  unsigned long StartTime(){return _obj._startTime=0;}
+  unsigned long StopTime(){return _obj._stopTime=0;}
 
   long timeSinceStateChange(){return getTime()-_lastStateTime;}
   std::string Name() { return _name; }

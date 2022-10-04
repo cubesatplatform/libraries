@@ -1,7 +1,7 @@
 #include "basedrive.h"
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
 #else
-  #include <analogWrite.h>
+  #include <analogWrite.h>  
 #endif
 #include <consoleio.h>
 

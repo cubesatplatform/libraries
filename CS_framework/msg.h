@@ -24,7 +24,7 @@ public:
   std::map<std::string, std::string> Parameters;
 
   CMsg() {_tc=getTime();_ID++;};
-  CMsg(std::string &s) { _str = s; _tc=getTime(); deserialize(); _ID++;}
+  CMsg(std::string s) { _str = s; _tc=getTime(); deserialize(); _ID++;}
   CMsg(const char* s) { _str = s; _tc=getTime(); deserialize(); _ID++;}
   CMsg(const char* s, float frssi , float fsnr = 0.0) { _str = s; _tc=getTime(); deserialize();  _rssi = frssi; fsnr = fsnr; _ID++;}
   
@@ -45,6 +45,8 @@ public:
 
   int getStaticID(){return _ID;}
 
+
+  std::string getNAME() { return  Parameters["N"]; }
   std::string getACT() { return  Parameters["ACT"]; }
   std::string getACK() { return  Parameters["ACK"]; }
   std::string getSYS() { return  Parameters["SYS"]; }
@@ -57,43 +59,53 @@ public:
   std::string getCID() { return  Parameters["CID"]; } 
   std::string getDATA() { return  Parameters["D"]; } 
   std::string getOFFSET() { return  Parameters["O"]; } 
-  std::string getTABLE() { return  Parameters["T"]; }
-  std::string getEVENT() { return  Parameters["E"]; } 
-  std::string getKEY() { return  Parameters["K"]; } 
+  std::string getEVENT() { return  Parameters["E"]; }   
   std::string getERROR() { return  Parameters["0"]; } 
   std::string getINFO() { return  Parameters["I"]; } 
   std::string getVALUE() { return  Parameters["V"]; } 
   std::string getCOMMENT() { return  Parameters["C"]; } 
   std::string getPANEL() { return  Parameters["P"]; } 
   std::string getLOG() { return  Parameters["L"]; } 
-  std::string getTIME() { return  Parameters["TM"]; } 
+  std::string getTIME() { return  Parameters["T"]; } 
+  std::string getMID() { return  Parameters["MID"]; } 
+  long getRECEIVEDTS() { return  getParameter("RTS",0L); } 
+  long getPROCESSTIME() { return  getParameter("RT",0L); } 
+
+  bool isReadyToProcess();
   bool checkPWD();
+
+  bool isAck() { 
+    if  (Parameters["ACK"]== "1") return true; 
+    return false; 
+    }
 
   void requestACK(){setACK("0");}
   void confirmACK(){setACK("1");}
+  void setNAME(std::string str) { Parameters["N"]=str; }
   void setACT(std::string str) { Parameters["ACT"]=str; }
   void setACK(std::string str) { Parameters["ACK"]=str; }
   void setSYS(std::string str) { Parameters["SYS"]=str; }
   void setFROM(std::string str="") { Parameters["FR"]=str; }
   void setTO(std::string str="") { Parameters["TO"]=str; }
   void setDATA(std::string str="") { Parameters["D"]=str; }
-  void setEVENT(std::string str="") { Parameters["E"]=str; }
-  void setKEY(std::string str="") { Parameters["K"]=str; }
+  void setEVENT(std::string str="") { Parameters["E"]=str; }  
   void setERROR(std::string str="") { Parameters["0"]=str; }
   void setINFO(std::string str="") { Parameters["I"]=str; }
   void setVALUE(std::string str="") { Parameters["V"]=str; }
   void setOFFSET(std::string str="") { Parameters["O"]=str; }
   void setOFFSET(int tmp) { Parameters["O"]=tostring(tmp); }
-  void setTABLE(std::string str) { Parameters["T"]=str; }
   void setPANEL(std::string str) { Parameters["P"]=str; }
   void setLOG(std::string str) { Parameters["L"]=str; }
   void setCOMMENT(std::string str) { Parameters["C"]=str; }
   void setCID(std::string str="") { Parameters["CID"]=str; }
-  void setTIME(unsigned long tmp) { Parameters["TM"]=tostring(tmp); }
+  void setPROCESSTIME(unsigned long tmp) { Parameters["PT"]=tostring(tmp); }
+  void setTIME(unsigned long tmp) { Parameters["T"]=tostring(tmp); }
+  void setMID(unsigned int tmp) { Parameters["MID"]=tostring(tmp); }
   bool setPWD();  //Returns false if parameters are not there for a real pwd    
   
   void setMODE(std::string str) { Parameters["MODE"]=str; }
   void setID(std::string str) { Parameters["ID"]=str; }  
+  long setRECEIVEDTS(unsigned long ts) { setParameter("RTS",ts); } 
   void setREFID(std::string str) { Parameters["REFID"]=str; }  
   void setREFID() { 
     std::string str=Parameters["REFID"];
@@ -104,6 +116,29 @@ public:
 
   std::string getParameter(std::string str) { return Parameters[str]; }
   std::string getParameter(std::string str,std::string val);
+
+  bool checkParameter(std::string str){
+  std::string cmds [] = {     "ACT","ACK","SYS","FR","TO","MODE","ID","REFID","CID","D","O","T","E","K","0","I","V","C","P","L","TM","MID"    }; 
+
+    for (auto cmd:cmds)
+      if (str==cmd) return true;
+    //writeconsole("Unknown parameter: "); writeconsoleln(str);
+    return false;
+    };
+
+  std::string get(std::string str){
+    if (!checkParameter(str)) return "";
+    if (Parameters.find(str) != Parameters.end()) return Parameters[str];
+    return "";
+    }
+
+  void set(std::string str,std::string val){
+    if (!checkParameter(str)) return;
+    Parameters[str]=val;
+    return;
+    }  
+    
+
   int getParameter(std::string str,int val);
   long getParameter(std::string str,long val);
   unsigned long getParameter(std::string str,unsigned long val);

@@ -39,7 +39,7 @@ public:
   void output();
   void runOnce(CMsg &msg);  
   void fillData();
-  void echoData(CMsg &msg);
+
 };
 
 #endif

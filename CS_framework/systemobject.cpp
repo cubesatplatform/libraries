@@ -19,19 +19,19 @@ CSystemObject::CSystemObject() {
 void CSystemObject::init(){
   success=false;
 
-  _currentTime=getTime();
-  _createdTime=getTime();
-  _modifiedTime=getTime();
-  _currentTime=getTime();
-  _prevTime=0;
+  _obj._currentTime=getTime();
+  _obj._createdTime=getTime();
+  _obj._modifiedTime=getTime();
+  _obj._currentTime=getTime();
+  _obj._prevTime=0;
   
-  _maxTime=TIMEORBIT;
-  _minTime=1000;
+  _obj._maxTime=TIMEORBIT;
+  _obj._minTime=1000;
 
-  _startTime=_createdTime;
-  _stopTime=_startTime+_maxTime;
+  _obj._startTime=_obj._createdTime;
+  _obj._stopTime=_obj._startTime+_obj._maxTime;
   
-  _minTime=0;
+  _obj._minTime=0;
 
   
   _loopCount=0;
@@ -41,7 +41,7 @@ void CSystemObject::init(){
   _olaststate="";  
    
   _lastStateTime=0;  
-  _lastUse=0;
+  _obj._lastUse=0;
   _retryCount=0;
 
   //_interval=0;// Don't clear the Mode on INIT !!!loop time interval in MicroSeconds,  0 means no delay
@@ -117,7 +117,7 @@ void CSystemObject::Name(std::string s) {
   
 
  void CSystemObject::fillMetaMSG(CMsg *m){
-    _currentTime = getTime(); 
+    _obj._currentTime = getTime(); 
     if((m->getSYS()=="")&&(m->getSYS()!="RADIO"))m->setSYS(Name());
     if(m->getFROM()=="") m->setFROM(getIAM());
     if(m->getTO()=="") m->setTO("ALL");
@@ -139,15 +139,15 @@ void CSystemObject::stats(CMsg &msg){
   m.setParameter("cid",_cid);
   m.setParameter("sid",_sid);
   m.setParameter("lastStateT",_lastStateTime);  
-  m.setParameter("currentT",_currentTime);
+  m.setParameter("currentT",_obj._currentTime);
 
-  m.setParameter("prevT",_prevTime);
-  m.setParameter("maxT", _maxTime);
-  m.setParameter("minT",_minTime);
+  m.setParameter("prevT",_obj._prevTime);
+  m.setParameter("maxT", _obj._maxTime);
+  m.setParameter("minT",_obj._minTime);
   m.setParameter("interval",_interval);
-  m.setParameter("lastUse",_lastUse);
+  m.setParameter("lastUse",_obj._lastUse);
 
-  m.setParameter("startT",_startTime);
+  m.setParameter("startT",_obj._startTime);
 
   m.setParameter("loopCount",_loopCount);
   m.setParameter("procCount",_procCount);
@@ -169,7 +169,7 @@ void CSystemObject::newMsg(CMsg &msg){
   if (act == "START") {start();return;}
   if (act == "OFF") {off();return;}
   if (act == "STATS") {stats(msg);return;}
-  if (act == "ECHODATA") {echoData(msg);return;}
+
 
   if ((Name()!="RADIO")&&(Name()!="RADIO2")){
     if (act == "PAUSE") {pause();return;}
@@ -184,7 +184,7 @@ void CSystemObject::newMsg(CMsg &msg){
   if(act=="UPDATE") {Update(msg);return;}
   if(act=="CONFIG") {config(msg);return;}
 
-  if(act=="ADDDATAMAP") {std::string key=msg.getKEY(); addDataMap(key,msg);return;}
+  if(act=="ADDDATAMAP") {std::string key=msg.getNAME(); addDataMap(key,msg);return;}
   if(act=="ADDTRANSMITLIST") {addTransmitList(msg);return;}
 
   writeconsoleln("callCustomFunctions");
@@ -195,11 +195,11 @@ void CSystemObject::newMsg(CMsg &msg){
 void CSystemObject::Update(CMsg &msg){
   
   _forever = (bool) msg.getParameter("FOREVER",(int)_forever);
-  _maxTime= msg.getParameter("MAXTIME",(unsigned long)_maxTime);
-  _minTime= msg.getParameter("MINTIME",(unsigned long)_minTime);
+  _obj._maxTime= msg.getParameter("MAXTIME",(unsigned long)_obj._maxTime);
+  _obj._minTime= msg.getParameter("MINTIME",(unsigned long)_obj._minTime);
   _interval= msg.getParameter("INTERVAL",(unsigned long)_interval);
-  _startTime= msg.getParameter("STARTTIME",(unsigned long)_startTime);
-  _stopTime= msg.getParameter("STOPTIME",(unsigned long)_stopTime);
+  _obj._startTime= msg.getParameter("STARTTIME",(unsigned long)_obj._startTime);
+  _obj._stopTime= msg.getParameter("STOPTIME",(unsigned long)_obj._stopTime);
   _ostate= msg.getParameter("OSTATE",_ostate);
   _mode= msg.getParameter("MODE",_mode);
   
@@ -230,7 +230,7 @@ std::string CSystemObject::outputStatus(long val) {
     m.setParameter("Forever",_forever);
 
     m.setParameter("Interval",_interval);
-    m.setParameter("Time",_currentTime);
+    m.setParameter("Time",_obj._currentTime);
         
     m.setParameter("State",_ostate);
     str=m.serializeout();     
@@ -252,7 +252,7 @@ void CSystemObject::Run(unsigned long runtime){
   unsigned long endtime=getTime()+runtime;
   
   while(getTime()<endtime){    
-    if((_currentTime+_interval)<getTime()){
+    if((_obj._currentTime+_interval)<getTime()){
       #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
         mbed::Watchdog::get_instance().kick();   
       #endif
@@ -264,10 +264,10 @@ void CSystemObject::Run(unsigned long runtime){
 
 void CSystemObject::Run() {
     _procCount++;
-    _currentTime = getTime();   
+    _obj._currentTime = getTime();   
        
 
-  if (_currentTime<_startTime) return;   //Do nothing as it shouldnt be activated yet
+  if (_obj._currentTime<_obj._startTime) return;   //Do nothing as it shouldnt be activated yet
 
 if (_ostate == "ERROR") {  //if ERROR, have it retry a few times
     if(_interval<570) {
@@ -307,7 +307,7 @@ if (_ostate == "ERROR") {  //if ERROR, have it retry a few times
 bool CSystemObject :: outOfTime() {
   if (_forever)
     return false;
-  if (((_currentTime - _startTime) > _maxTime)&&((_currentTime - _startTime) > _minTime)) {   //Play ->Out of Time
+  if (((_obj._currentTime - _obj._startTime) > _obj._maxTime)&&((_obj._currentTime - _obj._startTime) > _obj._minTime)) {   //Play ->Out of Time
     writeconsole("Forever: ");
     writeconsoleln(_forever);
     CMsg m;
@@ -319,7 +319,7 @@ bool CSystemObject :: outOfTime() {
 }
 
 void CSystemObject::timeStamp() { 
-  _currentTime = getTime(); 
+  _obj._currentTime = getTime(); 
   _loopCount++; 
 }
 
@@ -353,12 +353,12 @@ bool CSystemObject::isNextCycle() {
     return true;
   }
 
-  if(getTime()<_startTime){
+  if(getTime()<_obj._startTime){
     return false;
   }
 
-  if (_currentTime >= _prevTime + _interval) {
-    _prevTime = _currentTime;
+  if (_obj._currentTime >= _obj._prevTime + _interval) {
+    _obj._prevTime = _obj._currentTime;
     return true;
   }
   if(_interval==0)return true;
@@ -406,6 +406,9 @@ CMsg CSystemObject::getDataMap(std::string key){
   CMsg m;
   if(key.size()>1)    
     m=pM->DataMap[key];
+  if(m.Parameters.size()==0){
+    m.setNAME(key);
+  }
   return m;
 }
 
@@ -418,7 +421,7 @@ void CSystemObject::addMessageList(CMsg &m ){
 void CSystemObject::addReceivedList(CMsg &m ){
   CMessages* pM = getMessages();  
   pM->addReceivedList(m,getIAM());
-  pM->setReceivedTimestamp();
+  
 
 }
 

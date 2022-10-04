@@ -22,7 +22,6 @@ public:
   void init();
   void config(CMsg &msg);
   void test(CMsg &msg);
-  void runOnce(CMsg &m);
-  void echoData(CMsg &msg);
+  void runOnce(CMsg &m);  
 };
 

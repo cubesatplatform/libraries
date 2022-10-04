@@ -134,6 +134,7 @@ void CMotorController::config(PinName sig, PinName fg,PinName dir){
 }
 
 
+/*
 
 void CMotorController::config(CMsg &msg){
   std::string strSignal=msg.getParameter("PIN_SIGNAL");
@@ -143,7 +144,7 @@ void CMotorController::config(CMsg &msg){
   config(Pins[strSignal],Pins[strDir],Pins[strFG]);
   setState("PLAY");
 }
-
+*/
 
 
 void CMotorController::init(){
@@ -184,24 +185,6 @@ void CMotorController::off(){
   setState("DONE");
 }
 
-
-void CMotorController::echoData(CMsg &msg){
-  CMsg m=getDataMap("GYRO");
-
-  m.setParameter("Name",Name());
-  m.setParameter("Mode",Mode());
-  m.setParameter("Dir",getDir());
-  m.setParameter(" SP",_Setpoint);
-  m.setParameter(" SP Last",_Setpoint_last);
-  m.setParameter(" Dur",_Output_duration);
-  m.setParameter(" In",_Input);
-  m.setParameter(" Out",_Output);
-  m.setParameter(" Kp",_Kp);
-  m.setParameter(" Ki",_Ki);
-  m.setParameter(" Kd",_Kd);
-  
-  addTransmitList(m);
-};
 
 
 

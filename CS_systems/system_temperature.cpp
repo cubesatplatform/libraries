@@ -10,7 +10,7 @@ void CTemperatureObject::init(){
   CSystemObject::init();
   _temp=0.0;
   _ltime=0;
-  setInterval(10000);
+  setInterval(15000);
   setErrorThreshold(4);
 }
 
@@ -45,8 +45,7 @@ void CTemperatureObject::loop(){
 }
 
 void CTemperatureObject::test(CMsg &msg){
-  Run(50);
-  echoData(msg);
+  Run(50);  
 }
 
 
@@ -76,14 +75,14 @@ void CTemperatureObject::runOnce(CMsg &m){
 
  if (sensor.dataReady() == true) // Function to make sure that there is data ready to be printed, only prints temperature values when data is ready
   {
+    CMsg msg;
+    msg=getDataMap(std::string(TEMPERATUREKEY));
    _temp = sensor.readTempC();
    _ltime=getTime();
-
-    m.setKEY(Name());
-    m.setTIME(_ltime);
-    m.setParameter("TEMP",_temp);
     
-    addDataMap(Name(),m);
+    msg.setParameter(Name(),_temp);
+    
+    addDataMap(TEMPERATUREKEY,m);
   }
   else{
     incErrorCount();
@@ -92,10 +91,3 @@ return;
 }
 
 
-
-void CTemperatureObject::echoData(CMsg &msg){
-  if (State()!="ERROR"){
-    CMsg m=getDataMap(std::string(Name()));
-    addTransmitList(m);
-  }
-}

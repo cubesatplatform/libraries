@@ -1,10 +1,10 @@
 #include "mgr_defs.h"
 #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
-#include <analogWrite.h>
+  //#include <analogWrite.h>  ???
 
 
-#define PHONE_TX 23
-#define PHONE_RX 4
+  #define PHONE_TX 23
+  #define PHONE_RX 4
 
 #endif
 #include "system_mgr.h"
@@ -402,16 +402,6 @@ void CSystemMgr::sendSerial(const char* cmd) {    //Send to Phone
   Serial1.flush();
   delayMicroseconds(500); 
 
-
-  Serial.print("Sending to phone => ");
-  Serial.print(cmd);
-
-  CMsg m;
-  m.setSYS("SendSerial");
-  m.setINFO(cmd);
-  writeconsoleln(m.serializeout());
-  
-  addTransmitList(m);
 }
 
 
@@ -584,7 +574,7 @@ void CSystemMgr::chkTemperature(CMsg &msg){
   unsigned long ct=getTime();
 
   CMsg msgTemps;
-  msgTemps.setTABLE("TEMP");
+  
   msgTemps.setParameter("TIME",ct);
 
   

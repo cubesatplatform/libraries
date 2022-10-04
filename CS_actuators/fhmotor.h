@@ -16,8 +16,8 @@
 
 //using namespace mbed;
 #else
-#include <analogWrite.h>
-typedef int PinName; 
+  #include <analogWrite.h>  
+  typedef int PinName; 
 #endif
 
 //CMotorController mc1(PA_8,PC_6,PC_5);
@@ -88,7 +88,7 @@ public:
   void off();  
 
   void config(PinName sig, PinName fg,PinName dir);
-  void config(CMsg &msg);
+ // void config(CMsg &msg);
 
   void init();
   double RPM();
@@ -115,8 +115,7 @@ public:
   void loopPWM();
 
 
-  void writeStats();
-  void echoData(CMsg &msg);
+  void writeStats();  
   void Speed(int s=10,unsigned long dur=0){activateDrive(s);}
   
   void setPoint(double sp,unsigned long dur=10000000){_Setpoint=sp; changed();setDuration(dur);}

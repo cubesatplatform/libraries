@@ -23,7 +23,7 @@
 
 
 void CPhone::getData(CMsg &msg) {  //Send message to phone to get stuff 
-	std::string key=msg.getKEY();
+	std::string key=msg.getNAME();
   //Need to craft message to send msg to phone
 }
 
@@ -232,6 +232,7 @@ m.initArray(buffer,bufcount);   ////////////////////////////////////////////////
 std::string key=strfn;
 key+="_";
 key+=tostring(block);
+m.setNAME(key);
 
 addDataMap(key,m); 
 writeconsoleln("..................................... Adding Picture Data to DataList .....................................");
@@ -239,16 +240,16 @@ writeconsoleln(m.serialize());
 }
 
 void CPhone::onInitAvailable(int id) {   //Read from Phone add to queue
-
+  std::string status="BAD" ;
   writeconsoleln("..................................... On Init Available .....................................");
   unsigned char buff[BUFFER_LENGTH];
   bool ok = readUntil('\n', buff);
-  if (!ok) return;
+  if (!ok) status="OK";
 
   CMsg m;
-    m.Parameters["table"]="timephone";
-    m.Parameters["init"]="OK"; 
-    addTransmitList(m);
+  m.setNAME("PHONE_INIT");
+  m.setParameter("STATUS",status);
+  addTransmitList(m);
 
   setState("PLAY");
  
@@ -260,12 +261,10 @@ void CPhone::onTimeAvailable(int id) {   //Read from Phone  add to queue
   if (!ok) return;
 
   std::string str1=(char *)timeStr;
-    CMsg m;
-    m.Parameters["table"]="timephone";
-    m.Parameters["time"]=str1; 
-    addTransmitList(m);
-
- 
+  CMsg m;
+  m.setNAME("PHONE_TIME");
+  m.Parameters["TIME"]=str1; 
+  addTransmitList(m); 
 }
 
 void CPhone::onGpsAvailable(int id) {   //Read from Phone  add to queue
@@ -278,9 +277,8 @@ void CPhone::onGpsAvailable(int id) {   //Read from Phone  add to queue
   int x=str.find(',');
   if (x+4<=str.size()){
     CMsg m;
-    m.Parameters["table"]="gps";
-    m.Parameters["lat"]=str.substr(0,x);
-    m.Parameters["lon"]=str.substr(x+1,20);
+    m.setNAME("PHONE_GPS");
+    m.Parameters["LATLON"]=str.substr(0,x)+std::string(",")+str.substr(x+1,20);    
     addTransmitList(m);
   }
 }
@@ -300,14 +298,11 @@ void CPhone::onPhotoAvailable(int id) {    //Read from Phone  add to filename qu
   std::string strfn((const char *)fileName);
   std::string strfs((const char *)fileSizeStr);
   CMsg m;
-  m.Parameters["table"]="photos";
+  m.setNAME("PHONE_PHOTO");
   m.Parameters["filename"]=strfn;
   m.Parameters["filesize"]=strfs;
   addTransmitList(m);
 
-  /*char cmd[BUFFER_LENGTH];
-  sprintf(cmd, "STREAM(%s,%d)", fileName, 0);
-  sendSerial(cmd);*/
   
 }
  

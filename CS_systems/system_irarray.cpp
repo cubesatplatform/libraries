@@ -13,7 +13,7 @@ CIRArray::CIRArray(){
 
 void CIRArray::init(){
   CSystemObject::init();
-  setInterval(10000);
+  setInterval(60000);
   setErrorThreshold(3); 
 }
 
@@ -391,18 +391,31 @@ void CIRArray::Output(CMsg &msg){  //Easier to send as long   convert to decimal
   
   CMsg m;
 
-  m.setKEY(Name());
+  
   m.setTIME(getTime());
-  m.setDATA(imageTable);   ///  CHECK!!#!@#!@#
-
+  
   std::tuple<int, int> XY=getHotSpot();
   
   m.setParameter("X",std::get<0>(XY));
   m.setParameter("Y",std::get<1>(XY));
   m.setParameter("MAX",fmax);
   m.setParameter("MIN",fmin);
-          
-  addTransmitList(m); 
+
+  std::string s;
+  int y=0;
+  for (int count=0; count<4; count++){
+    for(int x=0; x<200; x++){
+      y=count*256+x;
+      if(y>755) break;
+      s+=imageTable[y];
+    }
+    m.setDATA(s);   ///  CHECK!!#!@#!@#
+    s="";      
+    std::string str=tostring(count);
+    m.setNAME(Name()+str);                     //Splits it in 3
+    addDataMap(m.getNAME(),m); 
+  }
+  
 }
 
 

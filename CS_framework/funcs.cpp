@@ -43,6 +43,16 @@ std::string tostring(int val) {
   return s;
 }
 
+std::string tostring(unsigned int val) {
+  std::string s;
+  char buffer [300];
+  int cx;
+  
+  cx = snprintf ( buffer, 30, "%d", val );
+  if((cx>0)&&(cx<100)) s=buffer;
+  return s;
+}
+
 std::string tostring(float val) {
   std::string s;
   char buffer [300];
@@ -63,3 +73,28 @@ std::string tostring(double val) {
   return s;
 }
 
+std::string replaceall(std::string str, std::string from, std::string to) {
+  size_t start_pos = str.find(from);
+  while(start_pos != std::string::npos) {
+    str.replace(start_pos, from.length(), to);
+    start_pos = str.find(from, start_pos + to.length());
+  }
+  return str;
+}
+
+
+/*Usage
+  std::string url="/updatecmd?sent=1&cid=$cid&bsid=$bsid";
+  std::string cid="14";
+  url=strReplace(url,"$cid",cid);
+ */
+
+std::string strReplace(std::string original, const char * search, std::string val){
+
+    String org=original.c_str();
+    String searchstr=search;
+    String valstr=val.c_str();
+
+    org.replace(searchstr,valstr);
+    return (std::string(org.c_str()));  
+}

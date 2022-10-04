@@ -172,7 +172,7 @@ class CIMU:public CSystemObject{
       return m;
     };
 
-    void echoData(CMsg &msg);
+
     void switchPlay(){};      //This needs to be set manually by some other function using the IMU to have it start getting data  Other systems will advance automatically
     long UpdatedOn(){return _dataUpdatedOn;}
     void callCustomFunctions(CMsg &msg) override;

@@ -5,19 +5,23 @@
 
 #include <list>
 #include <systemobject.h>
-#include <fhmotor.h>
-#include <system_irarray.h>
-#include <system_temperature.h>
 #include <SparkFun_BNO080_Arduino_Library.h>
 #include <radio.h>
 
 #include <string>
-#include <mdrive.h>
+
 #include <unordered_set>
+
+#include <fhmotor.h>
+#include <system_irarray.h>
+#include <system_temperature.h>
+#include <mdrive.h>
+
   
 
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+  
    // #include <pinDefinitions.h>
 /*
     #define IMU_OBC_NSS PinNameToIndex(PB_4)
@@ -32,6 +36,7 @@
     #define IMU_OBC_WAKE PinNameToIndex(PJ_9)
 
 #else    
+    #include <analogWrite.h>   
     typedef int PinName; 
 #endif
 
@@ -50,6 +55,11 @@ class CSystemMgr:public CSystemObject{
   unsigned long _lastPhone=0;
   
 public:
+  std::map<std::string, PinName> Pins;
+  std::map<std::string, PinName> pwmPins;
+
+  std::map<std::string, std::string> I2CMap;
+
   CSystemMgr(); 
   ~CSystemMgr();
 
@@ -69,6 +79,13 @@ public:
   void pinHigh(CMsg &msg);
   void pinLow(CMsg &msg);
   void pinPWM(CMsg &msg);
+  
+
+  void pinRead(CMsg &msg);
+	void pinReadState(CMsg &msg);
+	int pinDigitalReadOutput(PinName pin);
+
+	PinName getPinName(std::string strpin);
 
   void sendBeacon(CMsg &msg);  
   void sendError(std::string str){};
@@ -105,7 +122,8 @@ public:
   void testIR(CMsg &msg);
 
   void testDataMap(CMsg &msg);
-  void newEchoData(CMsg &msg);
+  void getData(CMsg &msg);
+  void scheduleData(CMsg &msg);
   
   void Output(CMsg &msg);
   void sendSerial(const char* cmd);

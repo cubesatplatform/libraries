@@ -4,15 +4,32 @@
 #define ALL "ALL"
 
 void CMessages::moveReceived() {
-  
+  /*
   while (ReceivedList.size()){
-    CMsg m=ReceivedList.back(); 
+    CMsg m=ReceivedList.front(); 
     ReceivedList.pop_front();
     if(m.getParameter("WRITE")=="1"){
       m.saveFile();
     }
     else
       MessageList.push_back(m);    
+  } 
+  */
+
+  int count=0,size=ReceivedList.size();
+  while (count<size){
+    count++;
+    CMsg m=ReceivedList.front(); 
+    ReceivedList.pop_front();
+    if(m.getParameter("WRITE")=="1"){
+      m.saveFile();
+    }
+    else {
+      if (m.isReadyToProcess())
+        MessageList.push_back(m);    
+      else  
+        ReceivedList.push_back(m);    
+    }
   }  
 }
 
@@ -35,7 +52,7 @@ void CMessages::displayList(int option=0){
   
 
 
-CMessageList::CMessageList(){}
+CMessageList::CMessageList(){_mid=0;}
 CMessageList::~CMessageList(){}
 
 
@@ -131,6 +148,7 @@ void CMessageList::push_back(CMsg &m){
     writeconsoleln("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Empty Message Push_Back xxxxxxxxxxxxxxxxxxxxxxx");
     return;
   }
+  _mid++;
 
   CMsg *pM=new CMsg;  
   *pM=m;
@@ -147,6 +165,8 @@ void CMessageList::push_front(CMsg &m){
     writeconsoleln("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Empty Message Push_Front xxxxxxxxxxxxxxxxxxxxxxx");
     return;
   }
+
+  _mid++;
 
   CMsg *pM=new CMsg;  
   *pM=m;
@@ -177,6 +197,7 @@ void CMessages::addMessageList(CMsg &m){
 
 void CMessages::addReceivedList(CMsg &s,std::string strIAM){
   _lastReceived=getTime();
+  setReceivedTimestamp();
   if(!s.checkPWD()){    
     s.setCOMMENT("Message PWD Invalid   Dropping   ------- Problably should add to some Log");
     writeconsoleln(s.serializeout());    
@@ -185,8 +206,9 @@ void CMessages::addReceivedList(CMsg &s,std::string strIAM){
   
   
   if((s.getTO()==strIAM)||(s.getTO()==ALL)){
-     ReceivedList.push_back(s);
-     return;
+    s.setRECEIVEDTS(_lastReceived);
+    ReceivedList.push_back(s);
+    return;
   }
   else {
     s.setCOMMENT("Message Received not for this Satellite   Dropping");
@@ -310,6 +332,7 @@ std::list<CMsg> CMessages::splitMsgData(CMsg &m){
 
 
 void CMessages::addTransmitList(CMsg &m){
+  //m.setMID(_mid);                                     //////////Commentewd out ?????????????????????
   if(m.vectorLen()){
     _addTransmit(m);
     return;
@@ -325,6 +348,7 @@ for(auto x:lMD){
   //writeconsoleln(x.serializeout());
   std::list<CMsg> lM=splitMsg(x);  
     for(auto y:lM){
+    y.setParameter("MID",m.getMID());
     _addTransmit(y);  
     }  
   }
@@ -341,7 +365,7 @@ void CMessages::addDataMap(std::string key,CMsg &m) {
 
 void  CMessages::sendData(CMsg &msg){   
   //SYS:MGR~ACT:SENDDATA~START:7~END:10~K:KEY_ 
-  std::string key=msg.getKEY();
+  std::string key=msg.getNAME();
 
   if(key.size()==0)
     return;
@@ -352,7 +376,7 @@ void  CMessages::sendData(CMsg &msg){
   if((start<0)||(end<0)){
     CMsg m=DataMap[key];
     if(m.Parameters.size()){
-      m.setKEY(key);
+      m.setNAME(key);
       addTransmitList(m);
       }
     }
@@ -361,10 +385,19 @@ void  CMessages::sendData(CMsg &msg){
       std::string key1=key+tostring(count);
       CMsg m=DataMap[key1];
       if(m.Parameters.size()){
-        m.setKEY(key1);
+        m.setNAME(key1);
         addTransmitList(m);
       }
     }
   }
 }
 
+
+
+
+void CMessages::loop() {
+	//Gets messages receieved from radio, pushes to message list and then pumps them out
+  moveReceived();
+
+ 
+}

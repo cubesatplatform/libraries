@@ -2,7 +2,7 @@
 #include "consoleio.h"
 #include "sdfs.h"
 
-int CMsg::_ID = 0;
+int CMsg::_ID = millis()%1000;
 
 void CMsg::writetoconsole(){
   writeconsoleln(serializeout());
@@ -62,6 +62,15 @@ bool CMsg::needACK(){
   if(getACK()=="0")
     flag=true;
     return flag;
+}
+
+bool CMsg::isReadyToProcess(){
+  unsigned long  ts=getRECEIVEDTS();
+  unsigned long pt=getPROCESSTIME();
+
+  if((ts+pt)< getTime())
+    return false;
+  return true;
 }
 
 std::string CMsg::TransmitData() { 

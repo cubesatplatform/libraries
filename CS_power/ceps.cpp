@@ -101,10 +101,6 @@ void CEPS::loop(){
 void CEPS::output(){   //FIX THIS  JUST FOR TESTING
 
   
-  return;
-  
-  writeconsoleln("HELLO POWER");
-
 
  // writeSWSelflock(0);
   writeSHDChrg(0);
@@ -119,7 +115,7 @@ void CEPS::output(){   //FIX THIS  JUST FOR TESTING
   writeSHD3V3(1);
   delay(300);
 */
-
+  m.setNAME("POWERKEY");
   m.setParameter("BatteryVolt",readBatteryVoltage());  
   m.setParameter("BatteryCrnt",readBatteryCurrent());  
   m.setParameter("BCRVolt",readBCRVoltage());
@@ -180,7 +176,7 @@ void CEPS::output(){   //FIX THIS  JUST FOR TESTING
   m.setParameter("ZCrntM",axis.readCurrentM());
   m.setParameter("ZCrntP",axis.readCurrentP());
 
-  //addDataList(m);
+  addDataMap(m.getNAME(),m);
 }
 
 

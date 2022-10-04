@@ -22,7 +22,7 @@ void CPayloadState::enter() {
   enablePhone();
   writeconsoleln("Enter Payload  Need to charge Phone"); 
   
-  _startTime = getTime();
+  _obj._startTime = getTime();
 	setState("PAUSE");
 
   CSystemObject * psys=getSystem("PHONE");

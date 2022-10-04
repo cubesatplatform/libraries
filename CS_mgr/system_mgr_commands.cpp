@@ -80,7 +80,7 @@ void CSystemMgr::initCommands(){  //SYS:MGR~ACT:COMMAND~CMD:CMD_BEACON
 }
 
 
-void CSystemMgr::newEchoData(CMsg &msg){
+void CSystemMgr::scheduleData(CMsg &msg){   //Schedules geting data from map
   std::string sys=msg.getVALUE();
   long interval=msg.getParameter("INTERVAL",5000L);
   if (interval<1000) interval=1000;
@@ -93,7 +93,7 @@ void CSystemMgr::newEchoData(CMsg &msg){
   CMsg m;  
   std::list<CMsg> ml;
   m.setSYS(sys);
-  m.setACT("ECHODATA");
+//  m.setACT("ECHODATA");
   m.setParameter("START",0L);
   m.setParameter("STOP",stop);
   m.setParameter("INTERVAL",interval);   
@@ -101,6 +101,13 @@ void CSystemMgr::newEchoData(CMsg &msg){
   Commands[std::string("CMD_ECHO")+sys]=ml;
    
 }
+
+void CSystemMgr::getData(CMsg &msg){
+  
+  CMsg m=getDataMap(msg.getNAME());  
+  addTransmitList(m);   
+};
+
 
 void CSystemMgr::showScheduler(CMsg &msg){
   writeconsoleln("");
@@ -154,6 +161,9 @@ void CSystemMgr::showCommands(){
   if(act=="SHOWCOMMANDS") {showCommands(); return; }
   if(act=="SHOWSCHEDULER") {showScheduler(msg); return; }
 
+  if(act=="GETDATA") {getData(msg); return; }  
+  if(act=="SCHEDULEDATA") {scheduleData(msg); return; }
+
   if(act== "MAGDX"){  testMAGDrive(MAG_ADDRESS_X); return; }
   if(act== "MAGDY"){  testMAGDrive(MAG_ADDRESS_Y); return; }
   if(act== "MAGDZ"){  testMAGDrive(MAG_ADDRESS_Z); return; }
@@ -174,7 +184,9 @@ void CSystemMgr::showCommands(){
   if(act=="PINLOW"){ pinLow(msg); return;}
   if(act=="PINPWM"){ pinPWM(msg); return;}
 
-  if(act=="NEWECHODATA"){ newEchoData(msg); return;}
+  if(act=="PINREAD"){ pinRead(msg); return;}
+  if(act=="PINREADSTATE"){ pinReadState(msg); return;}
+	
 
   if(act=="FILLDATA"){ testDataMap(msg); return;}
    

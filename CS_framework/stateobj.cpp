@@ -11,15 +11,39 @@ void CStateObj::start(){
 
 
 
+void CStateObj::MsgPump(){
+CMsg msg;
+  
+int count=0;
+
+CMessages *MSG= getMessages();
+
+while(  MSG->MessageList.size()){
+  writeconsoleln("MsgPump()");
+  count++;
+  if(count>20)
+    break;
+  msg = MSG->MessageList.front();
+  MSG->MessageList.pop_front();
+
+  if(msg.Parameters.size()) newMsg(msg);   //Satellite          }
+
+  }
+  MSG->MessageList.clear();//Probable make sure messages have all been processed.  I think they will as only thing that can add messages should be the loop
+  
+}
+
+
 
 void CStateObj::loop() {	
-	_currentTime = getTime();
+	MsgPump();
+	_obj._currentTime = getTime();
 	if (State()!="PLAY"){		
 		start();
 	}
 
 	for (auto  psys:subsystems) {
-		if(_currentTime>_lastDebug+ECHOINTERVAL){
+		if(_obj._currentTime>_lastDebug+ECHOINTERVAL){
 			if(Name()!="SAT") { writeconsole(psys->Name()); writeconsole("  Errors:"); writeconsole(psys->getRetryCount()); writeconsole("  State:"); writeconsole(psys->State()); writeconsole("  Forever:"); writeconsole(psys->getForever());
 			
 			writeconsole("  Start:"); writeconsole(psys->startTime());writeconsole("  Time:"); writeconsoleln(getTime());
@@ -32,8 +56,7 @@ void CStateObj::loop() {
 			
 			CMsg m;
 			m.setSYS(psys->Name());
-			m.setEVENT("REMOVE");
-			m.setTABLE("STATUS");
+			m.setEVENT("REMOVE");			
 			m.setParameter("RETRYCOUNT",psys->getRetryCount());
 			m.setParameter("STATE",psys->State());
 			m.setCOMMENT("REMOOOOOOOOOOOOOOOOOOOOOOOOOVVVVVVVVVVVVVVVVVIIIIIIIIIING : "); 
@@ -46,8 +69,8 @@ void CStateObj::loop() {
 		if(psys->isNextCycle())      	
 			psys->Run();				
 	}
-	if(_currentTime>_lastDebug+2000){
-		_lastDebug=_currentTime;
+	if(_obj._currentTime>_lastDebug+2000){
+		_lastDebug=_obj._currentTime;
 	}	
 }
 
@@ -63,7 +86,7 @@ void CStateObj::resetSubSystems(){
 }
 
 void CStateObj::cleanup(){
-	_lastcleanuptime=getTime();
+	_obj._lastcleanuptime=getTime();
 	for (auto it = subsystems.begin(); it != subsystems.end(); it++) {
 	CSystemObject* psys;
 	psys = *it;	
@@ -74,8 +97,7 @@ void CStateObj::cleanup(){
 		if (pcoresys==NULL){							
 			CMsg m;
 			m.setSYS(psys->Name());
-			m.setEVENT("REMOVE");
-			m.setTABLE("STATUS");
+			m.setEVENT("REMOVE");			
 			m.setINFO("CStateObj::Cleanup()");
 			m.setCOMMENT("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  Deleting from State Systems  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 			writeconsoleln(m.serializeout());
@@ -140,8 +162,7 @@ void CStateObj::addSystem(CSystemObject* psys){
     subsystems.push_back(psys);      
 	CMsg m;
 	m.setSYS(Name()+">"+psys->Name());
-	m.setEVENT("ADD");
-	m.setTABLE("STATUS");
+	m.setEVENT("ADD");	
 	m.setINFO("addSystem(CSystemObject* psys)   Success  push back");
 	writeconsoleln(m.serializeout()); 
 
@@ -155,8 +176,7 @@ void CStateObj::addSystem(CMsg &msg){
   if(psys!=nullptr){
     CMsg m;
 	m.setSYS(Name()+">"+psys->Name());
-	m.setEVENT("ADD");
-	m.setTABLE("STATUS");
+	m.setEVENT("ADD");	
 	m.setINFO("addSystem(CSystemObject* psys)   Already exists");
 	writeconsoleln(m.serializeout());
 
@@ -168,8 +188,7 @@ void CStateObj::addSystem(CMsg &msg){
   if(subsystems.size()>100) {
 		CMsg m;
 		m.setSYS(Name()+">"+psys->Name());
-		m.setEVENT("ADD");
-		m.setTABLE("STATUS");
+		m.setEVENT("ADD");		
 		m.setINFO("addSystem(CSystemObject* psys)   Error  Too many objects");
 		writeconsoleln(m.serializeout());
 		
@@ -184,8 +203,8 @@ void CStateObj::addSystem(CMsg &msg){
 
 bool CStateObj :: outOfTime() {
 	if(getForever())  return false;
-	_currentTime=getTime();
-  	if ( ((_currentTime - _startTime) > _maxTime)&&((_currentTime - _startTime) > _minTime)) {   //Play ->Out of Time
+	_obj._currentTime=getTime();
+  	if ( ((_obj._currentTime - _obj._startTime) > _obj._maxTime)&&((_obj._currentTime - _obj._startTime) > _obj._minTime)) {   //Play ->Out of Time
     	return true;
   	}
   return false;
@@ -204,10 +223,10 @@ bool CStateObj :: outOfTime() {
 
 
   m.setParameter(Name()+"_SYS",str);  
-  m.setParameter(Name()+"_crdT",_createdTime);
-  m.setParameter(Name()+"_curT",_currentTime);
-  m.setParameter(Name()+"_maxT", _maxTime);
-  m.setParameter(Name()+"_minT",_minTime);
+  m.setParameter(Name()+"_crdT",_obj._createdTime);
+  m.setParameter(Name()+"_curT",_obj._currentTime);
+  m.setParameter(Name()+"_maxT", _obj._maxTime);
+  m.setParameter(Name()+"_minT",_obj._minTime);
   return m;
 
  }
@@ -226,29 +245,27 @@ for (auto  psys:subsystems) {
 
   }
   CMsg cM;
-  cM.setDATA(logfinal);
-  cM.setTABLE(Name());
+  cM.setDATA(logfinal);  
   addTransmitList(cM);  
 }
 
   void CStateObj::init(){ 
 	
 	_statecount=0;
-	_enter_time=0;
-	_exit_time=0;
-	_starttimeoffset = 0;	
-	_lastcleanuptime=0;
+	_obj._enter_time=0;
+	_obj._exit_time=0;
+	_obj._starttimeoffset = 0;	
+	_obj._lastcleanuptime=0;
 
 	setMaxTime(3*TIMEORBIT);
 		
-  	
 	_statemsg.Parameters.clear();
   }
 
  
 void CStateObj::enter(){
 	_statecount++;
-	_startTime = getTime();	
+	_obj._startTime = getTime();	
 
 	if(onEnter["DISABLEMBLOGIC"]) disableMBLogic();
 	if(onEnter["DISABLE65V"]) disable65V();
@@ -263,14 +280,13 @@ void CStateObj::enter(){
 	if(onEnter["ENABLEPHONE"]) enablePhone();
 
 	setState("PLAY");
-	CMsg m;
-    m.setTABLE("LOG");
+	CMsg m;    
     m.setParameter("ENTERSTATE",Name());	
     addTransmitList(m);
     writeconsoleln(m.serializeout()) ;
 }
 void CStateObj::exit(){
-	_stopTime = getTime();
+	_obj._stopTime = getTime();
 
 	if(onExit["DISABLEMBLOGIC"]) disableMBLogic();
 	if(onExit["DISABLE65V"]) disable65V();
@@ -285,8 +301,7 @@ void CStateObj::exit(){
 	if(onExit["ENABLEPHONE"]) enablePhone();
 
 	setState("PAUSE");
-	CMsg m;
-    m.setTABLE("LOG");
+	CMsg m;    
 	m.setParameter("EXITSTATE",Name());    
     addTransmitList(m);
     writeconsoleln(m.serializeout()) ;

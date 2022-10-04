@@ -35,7 +35,7 @@ void CGPS::init()
   CSystemObject::init();
   
   setForever();
-  setInterval(5000);    
+  setInterval(15000);    
 }
 
 void CGPS::setup()
@@ -95,28 +95,15 @@ void CGPS::runOnce(CMsg &msg)
 
 void CGPS::fillData(){  //Easier to send as long   convert to decimal when receive  
   CMsg m;
-  m.setParameter("table","gps");
-  m.setParameter("lat",latitude);
-  m.setParameter("lon",longitude);
-  m.setParameter("alt",altitude);
-  m.setParameter("siv",(long)SIV);
-  m.setParameter("hr",(long) Hr);
-  m.setParameter("min",(long) Min);
-  m.setParameter("sec",(long) Sec);
-  m.setParameter("mon",(long) Mon);
-  m.setParameter("day",(long) Day);
-  m.setParameter("yr",(long) Yr);
-  m.setParameter("TIME",(long) Yr);
+  std::string pos="lat:";
+  pos+=tostring(latitude)+std::string(",lon:")+tostring(longitude)+std::string(",alt:")+tostring(altitude)+std::string(",sats:")+tostring(SIV)+std::string(",time:")+tostring(Hr)+std::string(",")+tostring(Min)+std::string(",")+tostring(Sec);
+  m.setNAME("GPS");
+  m.setParameter("POS",pos);
   m.setTIME(getTime());
 
   addDataMap(std::string("GPS"),m);
  }
 
-
-void CGPS::echoData(CMsg &msg){
-  CMsg m=getDataMap("GPS");  
-  addTransmitList(m);   
-}
 
 
 #endif 

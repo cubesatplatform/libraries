@@ -9,17 +9,13 @@
 #include "consoleio.h"
 #include <algorithm>
 #include "systemobject.h"
+#include "messages.h"
 #include "state_defs.h"
 #include <powerup.h>
 
 class CStateObj:public CSystemObject {  	
 	
 	long _statecount=0;
-	unsigned long _enter_time;
-	unsigned long _exit_time;	
-	unsigned long _starttimeoffset = 0;
-	unsigned long _lastcleanuptime=0;
-
 
   	
 protected:	  	
@@ -52,6 +48,7 @@ public:
 	void Output(CMsg &msg);
 	void resetSubSystems();
 	void callCustomFunctions(CMsg &msg) override;
+	void MsgPump();
 	CSystemObject* FindNameInSubsystems(std::string str);
 	CSystemObject* FindCIDInSubsystems(std::string str);
 };
