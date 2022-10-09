@@ -39,6 +39,8 @@ struct CTimeStruct {
 	unsigned long _exit_time;	
 	unsigned long _starttimeoffset = 0;
 	unsigned long _lastcleanuptime=0;
+  unsigned long _lastDebug=0;
+  unsigned long _lastDebug1=0;
 
   bool outOfTime(){
    	if ( ((_currentTime - _startTime) > _maxTime)&&((_currentTime - _startTime) > _minTime)) {   //Play ->Out of Time
@@ -88,8 +90,7 @@ protected:
   
 
 public:
-  unsigned long _lastDebug=0;
-  unsigned long _lastDebug1=0;
+  
   CSystemObject();
   virtual ~CSystemObject() {}
 
@@ -170,9 +171,11 @@ public:
  
   void addTransmitList(CMsg &m );
   void addDataMap(std::string key, CMsg &m); 
+  void addDataMap(CMsg &m); 
   CMsg getDataMap(std::string key); 
   void addMessageList(CMsg &m );
   void addReceivedList(CMsg &m );
+  void getData(CMsg &msg );
   
     
   //void statusUpdate(CMsg &m);

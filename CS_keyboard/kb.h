@@ -2,8 +2,6 @@
 
 #include <systemobject.h>
 
-#define CUBESAT "ADR1"
-
 class CKeyboard:public CSystemObject {
 private:
   std::map<std::string, std::string> _simpleCMDs;

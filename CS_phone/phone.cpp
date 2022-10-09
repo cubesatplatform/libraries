@@ -28,6 +28,7 @@ void CPhone::getData(CMsg &msg) {  //Send message to phone to get stuff
 }
 
 void  CPhone::callCustomFunctions(CMsg &msg){
+  CSystemObject::callCustomFunctions(msg);  
   std::string act=msg.getACT();
     
 	if((act=="GET")) {getData(msg);  return;}
@@ -88,12 +89,11 @@ void CPhone::setup() {
 void CPhone::config(CMsg &msg){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   #else
-  std::string strTX=msg.getParameter("TX");
-  std::string strRX=msg.getParameter("RX");
+  int nTX=msg.getParameter("TX",11);
+  int nRX=msg.getParameter("RX",12);  
   
-  
-  _TX=Pins[strTX];
-  _RX=Pins[strRX];
+  _TX=nTX;
+  _RX=nRX;
   #endif
   setup();
 }

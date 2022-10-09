@@ -104,6 +104,7 @@ void CBaseDrive::loop(){
 }
 
 void CBaseDrive::callCustomFunctions(CMsg &msg){   //Calls a specific function directly
+  CSystemObject::callCustomFunctions(msg);
   std::string act=msg.getParameter("ACT");  
   int speed=msg.getParameter("SPEED",1000);
   unsigned long duration=msg.getParameter("DURATION",0);

@@ -531,8 +531,8 @@ bool CRadio::readyToTransmit(){
   if (!_bTransmitter) return false;
   if (Mode()=="TX") return false;
   if ((pMsgs->TransmitList.size()<1) &&!isAck()) return false;
-  if(ct>_lastDebug+100){
-    _lastDebug=ct;
+  if(ct>_obj._lastDebug+100){
+    _obj._lastDebug=ct;
     writeconsole("Ready to Transmit.  Get Time: ");writeconsole(getTime());writeconsole("     Next Time: ");writeconsole(_nextTransmit);writeconsole("     Delay Time: ");writeconsoleln(_delayTransmit);    
   }
   if (getTime()>_nextTransmit) {    
@@ -543,11 +543,10 @@ bool CRadio::readyToTransmit(){
   
                
   void CRadio::callCustomFunctions(CMsg &msg){   //Calls a specific function directly
-  writeconsoleln("void CRadio::callCustomFunctions(CMsg &msg)");
-  msg.writetoconsole();
+    CSystemObject::callCustomFunctions(msg);  
+  
     std::string act=msg.getParameter("ACT");
-    if (act=="TRANSMITPACKET") TransmitPacket(msg);                   
-    
+    if (act=="TRANSMITPACKET") TransmitPacket(msg);                     
     if (act=="POWER") setPower(msg);
     if (act=="MODEM") setModem(msg);    
 
@@ -643,7 +642,7 @@ void CRadio::setModem(CMsg &m){
   _modem=m.getParameter("VAL","");
   _modemChangedOn=getTime();
   setState("");  
-}
+} 
 
 
 void CRadio::chkModem(){

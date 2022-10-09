@@ -19,13 +19,15 @@ void CDetumbleState::stateMsg(CMsg &msg){_statemsg=msg;};
 void CDetumbleState::enter() {
   enable65V();
   resetSubSystems();
-  _detumblecount++;
+  
   CStateObj::enter();
   
-  CMsg m;
-  m.setSYS("SAT");
-  m.setACT("WRITECOUNTS");
-  addMessageList(m);
+	CMsg msg=getDataMap(std::string("SAT")); 
+
+  int detumbles=msg.getParameter("DETUMBLES",0);
+  detumbles++;
+  addDataMap(std::string("SAT"),msg); 
+
 
   setState("PLAY");
   CSystemObject *pMT=getSystem("MT");

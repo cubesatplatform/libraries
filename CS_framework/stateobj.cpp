@@ -1,7 +1,7 @@
 #include "stateobj.h"
 //#include "powerup.h"
 
-#define ECHOINTERVAL 2000
+#define ECHOINTERVAL 5000
 
 void CStateObj::start(){
 	if(getTime()>startTime()){
@@ -11,43 +11,57 @@ void CStateObj::start(){
 
 
 
+
+/*
 void CStateObj::MsgPump(){
+CMessages *MSG= getMessages();
 CMsg msg;
   
 int count=0;
+int size=MSG->MessageList.size();
 
-CMessages *MSG= getMessages();
-
-while(  MSG->MessageList.size()){
-  writeconsoleln("MsgPump()");
+while(count<size){
+  
   count++;
-  if(count>20)
-    break;
+
   msg = MSG->MessageList.front();
   MSG->MessageList.pop_front();
+  //msg.writetoconsole();
 
-  if(msg.Parameters.size()) newMsg(msg);   //Satellite          }
+	if (msg.isReadyToProcess()){
+		msg.writetoconsole();
+		//writeconsoleln("MsgPump()  pumping to newMSG");
+		if(msg.Parameters.size()) newMsg(msg);   //Satellite          }
+	}
+	else{
+		
+		//writeconsoleln("MsgPump()  NOT TIME YET");
+		MSG->MessageList.push_back(msg);    
+	}
 
   }
-  MSG->MessageList.clear();//Probable make sure messages have all been processed.  I think they will as only thing that can add messages should be the loop
-  
+  //MSG->MessageList.clear();//Probable make sure messages have all been processed.  I think they will as only thing that can add messages should be the loop    
 }
+*/
 
 
+void CStateObj::loop() {		
+	//if(isNextCycle()) {    				MsgPump();	}
+	bool bflag=false;
+	timeStamp();
 
-void CStateObj::loop() {	
-	MsgPump();
-	_obj._currentTime = getTime();
+	
 	if (State()!="PLAY"){		
 		start();
 	}
 
 	for (auto  psys:subsystems) {
-		if(_obj._currentTime>_lastDebug+ECHOINTERVAL){
-			if(Name()!="SAT") { writeconsole(psys->Name()); writeconsole("  Errors:"); writeconsole(psys->getRetryCount()); writeconsole("  State:"); writeconsole(psys->State()); writeconsole("  Forever:"); writeconsole(psys->getForever());
-			
-			writeconsole("  Start:"); writeconsole(psys->startTime());writeconsole("  Time:"); writeconsoleln(getTime());
-			}
+		//writeconsole("-"); 		writeconsole(_obj._currentTime); writeconsole("_"); 		writeconsoleln(_obj._lastDebug);
+		if(_obj._currentTime>_obj._lastDebug+ECHOINTERVAL){			
+			writeconsole(psys->Name()); writeconsole("  Errors:"); writeconsole(psys->getRetryCount()); writeconsole("  State:"); writeconsole(psys->State()); writeconsole("  Forever:"); writeconsole(psys->getForever());			
+			writeconsole("  Start:"); writeconsole(psys->startTime());writeconsole("  Time:"); writeconsole(getTime());
+			writeconsole("  Interval:"); writeconsoleln(psys->getInterval());
+			bflag=true;	
 		}		
 		
 		if((psys->getRetryCount()>=5)||(psys->State()=="STOP")){
@@ -69,9 +83,12 @@ void CStateObj::loop() {
 		if(psys->isNextCycle())      	
 			psys->Run();				
 	}
-	if(_obj._currentTime>_lastDebug+2000){
-		_lastDebug=_obj._currentTime;
-	}	
+
+	if(bflag){
+		_obj._lastDebug=_obj._currentTime;		
+		bflag=false;
+		writeconsoleln(Name());
+	}
 }
 
 
@@ -146,6 +163,8 @@ CSystemObject* CStateObj::FindCIDInSubsystems(std::string str) {
 
 
 void CStateObj::callCustomFunctions(CMsg &msg){
+	writeconsoleln("CStateObj::callCustomFunctions(CMsg &msg)  ");
+	CSystemObject::callCustomFunctions(msg);
 	std::string sys = msg.getSYS();
 	std::string act = msg.getACT();
 	
@@ -155,6 +174,8 @@ void CStateObj::callCustomFunctions(CMsg &msg){
 	if (act == "RESETSUBSYSTEMS")  resetSubSystems();
 	if (act == "CLEANUP")  cleanup();
 	if (act == "INIT")  init();
+	if (act == "ADDSYSTEM") addSystem(msg);
+	if (act == "DELETESYSTEM") deleteSystem(msg);
 };
 
 
@@ -168,8 +189,18 @@ void CStateObj::addSystem(CSystemObject* psys){
 
  }
 
+ void CStateObj::deleteSystem(CMsg &msg){
+  writeconsoleln("------------------------- deleteSystem    Sets state to STOP then it should remove -------------------");
+   std::string sys = msg.getVALUE();  
+  CSystemObject* psys=nullptr;
+  psys=FindNameInSubsystems(sys);
+  if(psys!=nullptr){
+	psys->stop();
+  }
+ }
+
 void CStateObj::addSystem(CMsg &msg){
-  writeconsoleln("------------------------- AddSYstem -------------------");
+  writeconsoleln("------------------------- AddSystem -------------------");
   std::string sys = msg.getVALUE();  
   CSystemObject* psys=nullptr;
   psys=FindNameInSubsystems(sys);
@@ -256,6 +287,8 @@ for (auto  psys:subsystems) {
 	_obj._exit_time=0;
 	_obj._starttimeoffset = 0;	
 	_obj._lastcleanuptime=0;
+	setInterval(0);
+	setState("PLAY");
 
 	setMaxTime(3*TIMEORBIT);
 		

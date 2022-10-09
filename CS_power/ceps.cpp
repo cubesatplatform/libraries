@@ -100,8 +100,6 @@ void CEPS::loop(){
 }
 void CEPS::output(){   //FIX THIS  JUST FOR TESTING
 
-  
-
  // writeSWSelflock(0);
   writeSHDChrg(0);
   /*
@@ -1118,6 +1116,7 @@ CMsg AXIS_INFO::read(){
 
 
 void CEPS::callCustomFunctions(CMsg &msg){
+  CSystemObject::callCustomFunctions(msg);  
   std::string act=msg.getACT();  
   int val=msg.getParameter("V",0); 
   

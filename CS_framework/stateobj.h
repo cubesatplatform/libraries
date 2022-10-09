@@ -23,7 +23,7 @@ protected:
 
 public:
 	std::list<CSystemObject  *> subsystems;
-	std::map<std::string, bool> availablesystems;
+	//std::map<std::string, bool> availablesystems;
 	std::map<std::string, bool> onEnter;
 	std::map<std::string, bool> onExit;
 	CStateObj() { init(); }
@@ -36,6 +36,7 @@ public:
 	
   	void addSystem(CMsg &msg);
 	void addSystem(CSystemObject* psys);
+	void deleteSystem(CMsg &msg);
 	virtual void stateMsg(CMsg &msg){_statemsg=msg;};
 	virtual void enter();
 	virtual void exit();
@@ -48,7 +49,7 @@ public:
 	void Output(CMsg &msg);
 	void resetSubSystems();
 	void callCustomFunctions(CMsg &msg) override;
-	void MsgPump();
+	//void MsgPump();
 	CSystemObject* FindNameInSubsystems(std::string str);
 	CSystemObject* FindCIDInSubsystems(std::string str);
 };

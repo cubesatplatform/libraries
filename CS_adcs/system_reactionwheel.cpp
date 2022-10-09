@@ -62,6 +62,7 @@ void CRW::setup()
 
 
 void  CRW::callCustomFunctions(CMsg &msg){
+  CSystemObject::callCustomFunctions(msg);
   std::string act=msg.getACT();
 
   if(act=="CMD") newCMD(msg);  

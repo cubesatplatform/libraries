@@ -239,4 +239,5 @@ void CIMU::setupI2C(){
 
 
 void CIMU::callCustomFunctions(CMsg &msg){
+  CSystemObject::callCustomFunctions(msg);
 }

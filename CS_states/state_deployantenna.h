@@ -9,7 +9,7 @@
 
 class CDeployAntennaState: public CStateObj {
 public:
-	int _burncount=0;
+	
 	CDeployAntennaState(){};
 	~CDeployAntennaState() {};
 
@@ -20,12 +20,14 @@ public:
 		enableBurnWire();
   		delay(10000);
 		disableBurnWire();
-		_burncount++;
+		
+
+		CMsg msg=getDataMap(std::string("SAT")); 
+
+		int burns=msg.getParameter("BURNS",0);
+		burns++;
+		addDataMap(std::string("SAT"),msg); 
 	
-		CMsg m;
-		m.setSYS("SAT");
-		m.setACT("WRITECOUNTS");
-		addMessageList(m);
 		}
 	void exit()  {}
 };

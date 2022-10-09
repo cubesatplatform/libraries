@@ -1,3 +1,4 @@
+
 #pragma once
 
 
@@ -14,8 +15,7 @@ class CGPS :public CSystemObject {
   TinyGPSPlus gps;
   AXP20X_Class axp;
 
-  PinName _TX;
-  PinName _RX;
+
 
   float latitude=0.0;
   float longitude=0.0;
@@ -28,12 +28,13 @@ class CGPS :public CSystemObject {
   int Min=0;
   int Sec=0;
   long Speed=0;
+  unsigned long last = 0UL;
 public:
 
   CGPS();
   ~CGPS();
   void setup();
-  void config(CMsg &msg);
+
   void loop();
   void init();
   void output();

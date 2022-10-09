@@ -200,7 +200,7 @@ class CEPS:public CSystemObject
   public:
     CMsg m;
     
-    CEPS(){Name("EPS");};
+    CEPS(){Name("EPS"); setInterval(5000);};
     void config(char addr, TwoWire *twowire=&Wire);
     void setup();
     void init();

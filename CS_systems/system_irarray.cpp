@@ -94,17 +94,14 @@ void CIRArray::setup()
 }
 
 void CIRArray::test(CMsg &msg){    
-  Run(250);
-  if (State()!="ERROR"){
-    CMsg m;
-    Output(m);
-  }
+  Run(250);  
 }
 
 
 void CIRArray::loop(){  
     CMsg m;
     runOnce(m);    
+    Output(m);
 }
 
 
@@ -421,6 +418,7 @@ void CIRArray::Output(CMsg &msg){  //Easier to send as long   convert to decimal
 
 
 void CIRArray::callCustomFunctions(CMsg &msg){   //Calls a specific function directly
+  CSystemObject::callCustomFunctions(msg);
   std::string act=msg.getParameter("ACT");  
   
   if (act=="FILLPIXEL") fillPixel();

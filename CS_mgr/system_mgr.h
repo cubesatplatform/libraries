@@ -17,7 +17,12 @@
 #include <system_temperature.h>
 #include <mdrive.h>
 
-  
+
+#define MAG_ADDRESS_X  0x60
+#define MAG_ADDRESS_Y  0x61
+#define MAG_ADDRESS_Z  0x63
+
+ 
 
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
@@ -36,6 +41,7 @@
     #define IMU_OBC_WAKE PinNameToIndex(PJ_9)
 
 #else    
+    #define Wire2 Wire
     #include <analogWrite.h>   
     typedef int PinName; 
 #endif
@@ -46,7 +52,6 @@
 class CSystemMgr:public CSystemObject{
   
   std::list<CMsg> Scheduler;      
-  std::map<std::string, std::list<CMsg>> Commands;      
   std::list<CMsg> DoneList;      
   int _channel=0;
   const int freq = 10000;
@@ -91,13 +96,8 @@ public:
   void sendError(std::string str){};
     
   void newState(const char *str="LOWPOWER");
-  
-  void addTask(CMsg &msg);
-  void deleteTask(CMsg &msg);
-  void pauseTask(CMsg &msg);
-  void unpauseTask(CMsg &msg);
-  void showScheduler(CMsg &msg);
-  void showCommands();
+
+
   void showTests();
   
   
@@ -108,6 +108,7 @@ public:
   void phone();
   void pinsOn();
   void pinsOff();
+  
   
   
   void initPins();
@@ -124,11 +125,12 @@ public:
   void testDataMap(CMsg &msg);
   void getData(CMsg &msg);
   void scheduleData(CMsg &msg);
+  void tBeam(CMsg &msg);
   
   void Output(CMsg &msg);
   void sendSerial(const char* cmd);
   void callCustomFunctions(CMsg &msg) override;
-  void SendCmdToScheduler(CMsg &msg);
+
 };
 
 

@@ -24,9 +24,11 @@ public:
   std::map<std::string, std::string> Parameters;
 
   CMsg() {_tc=getTime();_ID++;};
-  CMsg(std::string s) { _str = s; _tc=getTime(); deserialize(); _ID++;}
-  CMsg(const char* s) { _str = s; _tc=getTime(); deserialize(); _ID++;}
-  CMsg(const char* s, float frssi , float fsnr = 0.0) { _str = s; _tc=getTime(); deserialize();  _rssi = frssi; fsnr = fsnr; _ID++;}
+  CMsg(std::string s) { config(s);_ID++;}
+  CMsg(const char* s) { std::string str = s; config(s);_ID++;}
+
+  CMsg(const char* s, float frssi , float fsnr = 0.0) {  std::string str = s; config(s); _rssi = frssi; fsnr = fsnr; _ID++;}
+  void config(std::string s) { _str = s; _tc=getTime(); deserialize(); }
   
   void decompose(const char* s){ _str = s; deserialize();}
   void clear(){_str="";_rssi = 0.0;_snr = 0.0; _tc=getTime();Parameters.clear();byteVector.clear();}
@@ -44,6 +46,10 @@ public:
   std::string getSys() { return  getSYS(); }
 
   int getStaticID(){return _ID;}
+
+  std::string getStringID(){return tostring((long) _ID); }
+
+  void remap();
 
 
   std::string getNAME() { return  Parameters["N"]; }
@@ -68,8 +74,10 @@ public:
   std::string getLOG() { return  Parameters["L"]; } 
   std::string getTIME() { return  Parameters["T"]; } 
   std::string getMID() { return  Parameters["MID"]; } 
+  std::string getMSG() { return  Parameters["MSG"]; } 
+  std::string getML() { return  Parameters["ML"]; } 
   long getRECEIVEDTS() { return  getParameter("RTS",0L); } 
-  long getPROCESSTIME() { return  getParameter("RT",0L); } 
+  long getPROCESSTIME() { return  getParameter("PT",0L); } 
 
   bool isReadyToProcess();
   bool checkPWD();
@@ -81,6 +89,7 @@ public:
 
   void requestACK(){setACK("0");}
   void confirmACK(){setACK("1");}
+  void setMSG(std::string str) { Parameters["MSG"]=str; }
   void setNAME(std::string str) { Parameters["N"]=str; }
   void setACT(std::string str) { Parameters["ACT"]=str; }
   void setACK(std::string str) { Parameters["ACK"]=str; }
@@ -101,6 +110,7 @@ public:
   void setPROCESSTIME(unsigned long tmp) { Parameters["PT"]=tostring(tmp); }
   void setTIME(unsigned long tmp) { Parameters["T"]=tostring(tmp); }
   void setMID(unsigned int tmp) { Parameters["MID"]=tostring(tmp); }
+  void setML(std::string str) { Parameters["ML"]=str; }
   bool setPWD();  //Returns false if parameters are not there for a real pwd    
   
   void setMODE(std::string str) { Parameters["MODE"]=str; }

@@ -64,14 +64,16 @@ public:
   //std::chrono::time_point<std::chrono::system_clock> starttime;
   
 
-  CMessages(){Name("MESSAGES");TransmittedList.maxSize(5);};
+  CMessages(){Name("MESSAGES");TransmittedList.maxSize(5);setInterval(100);};
   ~CMessages(){};
 
   void moveReceived();                        //Need to make a subsystem that moved data to transmitlist data based on requests
   
-  void addDataMap(std::string key,CMsg &m); 
+  
   void sendData(CMsg &msg);            //Similar to movetoTransmitList
-    
+
+  void addDataMap(std::string key,CMsg &m);   
+  void addDataMap(CMsg &m); 
   void addTransmitList(CMsg &m );  
   void addMessageList(CMsg &m );
   void addReceivedList(CMsg &m,std::string strIAM );
@@ -87,7 +89,9 @@ public:
   
   void prune();
   void displayList(int option);  
+  void MsgPump();
   void loop();
+  void callCustomFunctions(CMsg &msg);
 };
 
 CMessages *getMessages();  //This needs to be instatiated in main App    //CMessages* getMessages(){return &bs.MSG;}

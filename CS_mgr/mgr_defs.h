@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 
+#define POWERKEY  "POWERKEY"
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
 #else    

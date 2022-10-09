@@ -4,7 +4,7 @@
 #define ALL "ALL"
 
 void CMessages::moveReceived() {
-  /*
+  
   while (ReceivedList.size()){
     CMsg m=ReceivedList.front(); 
     ReceivedList.pop_front();
@@ -14,8 +14,8 @@ void CMessages::moveReceived() {
     else
       MessageList.push_back(m);    
   } 
-  */
-
+  
+/*
   int count=0,size=ReceivedList.size();
   while (count<size){
     count++;
@@ -31,6 +31,7 @@ void CMessages::moveReceived() {
         ReceivedList.push_back(m);    
     }
   }  
+  */
 }
 
 
@@ -190,6 +191,7 @@ void CMessageList::clear(){
 //////////////////////////////////////////////////////////////////////////////////
 void CMessages::addMessageList(CMsg &m){
   _lastMessage=getTime();
+  m.setRECEIVEDTS(_lastMessage);
   MessageList.push_back(m);
   return;
 
@@ -197,6 +199,7 @@ void CMessages::addMessageList(CMsg &m){
 
 void CMessages::addReceivedList(CMsg &s,std::string strIAM){
   _lastReceived=getTime();
+  s.setRECEIVEDTS(_lastReceived);
   setReceivedTimestamp();
   if(!s.checkPWD()){    
     s.setCOMMENT("Message PWD Invalid   Dropping   ------- Problably should add to some Log");
@@ -205,13 +208,19 @@ void CMessages::addReceivedList(CMsg &s,std::string strIAM){
   }
   
   
-  if((s.getTO()==strIAM)||(s.getTO()==ALL)){
-    s.setRECEIVEDTS(_lastReceived);
+  if((s.getTO()==strIAM)||(s.getTO()==ALL)){    
     ReceivedList.push_back(s);
     return;
   }
   else {
-    s.setCOMMENT("Message Received not for this Satellite   Dropping");
+    std::string str=s.getMSG();
+    if(str.size()>0){
+      s.setCOMMENT("Relay Message Received (MSG) ");      
+      addDataMap(s);      
+    }
+    else{
+      s.setCOMMENT("Message Received not for this Satellite   Dropping");      
+    }
     writeconsoleln(s.serializeout());    
   }
   return;
@@ -362,6 +371,12 @@ void CMessages::addDataMap(std::string key,CMsg &m) {
   DataMap[key]=m;  
   }
 
+void CMessages::addDataMap(CMsg &m) {  
+  std::string key=m.getNAME();
+  if (key=="") key=m.getStringID();
+  addDataMap(key,m);
+  }  
+
 
 void  CMessages::sendData(CMsg &msg){   
   //SYS:MGR~ACT:SENDDATA~START:7~END:10~K:KEY_ 
@@ -398,6 +413,55 @@ void  CMessages::sendData(CMsg &msg){
 void CMessages::loop() {
 	//Gets messages receieved from radio, pushes to message list and then pumps them out
   moveReceived();
+  MsgPump();
 
  
+}
+
+
+void CMessages::MsgPump(){
+
+CMsg msg;
+  
+int count=0;
+int size=MessageList.size();
+
+while(count<size){
+  
+  count++;
+
+  msg = MessageList.front();
+  MessageList.pop_front();
+  //msg.writetoconsole();
+
+	if (msg.isReadyToProcess()){
+		msg.writetoconsole();
+		//writeconsoleln("MsgPump()  pumping to newMSG");
+		if(msg.Parameters.size()) {
+      CSystemObject *pObj=getSystem(msg.getSYS().c_str());
+      if(pObj!=NULL) pObj->newMsg(msg);   //Satellite          }
+
+    }
+    
+	}
+	else{
+		
+		//writeconsoleln("MsgPump()  NOT TIME YET");
+		MessageList.push_back(msg);    
+	}
+
+  }
+  //MSG->MessageList.clear();//Probable make sure messages have all been processed.  I think they will as only thing that can add messages should be the loop    
+}
+
+void CMessages::callCustomFunctions(CMsg &msg){
+  CSystemObject::callCustomFunctions(msg);
+	std::string sys = msg.getSYS();
+	std::string act = msg.getACT();
+
+  /*
+  if(messagelist=="DATAMAP") {msg.remap();std::string key=msg.getNAME(); addDataMap(key,msg);return;}
+  if(messagelist=="TRANSMITLIST") {msg.remap();addTransmitList(msg);return;}
+  if(messagelist=="MESSAGELIST") {msg.remap();addMessageList(msg);return;}  
+  */
 }

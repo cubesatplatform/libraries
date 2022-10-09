@@ -65,12 +65,13 @@ bool CMsg::needACK(){
 }
 
 bool CMsg::isReadyToProcess(){
-  unsigned long  ts=getRECEIVEDTS();
+  unsigned long ts=getRECEIVEDTS();
   unsigned long pt=getPROCESSTIME();
+  unsigned long ct=getTime();
 
-  if((ts+pt)< getTime())
-    return false;
-  return true;
+  if((ts+pt)< ct)
+    return true;
+  return false;
 }
 
 std::string CMsg::TransmitData() { 
@@ -255,7 +256,20 @@ void CMsg::initArray(unsigned char* myRawArray, int byteCount) {
       unsigned char c=myRawArray[count];
       byteVector.push_back(c);       
       writeconsole((char)myRawArray[count]);
+  }  
+}
+
+void CMsg::remap(){
+  std::string sys = getParameter("_SYS","");
+	std::string act = getParameter("_ACT","");
+
+  if(sys.length()){
+    setSYS(sys);
+    setParameter("_SYS","");
   }
-    
-  
+
+  if(act.length()){
+    setACT(act);
+    setParameter("_ACT","");
   }
+}

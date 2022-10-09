@@ -5,14 +5,7 @@
 CADCSState::CADCSState() {
   Name("ADCS");
   setMaxTime(3*TIMEORBIT);
-  //add some items to the map
-  availablesystems["MT"] = true;
-  availablesystems["MAGX"] = true;
-  availablesystems["MAGY"] = true;
-  availablesystems["MAGZ"] = true;
-  availablesystems["MOTORX"] = true;
-  availablesystems["MOTORY"] = true;
-  availablesystems["MOTORZ"] = true;
+  
 };
 
 CADCSState::~CADCSState() {};

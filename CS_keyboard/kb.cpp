@@ -14,52 +14,39 @@ void CKeyboard::displayCMDs(){
 
 void CKeyboard::sendCmd(std::string str){  
   std::string cmd=_simpleCMDs[str];
-  if(cmd.size()>1){
-    CMsg m(cmd);
+  CMsg m;
+  if(cmd.size()>1)
+    m.config(cmd);
+  else
+    m.config(str);
+  fillMetaMSG(&m);
     
-    writeconsoleln(m.serialize());
-    m.setTO(CUBESAT);
-    addTransmitList(m); 
-  //  updateRadio(m);  
-  }
-  else{
-    if(str.size()>1){
-      CMsg m(str);
-      
-// if((m.getTO()==radio.getIAM())||(m.getTO()=="BSALL")){  //TO:BSALL~ACT:SENDFILE~PATH:UPDATE~FIRST:0~LAST:20
-if(0){
-        std::string act=m.getACT();
-        
-       // if(act=="SENDFILE") sendFile(m);
-        
-      }
-      else {
-        m.setTO(CUBESAT);  
-        addTransmitList(m);         
-     //   updateRadio(m);  
-      }
-    }
-  }      
+  m.writetoconsole();
+
+  if(m.getFROM()==m.getTO())    
+    addMessageList(m);   
+  else
+    addTransmitList(m);     
 }    
 
 
 void CKeyboard::loop() {
   
   if(Serial.available()){
-    writeconsole(".XSCVXCV");
-        _input = Serial.read();
-        if(_input =='?'){
-          displayCMDs();    
-          _cmdstr="";
-          _input=' '; 
-          return;
-        }
-        if((_input !='\n')&&(_input !=' ')) _cmdstr+=_input;              
-    }
+
+  _input = Serial.read();
+  if(_input =='?'){
+    displayCMDs();    
+    _cmdstr="";
+    _input=' '; 
+    return;
+  }
+  if((_input !='\n')&&(_input !=' ')) 
+  _cmdstr+=_input;              
+  }
   //while(Serial2.available())   Serial2.print(Serial2.read());
 
-  if(_input =='\n'){
-    writeconsoleln(_cmdstr.c_str());
+  if(_input =='\n'){  
     sendCmd(_cmdstr);   
     _cmdstr="";
     _input=' ';
@@ -93,6 +80,7 @@ void CKeyboard::sendSerial(const char* cmd) {    //Send to Phone
 }
 
 void CKeyboard::callCustomFunctions(CMsg &msg)  {  //Used to be NewMsg
+  CSystemObject::callCustomFunctions(msg);
   
   std::string sys=msg.getSYS();
   std::string act=msg.getACT();

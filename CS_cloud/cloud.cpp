@@ -3,6 +3,17 @@
 CCloud::CCloud(){
   Name("CLOUD");
   MSG= getMessages();
+
+  URLS["REGISTER"] = host + std::string("/register");
+  URLS["INSERTLOCATION"] = host + std::string("/insertlocation?bsid=$bsid");
+  URLS["GETCMD"] = host + std::string("/getcmd?bsid=$bsid");
+  URLS["UPDATECMD"] = host + std::string("/updatecmd?cid=$cid&bsid=$bsid");
+  URLS["INSERTCMD"] = host + std::string("/insertcmd?sent=1&cid=$cid&bsid=$bsid&sendon=$sendon&data=$data");
+  URLS["UPDATEACK"] = host + std::string("/updateack?ack=1&cid=$cid&bsid=$bsid");
+  URLS["INSERT"] =  host + std::string("insert?bid=1");
+  URLS["QUERY"] =  host + std::string("query?bid=1");
+  URLS["LOG"] =host + std::string("/v1/errorlog?bid=1&data=");
+
   
 }
  
@@ -111,48 +122,8 @@ std::string CCloud::getPage(std::string URL){
    }
 
 
-void CCloud::getLastCommand() {
-   std::string line =getPage(getcmdurl);   
-
-   if(line.length()<3) return;
-   
-  //line=line.substring(1,line.length()-2);  //Gets rid of []   This JSon doesnt like it
-  writeconsoleln(line.c_str());
-
-  jsonDoc doc;
-  
-  CMsg msg=getJSONDoc(line, doc);
-
-  writeconsoleln(line);
-  msg.writetoconsole();
-
-  if(msg.Parameters.size())  addTransmitList(msg);    
-  }
-
-void CCloud::insertSatData(CMsg &msg){
-  std::string newurl=fillurl(inserturl,msg);
-  getPage(newurl);
-}
 
 
-void CCloud::updateTransmittedCmd(CMsg &msg){
-  std::string newurl=fillurl(updatecmdurl,msg);
-  writeconsole(".........................................updateTransmittedCmd------");
-  writeconsoleln(newurl);
-  getPage(newurl);
-}
-
-
-void CCloud::updateAckCmd(CMsg &msg){
-  std::string newurl=fillurl(updateackurl,msg);
-  getPage(newurl);
-}
-
-
-
-void CCloud::getEchoData(std::string  URL){
-   writeconsoleln(getPage(std::string(URL)).c_str());
-}
 
 CMsg CCloud::getJSONDoc(std::string strJSON, jsonDoc &doc){
   CMsg msg;
@@ -191,10 +162,14 @@ void CCloud::updateAllReceivedCommands(){
   while(MSG->ReceivedList.size()){
       CMsg msg=MSG->ReceivedList.front();
       if (msg.isAck()) {
-        updateAckCmd(msg);
+        msg.setParameter("API","UPDATEACK");
+        callAPI(msg);
         }
         else{ 
-          if(msg.Data().length()>1)  insertSatData(msg);
+          if(msg.Data().length()>1) {
+            msg.setParameter("API","INSERT");
+            callAPI(msg);
+          } 
           else {  //Its a stream  Don't know how to add yet         
           }
       }      
@@ -221,7 +196,8 @@ void CCloud::updateAllTransmittedCommands(){
       } 
       else{
         writeconsoleln("updateAllTransmittedCommands()  YES CID --------------------------------------------------------");
-        updateTransmittedCmd(msg);
+        msg.setParameter("API","UPDATECMD");
+        callAPI(msg);
       }
 
       MSG->TransmittedList.pop_front();
@@ -236,28 +212,26 @@ void CCloud::loop(){
   if(millis() - _lastCmd >= CMD_INTERVAL )  {
     _lastCmd=millis();
 
-
-    getLastCommand();   //Restarts when connecting to service has some problem        
+    CMsg m;
+    m.setParameter("API","GETCMD");
+    callAPI(m);   //Restarts when connecting to service has some problem        
     updateAllTransmittedCommands(); 
     updateAllReceivedCommands();    
-  }
-
-  
-  //processMSG();  
+  }  
 }
 
 
 void CCloud::callCustomFunctions(CMsg &msg)  {  //Used to be NewMsg
-  
+  CSystemObject::callCustomFunctions(msg);  
   std::string sys=msg.getSYS();
   std::string act=msg.getACT();
 
   msg.writetoconsole();
 
+  if(act=="CALLAPI") callAPI(msg);
   if(act=="UPDATEALLTRANSMITTEDCOMMANDS")   updateAllTransmittedCommands();
   if(act=="UPDATEALLRECEIVEDCOMMANDS") updateAllReceivedCommands();    
-  if(act=="CONNECTWIFI") connectWifi();  
-  if(act=="GETLASTCOMMAND") getLastCommand();
+  if(act=="CONNECTWIFI") connectWifi();    
   if(act=="GETPAGE") getPage(msg.getParameter("URL"));
   
 }
@@ -284,3 +258,35 @@ std::string CCloud::fillurl(std::string original,CMsg &msg){
   return newurl;
  
 }
+
+
+
+CMsg CCloud::callAPI(CMsg &msg) {
+  std::string api=msg.getParameter("API","");
+  std::string url=msg.getParameter("URL",URLS[api]);
+  std::string newurl=fillurl(URLS[api],msg);
+  std::string line =getPage(newurl);   
+
+  if(line.length()<3) {
+    CMsg m;
+    return m;
+  }
+   
+  //line=line.substring(1,line.length()-2);  //Gets rid of []   This JSon doesnt like it
+  writeconsoleln(line.c_str());
+
+  jsonDoc doc;
+  
+  CMsg m=getJSONDoc(line, doc);
+
+  writeconsoleln(line);
+  m.writetoconsole();
+
+  if(m.Parameters.size())  {
+    std::string act=m.getACT();
+    //addTransmitList(m);    
+    addMessageList(m);    
+    }
+  return m;
+  }
+

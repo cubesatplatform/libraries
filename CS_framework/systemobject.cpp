@@ -19,7 +19,6 @@ CSystemObject::CSystemObject() {
 void CSystemObject::init(){
   success=false;
 
-  _obj._currentTime=getTime();
   _obj._createdTime=getTime();
   _obj._modifiedTime=getTime();
   _obj._currentTime=getTime();
@@ -118,7 +117,7 @@ void CSystemObject::Name(std::string s) {
 
  void CSystemObject::fillMetaMSG(CMsg *m){
     _obj._currentTime = getTime(); 
-    if((m->getSYS()=="")&&(m->getSYS()!="RADIO"))m->setSYS(Name());
+    if((m->getSYS()=="")&&(m->getSYS()!="RADIO")&&(m->getSYS()!="RADIO1"))m->setSYS(Name());
     if(m->getFROM()=="") m->setFROM(getIAM());
     if(m->getTO()=="") m->setTO("ALL");
     if(_cid.size())m->setCID(_cid);
@@ -161,8 +160,9 @@ void CSystemObject::stats(CMsg &msg){
 void CSystemObject::newMsg(CMsg &msg){
  
   std::string act=msg.getACT();
+  writeconsole("newMsg receieved by ");writeconsole(Name()); writeconsoleln(act);
 
-  writeconsole(Name());writeconsoleln(":  Message received");
+
   if (act=="NEWMODE") { newMode(msg); return;} //Updates a parameter in the Subsystem
   
   if (act == "PLAY") {play();return;}
@@ -170,8 +170,7 @@ void CSystemObject::newMsg(CMsg &msg){
   if (act == "OFF") {off();return;}
   if (act == "STATS") {stats(msg);return;}
 
-
-  if ((Name()!="RADIO")&&(Name()!="RADIO2")){
+  if ((Name()!="RADIO")&&(Name()!="RADIO2")&&(Name()!="CORE")){
     if (act == "PAUSE") {pause();return;}
     if (act == "STOP") {stop();return;}  
   }
@@ -184,13 +183,24 @@ void CSystemObject::newMsg(CMsg &msg){
   if(act=="UPDATE") {Update(msg);return;}
   if(act=="CONFIG") {config(msg);return;}
 
-  if(act=="ADDDATAMAP") {std::string key=msg.getNAME(); addDataMap(key,msg);return;}
-  if(act=="ADDTRANSMITLIST") {addTransmitList(msg);return;}
+  if(act=="DATAMAP") {msg.remap();std::string key=msg.getNAME(); addDataMap(key,msg);return;}
+  if(act=="TRANSMITLIST") {msg.remap();addTransmitList(msg);return;}
+  if(act=="MESSAGELIST") {msg.remap();addMessageList(msg);return;}  
+  if(act=="RECEIVEDLIST") {msg.remap();addReceivedList(msg);return;}  
+  if(act=="GETDATA") {getData(msg);return;}  
 
-  writeconsoleln("callCustomFunctions");
+
   callCustomFunctions(msg);
 }
 
+void CSystemObject::getData(CMsg &msg){
+  writeconsoleln("vCSystemObject::getData(CMsg &msg)");
+
+  std::string val=msg.getVALUE();
+  CMsg m=getDataMap(val);
+  m.writetoconsole();
+  addTransmitList(m);
+}
 
 void CSystemObject::Update(CMsg &msg){
   
@@ -336,10 +346,13 @@ void CSystemObject::sendError() {
 }
 
 bool CSystemObject::isNextCycle() {
-  if (State()=="STOP")
-    return false;  
   timeStamp();
+  
+  if (State()=="STOP")
+    return false;    
+  
   if (outOfTime()) {
+  
     CMsg m;
     m.setSYS(Name()); 
     m.setINFO("Out of time.  Stopping.");
@@ -348,19 +361,24 @@ bool CSystemObject::isNextCycle() {
     return false;
   }
   
-  if(State()!="PLAY"){
-    if(_retryCount>30)return false;
+  
+  if(State()!="PLAY"){  
+    if(_retryCount>30)return false;  
     return true;
   }
 
   if(getTime()<_obj._startTime){
+    
     return false;
   }
 
-  if (_obj._currentTime >= _obj._prevTime + _interval) {
+  
+
+  if (_obj._currentTime >= _obj._prevTime + _interval) {  
     _obj._prevTime = _obj._currentTime;
     return true;
   }
+  
   if(_interval==0)return true;
   return false;
 }
@@ -396,9 +414,17 @@ void CSystemObject::addTransmitList(CMsg &m ){
 
 void CSystemObject::addDataMap(std::string key,CMsg &m){
   CMessages* pM = getMessages();  
+  writeconsoleln("addDataMap");
+  m.writetoconsole();
   if(key.size()>1)    
-    pM->addDataMap(key,m);
-  
+    pM->addDataMap(key,m);  
+  else  
+    pM->addDataMap(m);  
+}
+
+void CSystemObject::addDataMap(CMsg &m){
+  std::string key=m.getNAME();
+  addDataMap(key, m);  
 }
 
 CMsg CSystemObject::getDataMap(std::string key){
