@@ -3,12 +3,23 @@
 #include "consoleio.h"
 
 
-std::list<std::string> qLog;
+//std::list<std::string> qLog;
+
+bool _echoConsole=true;
 
 
 #define REALTIME
 
+void echoOn(){
+  _echoConsole=true;
+}
+
+void echoOff(){
+  _echoConsole=false;
+}
+
 void writeOut(){
+  /*
   while(qLog.size()){
     std::string str=qLog.front();
     qLog.pop_front();
@@ -19,6 +30,7 @@ void writeOut(){
       if(Serial) Serial.print(str.c_str());
     }
   }
+  */
 }
 
 
@@ -29,42 +41,47 @@ void writeconsoleln(double s){writeconsoleln((float) s);};
 
 
 void writeconsole(const std::string s) {  
-  #ifdef  REALTIME
+  if(_echoConsole){
     if(Serial) Serial.print(s.c_str());
-  #else
-  qLog.push_back(s);  
-  #endif
+  }
+  else{
+  //qLog.push_back(s);  
+  }
+ 
 }
 
 void writeconsole(String s) {  
-  #ifdef  REALTIME
+  if(_echoConsole){
     if(Serial) Serial.print(s.c_str());
-  #else
+  }
+  else{
   std::string str=s.c_str();
-  qLog.push_back(str);  
-  #endif
+  //qLog.push_back(str);  
+  }
 }
 
 
 void writeconsoleln(const std::string s){   
-  #ifdef  REALTIME
+  if(_echoConsole){
   if(Serial) Serial.println(s.c_str());
-  #else
+  }
+  else{
    std::string blank;
-   qLog.push_back(s);
-   qLog.push_back(blank);
-   #endif
+   //qLog.push_back(s);
+   //qLog.push_back(blank);
+   }
   }
 
  void writeconsoleln(String s){   
-  #ifdef  REALTIME
+  if(_echoConsole){
   if(Serial) Serial.println(s.c_str());
-  #else
+  }
+  else{
    std::string blank;
    std::string str=s.c_str();
-   qLog.push_back(str);  
-   qLog.push_back(blank);
-   #endif
+   //qLog.push_back(str);  
+   //qLog.push_back(blank);
+   }
   }
 
 
@@ -99,10 +116,6 @@ void writeconsole( long s){
    writeconsole(str);
   }
 
-void writeconsole( unsigned long s){
-    std::string str=tostring(s);
-   writeconsole(str);
-  }
 
 void writeconsole(float s){
     std::string str=tostring(s);
@@ -131,10 +144,7 @@ void writeconsoleln( long s){
    writeconsoleln(str);
   }
 
-void writeconsoleln( unsigned long s){
-   std::string str=tostring(s);
-   writeconsoleln(str);
-  }
+
 
 void writeconsoleln(float s){
    std::string str=tostring(s);

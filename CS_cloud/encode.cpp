@@ -1,7 +1,7 @@
 #include <arduino.h>
 #include "cloud.h"
  
-unsigned char h2int(char c)
+unsigned char CCloud::h2int(char c)
 {
     if (c >= '0' && c <='9'){
         return((unsigned char)c - '0');
@@ -15,7 +15,21 @@ unsigned char h2int(char c)
     return(0);
 }
 
-String urldecode(String str)
+std::string CCloud::urlencode(std::string str){
+  String s=str.c_str();
+  s=urlencode(s);
+  str=s.c_str();
+  return str;
+}
+
+std::string CCloud::urldecode(std::string str){
+  String s=str.c_str();
+  s=urldecode(s);
+  str=s.c_str();
+  return str;
+}
+
+String CCloud::urldecode(String str)
 {
     
     String encodedString="";
@@ -44,7 +58,7 @@ String urldecode(String str)
    return encodedString;
 }
 
-String urlencode(String str)
+String CCloud::urlencode(String str)
 {
     String encodedString="";
     char c;
@@ -81,7 +95,7 @@ String urlencode(String str)
     
 }
 
-std::string convertStringToCommand(std::string str){
+std::string CCloud::convertStringToCommand(std::string str){
   StaticJsonDocument<500> doc;
   std::string cmdstr;
 

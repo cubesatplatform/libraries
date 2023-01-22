@@ -1,10 +1,14 @@
 #pragma once
 
-#include "Arduino.h"
-#include "msg.h"
-#include <iostream>
-#include <list>
 
+#include "msg.h"
+//#include <iostream>
+//#include <list>
+
+
+void echoOn();
+
+void echoOff();
 
 void writeconsole(CMsg &m);
 
@@ -18,7 +22,6 @@ void writeconsole(String s);
 
 void writeconsole( long s);
 
-void writeconsole( unsigned long s);
 
 void writeconsole(char s);
 
@@ -38,7 +41,6 @@ void writeconsoleln(String s);
 
 void writeconsoleln( long s);
 
-void writeconsoleln( unsigned long s);
 
 void writeconsoleln(float s);
 

@@ -10,6 +10,15 @@
 #include <axp20x.h>
 #include <boards.h>
 
+#define _LAT "LAT"
+#define _LON "LON"
+#define _ALT "ALT"
+
+#define _SATSV "SATSV"
+#define _GPSTIME "GPSTIME"
+#define _LATLON "LATLON"
+#define _GPS "GPS"
+
 class CGPS :public CSystemObject {
  
   TinyGPSPlus gps;
@@ -28,7 +37,7 @@ class CGPS :public CSystemObject {
   int Min=0;
   int Sec=0;
   long Speed=0;
-  unsigned long last = 0UL;
+  long last = 0UL;
 public:
 
   CGPS();

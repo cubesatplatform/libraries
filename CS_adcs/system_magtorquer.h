@@ -1,24 +1,22 @@
 #pragma once
 
 #include <map>
+
+#include <systemdefs.h>
 #include <systemobject.h>
-#include <system_imu.h>
+
+
 #include <mdrive.h>
+#include <system_imu.h>
  
+
+
     
 class CMagTorquer:public CSystemObject{
   private:    
-    CMDrive *_pMagX=NULL;
-    CMDrive *_pMagY=NULL;
-    CMDrive *_pMagZ=NULL;
-    CIMU *_pIMU=NULL; 
-    float _gyroX=0.0;
-    float _gyroY=0.0;
-    float _gyroZ=0.0;
-
-    float _magX=0.0;
-    float _magY=0.0;
-    float _magZ=0.0;
+    
+    long _nextStepTime=0;
+    std::string _strIMU=_IMUI;
     
   public:
     CMagTorquer();    
@@ -27,11 +25,11 @@ class CMagTorquer:public CSystemObject{
     void setup();      
     void loop();
     void init();
-    bool isIdle();
-    void activate(CMDrive *pMag, float gyro, float mag);
-    void newCMD(CMsg &msg);
+    
+    void activate(CMDrive *pMag, float gyro, float mag);        
     void deactivate();    
-    void getGyroData();
-    void getMagData();
-    void loopDetumble();            
+    void activate();    
+
+    void loopDetumble();      
+    void callCustomFunctions(CMsg &msg);      
 };

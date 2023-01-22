@@ -21,9 +21,7 @@
 #define I2C_SCL                     22
 
 
-CGPS::CGPS()  {  
-  Name("GPS");   
-  
+CGPS::CGPS()  {      
   }
 
 CGPS::~CGPS() {}
@@ -34,7 +32,7 @@ void CGPS::init()
   CSystemObject::init();
   
   setForever();
-  setInterval(1000);    
+  setInterval(60000);    
   initBoarda();  //new
       // When the power is turned on, a delay is required.
   delay(1500);
@@ -44,7 +42,7 @@ void CGPS::setup()
 {
   init();
 
-  setState("PLAY");
+  setState(_PLAY);
 }
 
 
@@ -65,7 +63,7 @@ void CGPS::runOnce(CMsg &msg)
       gps.encode(Serial1.read());
       flag=true;
       counter--;
-      writeconsole("HH");
+      
    }
 
    if(flag){
@@ -74,6 +72,7 @@ void CGPS::runOnce(CMsg &msg)
     longitude=gps.location.lng();
     altitude=gps.altitude.feet();
     SIV=gps.satellites.value();
+    
    // Yr=gpsl.time.year();
     //Mon=gpsl.time.month();
     //Day=gpsl.time.day();
@@ -92,14 +91,19 @@ void CGPS::runOnce(CMsg &msg)
 
 void CGPS::fillData(){  //Easier to send as long   convert to decimal when receive  
   writeconsoleln("filldata gps");
-  CMsg m;
-  std::string pos="lat:";
-  pos+=tostring(latitude)+std::string(",lon:")+tostring(longitude)+std::string(",alt:")+tostring(altitude)+std::string(",sats:")+tostring(SIV)+std::string(",time:")+tostring(Hr)+std::string(",")+tostring(Min)+std::string(",")+tostring(Sec);
-  m.setNAME("GPS");
-  m.setParameter("POS",pos);
-  m.setTIME(getTime());
+  CMsg m;  
+  m.set(_LAT,latitude);
+  m.set(_LON,longitude);
+  m.set(_ALT,altitude);
+  m.set(_SATSV,SIV);
+  m.set(_GPSTIME,tostring(Hr)+std::string(":")+tostring(Min)+std::string(":")+tostring(Sec));
+  m.set(_NAME,_GPS);
+  m.set(_SYS,_CLOUD);  
+  m.set(_ACT,_SAVE);    
+  m.set(_TIME,getTime());
 
   addDataMap(std::string("GPS"),m);
+  //addMessageList(m);
  }
 
 /*

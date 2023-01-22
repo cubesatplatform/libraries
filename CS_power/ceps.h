@@ -30,6 +30,67 @@
 uint8_t readI2C(uint8_t i2cs_addr, uint8_t reg, uint8_t * data, uint16_t nbyte);
 uint8_t writeI2C(uint8_t i2cs_addr, uint8_t reg, uint8_t * data, uint16_t nbyte);
 
+#define BatteryVolt "BatteryVolt"
+#define BatteryCrnt "BatteryCurrent"
+#define BCRVolt "BCRVoltage"
+#define BCRCrnt "BCRCurrent" 
+#define P3V3Crnt "P3V3Current"
+#define P5VCrnt "P5VCurrent"
+#define LUP3V3 "LUP3V3"
+#define LUP5V "LUP5V"
+#define MCUTemp "MCUTemp"  
+#define InputConditions "InputConditions"
+#define OutputConditions "OutputConditions"
+#define OutputConditions2 "OutputConditions2"
+#define PowerONCycles "PowerONCycles"
+#define VUnderVolt "VUnderVoltage"
+#define VShortCircuit "VShortCircuit"
+#define VOverTemp "VOverTemperature"
+#define Ver "SoftwareVersion"
+#define Defaults1 "Defaults1"
+#define Defaults12 "Defaults12"
+#define ChargeCycles "ChargeCycles"
+
+
+#define BatTemp1 "BatTemp1"
+#define BatTemp2 "BatTemp2"
+#define BatTemp3 "BatTemp3"
+#define BatTemp4 "BatTemp4"
+
+
+#define MaxTemp1 "MaxTemp1"
+#define MaxTemp2 "MaxTemp2"
+#define MaxTemp3 "MaxTemp3"
+#define MaxTemp4 "MaxTemp4"
+
+
+#define MinTemp1 "MinTemp1"
+#define MinTemp2 "MinTemp2"
+#define MinTemp3 "MinTemp3"
+#define MinTemp4 "MinTemp4"
+
+
+#define TSTemp1 "TSTemp1"
+#define TSTemp2 "TSTemp2"
+#define TSTemp3 "TSTemp3"
+#define TSTemp4 "TSTemp4"
+    
+
+#define XVolt "XVoltage"
+#define XCrntM "XCurrentM"
+#define XCrntP "XCurrentP"
+
+
+#define YVolt "YVoltage"
+#define YCrntM "YCurrentM"
+#define YCrntP "YCurrentP"
+
+
+#define ZVolt "ZVoltage"
+#define ZCrntM "ZCurrentM"
+#define ZCrntP "ZCurrentP"
+
+
 #define BATTERY_VOLTAGE_CC        0.0023394775
 #define BATTERY_CURRENT_CC        0.0030517578
 #define BCR_VOLTAGE_CC          0.0023394775
@@ -198,13 +259,14 @@ class CEPS:public CSystemObject
   
 
   public:
-    CMsg m;
+   
     
-    CEPS(){Name("EPS"); setInterval(5000);};
+    CEPS(){setInterval(5000);};
     void config(char addr, TwoWire *twowire=&Wire);
     void setup();
     void init();
     void loop();
+    void checkPower();
   //  void begin( uint8_t addr_ , uint8_t (*readI2C_)(uint8_t i2cs_addr, uint8_t reg, uint8_t * data, uint16_t nbyte),  uint8_t (*writeI2C_)(uint8_t i2cs_addr, uint8_t reg, uint8_t * data, uint16_t nbyte));
 
     float readBatteryVoltage(void);

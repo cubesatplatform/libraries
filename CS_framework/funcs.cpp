@@ -1,18 +1,23 @@
 #include "funcs.h"
 #include <Arduino.h>
 
+
+
+
+
+
 long getTime() {
   return millis();
 }
 
 std::string getTimeString(){
-  unsigned long tmp=millis();
+  long tmp=millis();
   return(tostring(tmp));
 }
 
 
 
-std::string tostring(unsigned long val) {
+std::string tostring(long val) {
   std::string s;
   char buffer [300];
   int cx;
@@ -23,15 +28,6 @@ std::string tostring(unsigned long val) {
 }
 
 
-std::string tostring(long val) {
-  std::string s;
-  char buffer [300];
-  long cx;
-  
-  cx = snprintf ( buffer, 30, "%li", val );
-  if((cx>0)&&(cx<100)) s=buffer;
-  return s;
-}
 
 std::string tostring(int val) {
   std::string s;
@@ -58,8 +54,14 @@ std::string tostring(float val) {
   char buffer [300];
   int cx;
   
-  cx = snprintf ( buffer, 30, "%f", val );
+  cx = snprintf ( buffer, 30, "%f", val );  //.4
   if((cx>0)&&(cx<100)) s=buffer;
+
+  
+  if (s.find(".")!=std::string::npos){
+    while (s[s.size()-1]=='0') s=s.substr(0,s.size()-1);
+  }
+
   return s;
 }
 
@@ -68,8 +70,13 @@ std::string tostring(double val) {
   char buffer [300];
   int cx;
   
-  cx = snprintf ( buffer, 30, "%f", val );
+  cx = snprintf ( buffer, 30, "%f", val );   //.6
   if((cx>0)&&(cx<100)) s=buffer;
+
+  if (s.find(".")!=std::string::npos){
+    while (s[s.size()-1]=='0') s=s.substr(0,s.size()-1);
+  }
+
   return s;
 }
 
@@ -83,11 +90,11 @@ std::string replaceall(std::string str, std::string from, std::string to) {
 }
 
 
-/*Usage
-  std::string url="/updatecmd?sent=1&cid=$cid&bsid=$bsid";
-  std::string cid="14";
-  url=strReplace(url,"$cid",cid);
- */
+  //Usage
+  //std::string url="/updatecmd?sent=1&cid=$cid&bsid=$bsid";
+  //std::string cid="14";
+  //url=strReplace(url,"$cid",cid);
+
 
 std::string strReplace(std::string original, const char * search, std::string val){
 

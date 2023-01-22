@@ -57,11 +57,11 @@ class CSystemMgr:public CSystemObject{
   const int freq = 10000;
   const int resolution = 12;
 
-  unsigned long _lastPhone=0;
+  long _lastPhone=0;
   
 public:
-  std::map<std::string, PinName> Pins;
-  std::map<std::string, PinName> pwmPins;
+ // std::map<std::string, PinName> Pins;
+ // std::map<std::string, PinName> pwmPins;
 
   std::map<std::string, std::string> I2CMap;
 
@@ -73,18 +73,26 @@ public:
   void setup();
   void loop();
 
+  void chkAll(CMsg &msg);
   void chkIRArrays(CMsg &msg);
   void chkTemperature(CMsg &msg);
   void chkRadio(CMsg &msg);
   void chkBattery(CMsg &msg);
   void chkRotation(CMsg &msg);
   void chkMagField(CMsg &msg);
+  void chkMags(CMsg &msg);
   void chkMessages(CMsg &msg);
+  void chkIMUI(CMsg &msg);
+  void chkIMUS(CMsg &msg);
+
+  void randomState();
 
   void pinHigh(CMsg &msg);
   void pinLow(CMsg &msg);
   void pinPWM(CMsg &msg);
   
+
+  void runSystem(CMsg &msg);
 
   void pinRead(CMsg &msg);
 	void pinReadState(CMsg &msg);
@@ -95,47 +103,47 @@ public:
   void sendBeacon(CMsg &msg);  
   void sendError(std::string str){};
     
-  void newState(const char *str="LOWPOWER");
+  //void newState(const char *str=_LOWPOWER);
+  //void newState(CMsg &msg);  
 
+  void showTests(); 
 
-  void showTests();
-  
-  
-  void loopWire(TwoWire *wire, const char* s);
-  void resetWire(TwoWire *wire, const char* s);
+  void loopWire(char s);
+  void loopWire(CMsg &msg);
+
+  void resetWire(char s);
+  void resetWire(CMsg &msg);
   void enableI2C();
   void disableI2C();
   void phone();
+  void chargePhone();
   void pinsOn();
   void pinsOff();
   
   
+ // void controlPlan();
   
-  void initPins();
-  void initI2CMap();
-  void controlPlan();
-  
-  void testIMU(CMsg &msg);
-  void testMAGDrive(char addr);
-  void testMAG(CMsg &msg);
-  void testMotor(CMsg &msg);
-  void testTemp(CMsg &msg);
-  void testIR(CMsg &msg);
+  void mag(CMsg &msg);
+  void motor(CMsg &msg);
+  void temp(CMsg &msg);
+  void ir(CMsg &msg);
+  void IMU(CMsg &msg);
 
   void testDataMap(CMsg &msg);
   void getData(CMsg &msg);
-  void scheduleData(CMsg &msg);
+  void scheduleData(CMsg &msg){};
   void tBeam(CMsg &msg);
-  
-  void Output(CMsg &msg);
+  void initI2CMap();
+  void sendPicture(CMsg &msg);
+
   void sendSerial(const char* cmd);
   void callCustomFunctions(CMsg &msg) override;
-
+  
 };
 
 
 
-
+ 
 
 
 

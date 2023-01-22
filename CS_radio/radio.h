@@ -15,7 +15,8 @@
   #include <boards.h>
 #endif
 
-
+#define _BW "BW"
+#define _SF "SF"
 
 ///////////////////////////
 /*
@@ -92,34 +93,35 @@ SX1268 *plora=&radio1;
   
 #endif
 
-  std::list<unsigned long> transmitLog;
+  std::list<long> transmitLog;
   int _radioState = RADIOLIB_ERR_NONE;  // save transmission state between loops
-  unsigned long _lastPing = 0;// timestamp of the last PING packet
+  long _lastPing = 0;// timestamp of the last PING packet
   
-  unsigned long _nextTransmit=0;
-  unsigned long _completedTransmit=0;
+  long _nextTransmit=0;
+  long _completedTransmit=0;
   
   CMsg mACK;
   bool _sendACK=true;
   bool _waitForACK=false;
-  unsigned long _delayTransmit=RADIOTXDELAY;
-  unsigned long _modemChangedOn=0;
+  long _delayTransmit=RADIOTXDELAY;
+  long _modemChangedOn=0;
   CMessages *pMsgs;
   bool volatile  *_pbFlag;
   bool volatile  *_penableInterrupt;
-  bool _bTransmitter=true;
-  bool _bReceiver=true;
-  unsigned long _sleepTime=0;
+  
+  long _sleepTime=0;
 
-  unsigned long _lastTransmit=0;
-  unsigned long _lastReceive=0;
+  long _lastTransmit=0;
+  long _lastReceive=0;
 
   int _badInterruptCount=0;
 
-  std::string _modem="";
+  std::string _modem=_MEGABW;
   
 
 public:
+  bool _bTransmitter=true;
+  bool _bReceiver=true;
 
   CRadio();
   void init();
@@ -134,8 +136,9 @@ public:
   void TransmitCmd();
   
   void TransmitPacket(CMsg &m);
-  void TransmitPacket(std::string str="ACK",bool bAck=false);
-  void TransmitPacket(const unsigned char *buf, int len,bool bAck=false);
+  void TransmitPacket(std::string str=_ACK,bool bAck=false);
+  //void TransmitPacket(const unsigned char *buf, int len,bool bAck=false);
+  void TransmitPacket(unsigned char *buf, int len,bool bAck=false);
   void SetRadioReceive();
   void ReceivedPacket();
   void loopRadio();
@@ -154,10 +157,11 @@ public:
   bool getReceiver(){return _bReceiver;}
 
   void resetAck(){mACK.clear();};
-  void Update(CMsg &msg); 
+  void update(CMsg &msg); 
   void sleep(bool tmp);
   bool stillSleeping();
   void clearSleep();
+  void setActions();
 
   void setPower(CMsg &m);  
   void setModem(CMsg &m);  
@@ -171,9 +175,11 @@ public:
   int getCR();
   int getTXDelay();
   float getFrequency();
+  const char * errorDescription(int err);
+  
 
-  unsigned long getLastTransmit(){return _lastTransmit=0;}
-  unsigned long getLastReceive(){return _lastReceive=0;}
+  long getLastTransmit(){return _lastTransmit;}
+  long getLastReceive(){return _lastReceive;}
   int getRadioState(){return(_radioState);}
   
 };

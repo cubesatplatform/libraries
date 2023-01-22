@@ -28,6 +28,10 @@ CSTREAM(108.png,0)
 CSTREAM(108.png,117)
 CSTREAM(3858.jpg,0+)
 
+stream(12_54.jpg,0)                 //54 is the chunk number   0 is the part of 54 to get
+
+TO:BS103~SYS:PHONE~ACT:SENDSERIAL~V:stream(12_54.jpg,0)
+
 Command for streaming is stream(123.jpg,0+), if you dont have photos from last time, you can find commamds for taking photo in transmitter.ino, at the end of the file. 
 As it's streaming you can see which chunks are received. At the end of streaming, there will be acknowledgement message, which on receiver will look like "<messageid> A <list of chunks not received>". 
 That list will most likely be empty, you can maybe force lost packets by removing antenna from receiver 
@@ -41,6 +45,17 @@ for individual chunk its stream(123.jpg,456) (here for chunk number 456). there 
 
 
 #define STREAMHEADERLEN 15
+#define PHONEDATADELAY 30000
+#define _PHONETX "PHONETX"
+#define _PHONERX "PHONERX"
+
+
+#define _MODETX "MODETX"
+#define _MODERX "MODERX"   
+
+#define _LATLON "LATLON"
+
+
 
 //  Serial1.begin(PHONE_BAUD_RATE, SERIAL_8N1, PHONE_TX, PHONE_RX);
 
@@ -48,18 +63,20 @@ for individual chunk its stream(123.jpg,456) (here for chunk number 456). there 
 class CPhone:public CSystemObject {
   private:
     
-    long int id = 0;
+    long int _id = 0;
     volatile bool transmitted = false;
     volatile bool transmitting = false;
     volatile bool received = false;
    
-    long waitingForAck;
-    bool waitForAck;
-    long lastSerial = getTime(), lastTx = getTime(), lastDebug = getTime();
-    long int lastPacketTOA = 0;
-    bool bnew=false;
+    long _waitingForAck;
+    bool _waitForAck;
+    long _lastSerial = getTime(), _lastTx = getTime(), _lastDebug = getTime();
+    long int _lastPacketTOA = 0;
+    bool _bnew=false;
     PinName _TX;
     PinName _RX;
+    long _lastTransmit=0;
+    long _nextTransmit=0;
     
   public:
     std::queue<CMsg> commandQueue;   //This is the commands that should be sent to phone,filled from the Transmitter  
@@ -73,12 +90,15 @@ class CPhone:public CSystemObject {
     bool waitForBytes(int count);
     bool readUntil(char terminator, unsigned char* buffer);
     void sendSerial(const char* cmd);
+    void sendSerial(CMsg &msg);
     void push_stream(long id, unsigned char* fileName, int block, int len, bool hasMore, unsigned char* data);
     void onInitAvailable(int id);
     void onTimeAvailable(int id);
     void onGpsAvailable(int id);
     void onPhotoAvailable(int id);
+    void onBatteryAvailable(int id);
     void onStreamAvailable(int id);
+    void onDirectoryAvailable(int id);
     void ProcessCommandQueue();
     void TransmitPacket(CMsg &m);
     void SetPhoneReceive();
@@ -86,6 +106,7 @@ class CPhone:public CSystemObject {
     void loop();
     void init();
     void ready();    
-	  void getData(CMsg &msg);
+	  void getBlocks(CMsg &msg);    
+    void clearQueue();
     void callCustomFunctions(CMsg &msg) override;
 };

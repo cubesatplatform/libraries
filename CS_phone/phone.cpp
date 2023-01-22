@@ -1,16 +1,119 @@
 #include "phone.h"
 
-#define BLOCK_LENGTH 200
-#define BUFFER_LENGTH 50
-#define MAXQUEUE 400
+
+#define MAXSTREAMSIZE 200  //200
+#define BUFFER_LENGTH 1000    //50
+
 #define TIMEOUT 1*1000
 
 #define PHONE_BAUD_RATE 115200
 
+#define LATLON "LATLON"
+
+
+
+
+/*
+Commands
+//For Cubesat Dont need the C
+//For Phone stuff, need the 'C' infront to designate 'Command'
+//Compression parameters dont seem to be working   Need to check Android code
+"CTIME"
+"CGPS"
+Front/Back, Quality, ISO, Shutter speed, White Balance
+CPHOTO(B,50%,100,250,CLOUDY)
+CPHOTO(F,50%,100,100,AUTO)
+CPHOTO(B,50%,100,250,CLOUDY)
+CPHOTO(F,50%,100,100,AUTO)
+CBURST(B,50%,100,10,CLOUDY)
+CBURST(F,50%,100,500,CLOUDY)
+//CSTREAM(108.png,0)
+//CSTREAM(108.png,117)
+//CSTREAM(3858.jpg,0+)  this changed
+
+stream(0_3.jpg,0)
+
+
+for burst, you can submit the number of images in commend. If you don't it will use 5 as default
+
+so in message it will be following
+
+CBURST(B,50%,100,10,CLOUDY) > 5 pictures
+CBURST(B,50%,100,10,CLOUDY,7) > 7 pictures
+CBURST(B,50%,100,10,CLOUDY,7,5) > 7 pictures with 5 s delay
+
+
+f: it presented it will take from front
+q: quality of images
+iso: iso of image
+shutter: shutter of image
+wp is the mode of image I will write down what is there
+count and delay are optional, count number of images and delay
+
+for wp there is : auto, cloudy, day, fluorescent, incandescent, shade, twilight, warm_fluorescent
+
+
+(f,q,iso,shutter,wp,count,delay)
+POWER
+BATTERY
+DELETE  //Delete all files
+
+
+TO:BS~SYS:PHONE~ACT:CBATTERY
+
+//CRASH  CSTREAM(11_330.jpg,0)
+
+*/
+
+
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
 #else
-  #define PHONE_TX 23
-  #define PHONE_RX 4
+  
+  #define PHONE_RX 13
+  #define PHONE_TX 14
+
+  /*
+
+   TO:SENDSERIAL~PHONE:xxx
+
+  #include <HardwareSerial.h>
+
+
+//Definitely works TBeam 443
+//May not need power, but definitely needs a GROUND connected to the Serial module
+
+#define RXD2 13
+#define TXD2 14
+
+HardwareSerial ESerial2(2);
+
+
+void setup() {
+    Serial.begin(115200);
+    ESerial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
+    while(!ESerial2)
+      Serial.println("Serial2.................");
+    
+    Serial.println("starting.................");
+
+
+}
+
+void loop()
+{
+  
+  if (Serial.available() > 0) {
+    char a=Serial.read();
+ //  Serial.print(a); Serial.print(".");
+    ESerial2.write(a);
+  }
+  
+  if (ESerial2.available() > 0) {
+    
+    Serial.write(ESerial2.read());
+  }
+}
+  */
 #endif
 
 
@@ -19,28 +122,45 @@
 #define ANDROID_POWERUP_DELAY 1000
 
 
+//TO:BS~SYS:PHONE~ACT:GETBLOCKS~N:11~START:5~STOP:16
+void CPhone::getBlocks(CMsg &msg) {  //Send message to phone to get stuff 
+  //stream(0_3.jpg,0)
+	std::string key=msg.get(_NAME);
+  int start=msg.get(_START,0);
+  int stop=msg.get(_STOP,start+50);
 
-
-
-void CPhone::getData(CMsg &msg) {  //Send message to phone to get stuff 
-	std::string key=msg.getNAME();
-  //Need to craft message to send msg to phone
+  for(int count=start;count<stop;count++) {
+    std::string str="CSTREAM("+key+"_"+std::to_string(count)+".jpg,0)";
+    CMsg m;
+    m.set(_ACT,str);
+    m.writetoconsoleln();
+    
+    commandQueue.push(m);
+  }
 }
 
-void  CPhone::callCustomFunctions(CMsg &msg){
-  CSystemObject::callCustomFunctions(msg);  
-  std::string act=msg.getACT();
-    
-	if((act=="GET")) {getData(msg);  return;}
-  if((act=="SENDSERIAL")) {std::string str=msg.getParameter("SERIAL"); sendSerial(str.c_str());  return;}
+void  CPhone::clearQueue() {  //Send message to phone to get stuff 
+  while(!commandQueue.empty()) commandQueue.pop();
+}
+
+void  CPhone::callCustomFunctions(CMsg &msg){  
   
-  if(act.size()>1)  commandQueue.push(msg);
+  std::string act=msg.get(_ACT);
+
+  mapcustommsg(getBlocks)
+  mapcustom(clearQueue)
+    
+	
+  if((act==_SENDSERIAL)) {std::string str=msg.get(_VALUE); sendSerial(str.c_str());  return;}
+  
+  if(act.size()>1) { commandQueue.push(msg); return;}
+  CSystemObject::callCustomFunctions(msg);  
 }
 
 
 
 CPhone::CPhone(){
-  Name("PHONE");
+  //Name ( _PHONE);   //Never name in constructor  Crashes!!@#!@#!@
   setForever(true);    
   setInterval(20);
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
@@ -53,44 +173,44 @@ CPhone::CPhone(){
 
 void CPhone::init(){
 
-  id = 0;
+  _id = 0;
   transmitted = false;
   transmitting = false;
   received = false;
 
-  waitingForAck=0;
-  waitForAck=false;
-  lastSerial = getTime();
-  lastTx = getTime();
-  lastDebug = getTime();
-  lastPacketTOA = 0;
-  bnew=false;
+  _waitingForAck=0;
+  _waitForAck=false;
+  _lastSerial = getTime();
+  _lastTx = getTime();
+  _lastDebug = getTime();
+  _lastPacketTOA = 0;
+  _bnew=false;
+
+  _lastTransmit = getTime();
+  _nextTransmit = getTime();
   
 }
 
 
 void CPhone::setup() {   
   init();
- // Serial1.begin(115200);
- // Serial1.setTimeout(TIMEOUT);
-
- writeconsoleln("..................................... Setup .....................................");
+ 
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   Serial1.begin(PHONE_BAUD_RATE);
 #else  
-   Serial1.begin(PHONE_BAUD_RATE,SERIAL_8N1, PHONE_TX, PHONE_RX);
+   Serial1.begin(PHONE_BAUD_RATE,SERIAL_8N1, PHONE_RX, PHONE_TX);
 #endif  
-  sendSerial("INIT"); //to synchronise  
-  setState("PLAY");
+  setState(_PLAY);
+  sendSerial("INIT"); //to synchronise    
 }
 
 
 void CPhone::config(CMsg &msg){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   #else
-  int nTX=msg.getParameter("TX",11);
-  int nRX=msg.getParameter("RX",12);  
+  int nTX=msg.get(_PHONETX,11);
+  int nRX=msg.get(_PHONERX,12);  
   
   _TX=nTX;
   _RX=nRX;
@@ -99,8 +219,7 @@ void CPhone::config(CMsg &msg){
 }
 
 
-void CPhone::ready(){
-  writeconsoleln("..................................... StartPlay .....................................");
+void CPhone::ready(){  
   ReceivedPacket();  //Should hit onInit whch should set state to PLAY
 }
 
@@ -137,19 +256,41 @@ bool CPhone::readUntil(char terminator, unsigned char* buffer) {    //Read from 
   return false;
 }
 
+
+
+//TO:ADR1~SYS:PHONE~ACT:SENDSERIAL~V:TIME
+
+void CPhone::sendSerial(CMsg &msg){  
+  std::string s=msg.get(_VALUE);
+  sendSerial(s.c_str());
+}
+
 void CPhone::sendSerial(const char* cmd) {    //Send to Phone
-  Serial1.print(id);
+  if(state()!=_PLAY){   //Means u probably called it directly  Need to setup
+    run(50);
+    return;
+  }
+  _m.set(_MODE,_MODERX);
+  _lastTransmit=getTime();
+  _nextTransmit=_lastTransmit + 2000;
+  Serial1.print(_id);
   Serial1.flush();
   Serial1.print(",");
   Serial1.flush();
   Serial1.println(cmd);
   Serial1.flush();
   delayMicroseconds(500); 
-  id++;
+  _id++;
 
-  writeconsoleln();
-  writeconsole("Sending to phone => ");
-  writeconsoleln(cmd);
+
+    CMsg m;
+  m.set("NOW",getTime());
+  m.set("LAST",_lastTransmit);
+  m.set("NEXT",_nextTransmit);
+
+  m.writetoconsoleln();
+
+  writeconsoleln();  writeconsole("Sending to phone => ");  writeconsoleln(cmd);
 }
     
 
@@ -184,7 +325,7 @@ void push_stream(long id, byte* fileName, int block, int len, bool hasMore, byte
 
    
 void CPhone::push_stream(long id, unsigned char* fileName, int block, int len, bool hasMore, unsigned char* data) {  //Gets Filename and offset sent to comms,  id is id of the phone
- char type = 'S';
+// char type = 'S';
 std::string str;
 //MAYBE USE CID AS ID
 //X as first character denotes stream
@@ -196,20 +337,16 @@ if(hasMore)  str= std::string("X")+getCID()+std::string("b")+tostring(block);
 else str = std::string("X")+getCID()+std::string("B")+tostring(block);
 
 while (str.length()<STREAMHEADERLEN) str=str+" ";
- writeconsoleln();
- writeconsole("---------------------------Stream Length:");
- writeconsole(len+STREAMHEADERLEN);
- writeconsoleln(str.c_str());
+ writeconsoleln(); writeconsole("Stream Length:"); writeconsole(len+STREAMHEADERLEN); writeconsole("  "); writeconsoleln(str.c_str());
 
-unsigned char buffer[256];
+unsigned char buffer[2560];
 int bufcount=0,count=0;
 for (count=0;count<str.length();count++){
   buffer[bufcount]=str[count];
   bufcount++;
 }
 if(bufcount>STREAMHEADERLEN){
-  writeconsole("------------------------- ERROR   STREAM HEADER OVERFLOW ----------"); 
-   writeconsole(bufcount);
+  writeconsole("ERROR   STREAM HEADER OVERFLOW ");    writeconsoleln(bufcount);
 }
 while(bufcount<STREAMHEADERLEN){
   buffer[bufcount]=' ';
@@ -226,44 +363,80 @@ for (count=0;count<len;count++){
 
 CMsg m(str);
 std::string strfn((const char *)fileName);
-m.Parameters["FILE"]=strfn;
-m.Parameters["BLK"]=tostring(block);
-m.initArray(buffer,bufcount);   ///////////////////////////////////////////////////////////////////////////////////////////////////////////// FIX THIS
+m.set(_FILENAME,strfn);
+m.set(_BLOCK,tostring(block));
+m.initArray(buffer,bufcount);   ///// FIX THIS
 std::string key=strfn;
 key+="_";
 key+=tostring(block);
-m.setNAME(key);
+m.set(_NAME,key);
 
 addDataMap(key,m); 
-writeconsoleln("..................................... Adding Picture Data to DataList .....................................");
-writeconsoleln(m.serialize());
+addTransmitList(m);
+writeconsoleln("Adding Picture Data to DataList");
+m.writetoconsole();
 }
 
 void CPhone::onInitAvailable(int id) {   //Read from Phone add to queue
-  std::string status="BAD" ;
-  writeconsoleln("..................................... On Init Available .....................................");
+  std::string status="OK" ;
+  writeconsoleln("On Init Available ");
   unsigned char buff[BUFFER_LENGTH];
   bool ok = readUntil('\n', buff);
-  if (!ok) status="OK";
+  if (!ok)    return;
 
   CMsg m;
-  m.setNAME("PHONE_INIT");
-  m.setParameter("STATUS",status);
+  m.set(_PHONE_INIT,status);
   addTransmitList(m);
 
-  setState("PLAY");
+  _m.set(_MODE,_BLANK);
+ m.writetoconsole();
+ setState(_PLAY);
  
 }
 
+void CPhone::onDirectoryAvailable(int id) {   //Read from Phone  add to queue
+  writeconsoleln("On Directory Available");
+  unsigned char batStr[BUFFER_LENGTH];
+  bool ok = readUntil('\n', batStr);
+  if (!ok) return;
+
+  std::string str1=(char *)batStr;
+  CMsg m;
+  m.set(_PHONE_BATTERY,str1);   
+  _m.set(_MODE,_BLANK);
+   m.writetoconsole();
+  addTransmitList(m); 
+}
+
+
+
+
+void CPhone::onBatteryAvailable(int id) {   //Read from Phone  add to queue
+  writeconsoleln("On Battery Available");
+  unsigned char batStr[BUFFER_LENGTH];
+  bool ok = readUntil('\n', batStr);
+  if (!ok) return;
+
+  std::string str1=(char *)batStr;
+  CMsg m;
+  m.set(_PHONE_BATTERY,str1);   
+  _m.set(_MODE,_BLANK);
+   m.writetoconsole();
+  addTransmitList(m); 
+}
+
+
 void CPhone::onTimeAvailable(int id) {   //Read from Phone  add to queue
+  writeconsoleln("On Time Available");
   unsigned char timeStr[BUFFER_LENGTH];
   bool ok = readUntil('\n', timeStr);
   if (!ok) return;
 
   std::string str1=(char *)timeStr;
   CMsg m;
-  m.setNAME("PHONE_TIME");
-  m.Parameters["TIME"]=str1; 
+  m.set(_PHONE_TIME,str1);     
+  _m.set(_MODE,_BLANK);
+  m.writetoconsole();
   addTransmitList(m); 
 }
 
@@ -277,8 +450,9 @@ void CPhone::onGpsAvailable(int id) {   //Read from Phone  add to queue
   int x=str.find(',');
   if (x+4<=str.size()){
     CMsg m;
-    m.setNAME("PHONE_GPS");
-    m.Parameters["LATLON"]=str.substr(0,x)+std::string(",")+str.substr(x+1,20);    
+    m.set(_LATLON,str.substr(0,x)+std::string(",")+str.substr(x+1,20));        
+    _m.set(_MODE,_BLANK);
+    m.writetoconsole();
     addTransmitList(m);
   }
 }
@@ -298,16 +472,19 @@ void CPhone::onPhotoAvailable(int id) {    //Read from Phone  add to filename qu
   std::string strfn((const char *)fileName);
   std::string strfs((const char *)fileSizeStr);
   CMsg m;
-  m.setNAME("PHONE_PHOTO");
-  m.Parameters["filename"]=strfn;
-  m.Parameters["filesize"]=strfs;
+  m.set(_NAME,_PHONE_PHOTO);
+  m.set(_FILENAME,strfn);
+  m.set(_FILESIZE,strfs);  
+  _m.set(_MODE,_BLANK);
+  m.writetoconsole();
   addTransmitList(m);
-
-  
 }
  
 
+
+
 void CPhone::onStreamAvailable(int id) {   //Read from Phone add to streamqueue
+  std::string strfilename;
   unsigned char fileName[BUFFER_LENGTH];
   bool ok = readUntil(',', fileName);
   if (!ok) return;
@@ -316,16 +493,129 @@ void CPhone::onStreamAvailable(int id) {   //Read from Phone add to streamqueue
   long block = (Serial1.read() << 8) + Serial1.read();
   char len = Serial1.read();
   unsigned char hasMore = Serial1.read();
-  unsigned char data[len];
-  for (int i = 0; i < len; i++) {
-    ok = waitForBytes(1);
-    if (!ok) {
-      return;
-    }
-    data[i] = Serial1.read();
-  }
-  push_stream(id, fileName, block, len, hasMore, data);         //This is the output
+  
+  std::string strfn((const char *)fileName);
+  strfn=strfn.substr(0,strfn.size()-4);
+  strfn="img"+strfn;
+ 
+ 
+  std::string datastr;
+  int i=0, bufferlen=0;
+  char c='a';
+  int errcount=0;
+  
+  CMsg m;
 
+  for(int count=0;count<BUFFER_LENGTH;count++){
+    if(Serial1.available()>0){
+      unsigned char a=Serial1.read();    
+      i++;
+      writeconsole(a);
+      datastr+=a;
+    }
+    else{
+      delay(5);
+      errcount++;
+      if(errcount>100) break;
+    }
+  }
+
+  writeconsoleln(" ");  writeconsole("Bytes Read Data: ");  writeconsoleln(i);  writeconsoleln((long)datastr.size());
+
+  
+  strfilename=strfn;  
+  strfilename+="_.jpg";
+  m.set(_MSGTYPE,_STREAM);
+  m.set(_API,_INSERTMULTI);
+  m.set(strfilename,datastr);
+  
+  addTransmitList(m);
+
+  bufferlen=i;
+  
+
+  for(int count=0;count<bufferlen;count+=MAXSTREAMSIZE){
+    std::string str;
+    m.clear();
+    str=datastr.substr(count,MAXSTREAMSIZE);
+      
+    strfilename=strfn;  
+    strfilename+=c;
+    strfilename+=".jpg";
+    m.set(_MSGTYPE,_STREAM);
+    m.set(_API,_INSERTMULTI);
+    m.set(strfilename,str);
+    
+    c++;
+    addTransmitList(m);
+  }
+
+  /*
+  for(int count=0;count<10;count++){
+  while(Serial1.available()>0){
+    unsigned char a=Serial1.read();    
+    i++;
+    writeconsole(a);
+    datastr+=a;
+
+    if(i>=MAXSTREAMSIZE) {
+      
+      std::string strfn((const char *)fileName);
+      strfn=strfn.substr(0,strfn.size()-4);
+      strfn="img"+strfn;
+      strfn+=c;
+      strfn+=".jpg";
+      m.set(_MSGTYPE,_STREAM);
+      m.set(_API,_INSERTMULTI);
+      m.set(strfn,datastr);
+      
+      addTransmitList(m);
+      writeconsoleln(" ");
+      writeconsole("Bytes Read Data: ");
+      writeconsoleln(i);
+      writeconsoleln((long)datastr.size());
+
+      std::string sample=m.get(strfn);
+      
+      writeconsole("Bytes Sample Read Data: ");
+      writeconsoleln(i);
+      writeconsoleln((long)sample.size());
+
+      c++;
+      datastr="";
+      i=0;
+      m.clear();
+    }
+  }
+  delay(10);
+  }
+
+  if(datastr.size()>0){    
+    std::string strfn((const char *)fileName);
+    strfn=strfn.substr(0,strfn.size()-4);
+    strfn="img"+strfn;
+    strfn+=c;
+    strfn+=".jpg";
+    m.set(_MSGTYPE,_STREAM);
+    m.set(_API,_INSERTMULTI);
+    m.set(strfn,datastr);
+    addTransmitList(m);
+    writeconsoleln(" ");
+    writeconsole("Bytes Read Data: ");
+    writeconsoleln(i);
+    writeconsoleln((long)datastr.size());
+    
+  }
+*/
+_m.set(_MODE,_BLANK);
+return; 
+
+
+//  push_stream(id, fileName, block, len, hasMore, data);         //This is the output
+
+
+
+  
   /*
   if (hasMore == 3) {         //This is the queue to get more data from the phone
     char cmd[50];
@@ -346,15 +636,15 @@ void CPhone::onStreamAvailable(int id) {   //Read from Phone add to streamqueue
 
 
 void CPhone::ProcessCommandQueue(){     //This is where the New Command is procressed and sent to the phone
-
+if(Mode()!=_BLANK) return;
+if(_nextTransmit>getTime()) return;
 
 if (commandQueue.size() > 0) {
-  writeconsoleln("........................................ Sending Command to Phone .........................................");  
+  writeconsoleln("Sending Command to Phone ");  
   CMsg cmsg =commandQueue.front();
   commandQueue.pop();
 
-//  std::string bytes=cmsg.getMODE();    //Temporaty not using any params just seeing if CTIME works
-  std::string bytes=cmsg.getACT();    //Temporaty not using any params just seeing if CTIME works
+  std::string bytes=cmsg.get(_ACT);    //Temporaty not using any params just seeing if CTIME works
   writeconsoleln(cmsg.Data().c_str());
   writeconsoleln(bytes.c_str());
   received = false;
@@ -364,7 +654,7 @@ if (commandQueue.size() > 0) {
     sendSerial((char*)tmpstr.c_str());   //Sends it to the Phone  
   }
   else if (bytes[0] == 'A') { //acknowledgment from receiver
-    waitingForAck = 0;
+    _waitingForAck = 0;
     /*
     char filename[16];
     for (int i = 0; i < 16; i++) {
@@ -392,18 +682,29 @@ if (commandQueue.size() > 0) {
     */
   } 
 }
-//Play();
-setState("PLAY");
+
+setState(_PLAY);
 
 }
 
 
  
 void CPhone::ReceivedPacket() {  //Any Comments to Serial Port go right back to the PHONE!!!!!  Screws it up
-//writeconsoleln(F("o"));
- 
+  if(Mode()!=_MODERX) return;
+
+  if(getTime()>  _lastTransmit+PHONEDATADELAY){
+    _m.set(_MODE,_BLANK);
+    return;
+  }
+
+ int counter=0;
   if (Serial1.available() > 0) {   //Reads data from phone.  Takes ID and MessageType and uses that to call the appropriate function to read from phone and if result is good adds it to the "queue"
-    writeconsoleln(" ------------------------------- Phone loop Reading Data ----------------------------------------------------------------------------------------------------------------");
+    counter++;
+    if (counter>30000) {
+      return;
+    }
+
+    writeconsoleln("Reading Data from Phone");
     unsigned char msgIdStr[BUFFER_LENGTH];
     int msgId;
     char msgType;
@@ -413,21 +714,29 @@ void CPhone::ReceivedPacket() {  //Any Comments to Serial Port go right back to 
     ok = waitForBytes(1);
     if (!ok) return;
     msgType = Serial1.read();
+
+    //writeconsole(" --msgType"); writeconsoleln(msgType);
   
     switch (msgType) {
-      case 'I':
+      case 'B':      
+        onBatteryAvailable(msgId);
+        break;
+      case 'D':      
+        onDirectoryAvailable(msgId);
+        break;
+      case 'I':        
         onInitAvailable(msgId);
         break;
-      case 'T':
+      case 'T':      
         onTimeAvailable(msgId);  
         break;
-      case 'G':
+      case 'G':      
         onGpsAvailable(msgId);
         break;
-      case 'P':
+      case 'P':        
         onPhotoAvailable(msgId);
         break;
-      case 'S':
+      case 'S':        
         onStreamAvailable(msgId);
         break;
     }
@@ -444,5 +753,6 @@ void CPhone::TransmitPacket(CMsg &m){
 
 void CPhone::loop() {    
   ReceivedPacket();
-  ProcessCommandQueue();
+    
+  ProcessCommandQueue();      
 }

@@ -9,7 +9,7 @@ public:
 	~CADCSState();
 
 	void setup();
-  void stateMsg(CMsg &msg);
+  
   void enter();
   void exit();
 	

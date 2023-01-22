@@ -2,6 +2,7 @@
 
 #include <stateobj.h>
 
+#define DETUMBLES "DETUMBLES"
 
 class CDetumbleState : public CStateObj {
 public:
@@ -10,7 +11,7 @@ public:
   ~CDetumbleState();
 
   void setup();
-  void stateMsg(CMsg &msg);
+  
   void enter();
   void exit();
   

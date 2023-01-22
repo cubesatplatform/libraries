@@ -4,51 +4,51 @@
 #include <list>
 #include <map>
 #include "msg.h"
-#include "systemobject.h"
-#include <sdfs.h>
+
 
 
 #define MAXLISTSIZE 50
-#define MAXDATALEN 170
+#define MAXDATALEN 201
 
 
 class CMessageList {
 private:
-  std::list<CMsg *> MList; 
+   
   int _maxsize=MAXLISTSIZE;
   unsigned int _mid;   //Used to make sure we don't get a duplicate db entry and to combine entries when u need to split fields
 public:   
+  std::list<CMsg > MList;
   CMessageList();
   ~CMessageList();
 
   int size();
   void maxSize(int tmp=MAXLISTSIZE){_maxsize=tmp;}
-  CMsg front();
-  CMsg back();
+  CMsg front();  
+  CMsg back();  
   void pop_front();
   void pop_back();
   void push_back(CMsg &m);
   void push_front(CMsg &m);
-  CMsg find(std::string str,std::string field="SYS");
-  CMsg findwRemove(std::string str,std::string field="SYS");
+  CMsg find(std::string str,std::string field=_SYS);
+  CMsg findwRemove(std::string str,std::string field=_SYS);
   void clear();
   void prune();
-  void serializeFile(const char * path){ writeMsgList(path,&MList );}
-  void deserializeFile(const char * path){readMsgList(path,&MList );}
+  //void serializeFile(const char * path){ writeMsgList(path,&MList );}
+  //void deserializeFile(const char * path){readMsgList(path,&MList );}
 
 };
 
 
 
 
-class CMessages:public CSystemObject {
+class CMessages {
 private:
   void _addTransmit(CMsg &m);
 
-  unsigned long _lastReceived=0;
-  unsigned long _lastMessage=0;
-  unsigned long _lastData=0;
-  unsigned long _lastTransmit=0;
+  long _lastReceived=0;
+  long _lastMessage=0;
+  long _lastData=0;
+  long _lastTransmit=0;
 
 
 public:  
@@ -64,7 +64,7 @@ public:
   //std::chrono::time_point<std::chrono::system_clock> starttime;
   
 
-  CMessages(){Name("MESSAGES");TransmittedList.maxSize(5);setInterval(100);};
+  CMessages(){};
   ~CMessages(){};
 
   void moveReceived();                        //Need to make a subsystem that moved data to transmitlist data based on requests
@@ -72,26 +72,41 @@ public:
   
   void sendData(CMsg &msg);            //Similar to movetoTransmitList
 
-  void addDataMap(std::string key,CMsg &m);   
-  void addDataMap(CMsg &m); 
-  void addTransmitList(CMsg &m );  
-  void addMessageList(CMsg &m );
-  void addReceivedList(CMsg &m,std::string strIAM );
+  void addDMap(std::string key,CMsg &m);   
+  void addDMap(CMsg &m); 
+  void sendDataMap(CMsg &m); 
+  void addTList(CMsg &m );  
+  void addMList(CMsg &m );
+  void addRList(CMsg &m,std::string strIAM );
 
   std::list<CMsg> splitMsg(CMsg &m);
   std::list<CMsg> splitMsgData(CMsg &m);  
 
   void setReceivedTimestamp(){_lastReceived=getTime();}
-  unsigned long getLastReceived(){return _lastReceived;}
-  unsigned long getLastData(){return _lastData;}
-  unsigned long getLastMessage(){return _lastMessage;}
-  unsigned long getLastTransmit(){return _lastTransmit;}
+  long getLastReceived(){return _lastReceived;}
+  long getLastData(){return _lastData;}
+  long getLastMessage(){return _lastMessage;}
+  long getLastTransmit(){return _lastTransmit;}
+
+  void addMessageList(CMsg &m );
+  void addReceivedList(CMsg &m );
+  void addTransmitList(CMsg &m );  
+  void addDataMap(std::string key, CMsg &m); 
+  void addDataMap(CMsg &m); 
+  void setDataMap(CMsg &m){addDataMap(m);}
+  void setDataMap(std::string key, CMsg &m){addDataMap(key,m);}; 
+  CMsg getDataMap(std::string key); 
+
+
+
+  long displayFreeHeap();
   
   void prune();
   void displayList(int option);  
-  void MsgPump();
-  void loop();
-  void callCustomFunctions(CMsg &msg);
+  
+  void stats(CMsg &msg);
+  void clearDataMap();
+  
 };
 
-CMessages *getMessages();  //This needs to be instatiated in main App    //CMessages* getMessages(){return &bs.MSG;}
+

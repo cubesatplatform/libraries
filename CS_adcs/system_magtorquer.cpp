@@ -4,11 +4,11 @@
 
 #define PWM_MAX 4000
 
-
 CMagTorquer::CMagTorquer():CSystemObject(){    
   init();
-  Name("MT");
-  setInterval(40);
+
+  setInterval(20);
+  
 }
 
 CMagTorquer::~CMagTorquer(){}
@@ -19,128 +19,148 @@ void CMagTorquer::init()  {
 
 void CMagTorquer::setup()  {
   init();
- _pIMU=(CIMU *)getIMU();
- 
-  if(_pIMU==NULL){           
-    if(incErrorCount()){
-      sendError();
-    }
-    return;
-  }   
-  
-  _pMagX=(CMDrive *)getSystem("MAGX");
-  _pMagY=(CMDrive *)getSystem("MAGY");
-  _pMagZ=(CMDrive *)getSystem("MAGZ");
+
+
   setForever();
   setInterval(20);
+
+  CMsg m;
+
+  m.set(_NAME, _MAGNETORQUERS);
+  m.set(_DEFAULTIMU, _IMU1);
+  addDataMap(m);
+
+
+  m.set(_SYS,_MAGX);
+  m.set(_MODE,_DETUMBLE);
+  addMessageList(m);
+  m.set(_SYS,_MAGY);  
+  addMessageList(m);
+  m.set(_SYS,_MAGZ);  
+  addMessageList(m);
+
+  Mode(_DETUMBLE);
  
-  setState("PLAY");
-}
-
-
-
-bool CMagTorquer::isIdle(){  
-
-  if(_pMagX!=NULL) {
-    if(_pMagX->State()!="PAUSE") return false;
-  }
-  if(_pMagY!=NULL) {
-    if(_pMagY->State()!="PAUSE") return false;
-  }
-  if(_pMagZ!=NULL) {
-    if(_pMagZ->State()!="PAUSE") return false;
-  }
-  return true;
+  setState(_PLAY);
 }
 
 
 
 void CMagTorquer::deactivate(){
-  if(_pMagX!=NULL) _pMagX->Speed(0);
-  if(_pMagY!=NULL) _pMagY->Speed(0);
-  if(_pMagZ!=NULL) _pMagZ->Speed(0);
+  CMsg m;
+  m.set(_SYS, _MAGX);
+  m.set(_ACT, _DEACTIVATE);
+
+  addMessageList(m);
+  m.set(_SYS,_MAGY);  
+//  addMessageList(m);
+  m.set(_SYS,_MAGZ);  
+//  addMessageList(m);  
 }
 
 
-void CMagTorquer::getGyroData(){  
-  CMsg m=getDataMap("GYRO");
-  _gyroX=m.getParameter("GYRO_X",0.0);
-  _gyroY=m.getParameter("GYRO_Y",0.0);
-  _gyroZ=m.getParameter("GYRO_Z",0.0);
+
+void CMagTorquer::activate(){
+  CMsg m;
+  m.set(_SYS, _MAGX);
+  m.set(_ACT, _ACTIVATE);
+
+  addMessageList(m);
+  m.set(_SYS,_MAGY);  
+//  addMessageList(m);
+  m.set(_SYS,_MAGZ);  
+//  addMessageList(m);
+ 
+ 
 }
 
 
-void CMagTorquer::getMagData(){
-  CMsg m=getDataMap("MAG");
-  _gyroX=m.getParameter("MAG_X",0.0);
-  _gyroY=m.getParameter("MAG_Y",0.0);
-  _gyroZ=m.getParameter("MAG_Z",0.0);
-}
-
-
-void CMagTorquer::activate(CMDrive *pMag, float gyro, float mag){
-  if(mag>MAGLIMIT){
-      if(pMag!=NULL) pMag->Speed(PWM_MAX);    
-    } 
-    
-  if(mag<-MAGLIMIT){
-      if(pMag!=NULL) pMag->Speed(-PWM_MAX);    
-    }
-}
   
 
 void CMagTorquer::loopDetumble(){
+  long STEPSIZE=2000;
+  CMsg m,mm;
 
-if(_pIMU==NULL) {writeconsoleln("NO IMU!!!!!!!!!!!!!!!!!!!!!");setState("ERROR");return;}
-
+  if(getTime()<_nextStepTime)
+    return;
+  
+  
   switch (getStep()){
-
-  case 0: 
-    _pIMU->setMode("GYRO");
-    _pIMU->setPeriod(GYROPERIOD);
-    _pIMU->Run(30);
+  
+  case 0:    
+    writeconsole("Mag Case 0    Set Mode Gyro");
+    m.set(_SYS,_strIMU);
+    m.set(_ACT,_NEWMODE);
+    m.set(_VALUE,_GYRO);
+    addMessageList(m);
+    
+    _nextStepTime=getTime()+STEPSIZE/2;   
+    
     break;
+    
   case 1:    
-    getGyroData();    
+    writeconsoleln("Mag Case 1    Generate Gyro Data");
+    mm= getDataMap("IMUI_GYRO");
+    mm.writetoconsole();
+    
+    _nextStepTime=getTime()+STEPSIZE;    
+    
     break;
   case 2:
+    writeconsoleln("Mag Case 2   Deactive Magnets");
     deactivate();
-    _pIMU->setMode("MAG");
-    _pIMU->setPeriod(MAGPERIOD);
-    _pIMU->Run(30);
+    _nextStepTime=getTime()+STEPSIZE/2;    
+    break;
+
+
+  case 3:          
+    writeconsoleln("Mag Case 3   Turn on Magnet Data");
+    m.set(_SYS,_strIMU);
+    m.set(_ACT,_NEWMODE);
+    m.set(_VALUE,_MAG);
+    addMessageList(m);
+    
+    _nextStepTime=getTime()+STEPSIZE;    
+    
     break;  
-  case 3:    
-    getMagData();
-    activate(_pMagX,_gyroX,_magX);
-    activate(_pMagY,_gyroY,_magY);
-    activate(_pMagZ,_gyroZ,_magZ);
+  case 4:    
+    writeconsoleln("Mag Case 4  Activate Magnets with New Data");    
+    mm= getDataMap("IMUI_MAG");
+    mm.writetoconsole();
+    activate();
+
+    _nextStepTime=getTime()+STEPSIZE*2;    
+    
     break;      
   }
 
   incStep();
-  if (getStep()>5) setStep(0);  
-}
-
-
-void CMagTorquer::newCMD(CMsg &msg){
-  setMode(msg.getParameter("MODE",Mode()));
   
+  if (getStep()>5) {
+    writeconsoleln("Mag Case 5");
+    setStep(0);  
+    _nextStepTime=getTime()+STEPSIZE;    
+  }
 }
+
+
 
   
 
 void CMagTorquer::loop(){ 
-  if(_pIMU!=NULL) _pIMU->Run();
-  if (Mode()=="CUSTOM"){   //Do some control
-    
-    if(_pMagX!=NULL) _pMagX->Run();
-    if(_pMagY!=NULL) _pMagY->Run();
-    if(_pMagZ!=NULL) _pMagZ->Run();
-  }
-  else
-    loopDetumble();         
-  std::string str=State();
-  if ((str=="STOP")||(str=="ERROR")){
-    goLowPowerState();
+  
+  if (Mode()==_DETUMBLE){
+    loopDetumble();     
+  }    
+  std::string str=state();
+  if ((str==_STOP)||(str==_ERROR)){
+    goState(_LOWPOWER);
   }
 }  
+
+
+void  CMagTorquer::callCustomFunctions(CMsg &msg){
+  
+  
+  CSystemObject::callCustomFunctions(msg);
+}

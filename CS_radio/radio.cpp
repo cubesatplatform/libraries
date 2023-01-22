@@ -49,7 +49,7 @@ void setFlag2(void) {  // this function is called when a complete packet is rece
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 CRadio::CRadio():CSystemObject() {
-  Name("radio");
+  _name=_RADIO;
   init();
   };
 
@@ -58,9 +58,9 @@ void CRadio::init(){
   setForever();
   setInterval(10);
   setErrorThreshold(5);
-  pMsgs=getMessages();
 
-  if(Name()=="RADIO"){
+
+  if(name()==_RADIO){
     _pbFlag=&bFlag;
     _penableInterrupt=&enableInterrupt;
     plora=&radio1;
@@ -126,7 +126,7 @@ void CRadio::init(){
 void CRadio::setRfMode(bool transmit) {   //True is transmit
 
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
-  if(Name()=="RADIO"){
+  if(name()==RADIO){
     if(transmit) {
       digitalWrite(R1_RXEN, LOW);
       digitalWrite(R1_TXEN, HIGH);
@@ -154,7 +154,7 @@ void CRadio::enableRX(){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
   plora->standby();
   delay(20);
-  if(Name()=="RADIO"){
+  if(name()==RADIO){
     digitalWrite(R1_TXEN, LOW);
     delay(20);
     digitalWrite(R1_RXEN, HIGH);   
@@ -174,7 +174,7 @@ void CRadio::enableTX(){
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
   plora->standby();
   delay(20);
-  if(Name()=="RADIO"){    
+  if(name()==RADIO){    
     digitalWrite(R1_RXEN, LOW);
     delay(20);
     digitalWrite(R1_TXEN, HIGH);
@@ -191,13 +191,13 @@ void CRadio::enableTX(){
 
 */
 
-void  CRadio::Update(CMsg &msg){
-  CSystemObject::Update(msg);
-  writeconsoleln("Radio Update Parameters ..............");
+void  CRadio::update(CMsg &msg){
+  CSystemObject::update(msg);
+  writeconsoleln("Radio update Parameters ..............");
   int power=0, bw=0, sf=0;
-  power =msg.getParameter("POWER",0);
-  bw =msg.getParameter("BW",0);
-  sf =msg.getParameter("SF",0);
+  power =msg.get(_SYSPOWER,0);
+  bw =msg.get(_BW,0);
+  sf =msg.get(_SF,0);
   if(power>0) {
     
     writeconsole("Power :");
@@ -221,18 +221,16 @@ void CRadio::setup() {
   init();
 
   float freq= LORA_RADIO_FREQUENCY;
-  //if (Name()!="RADIO")     freq= LORA_RADIO2_FREQUENCY;
-
 
 
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
-  writeconsole(Name());writeconsole("   Initializing Radio on Portenta... Freq:");writeconsoleln(freq);
+  writeconsole(name());writeconsole("   Initializing Radio on Portenta... Freq:");writeconsoleln(freq);
 
   #else    
     writeconsoleln("Initializing Radio on new TTGO ... ");
     
     #ifdef TTGO1
-      writeconsoleln("");      writeconsoleln("InitBoard TTGO 1 ... ");
+      writeconsoleln(_BLANK);      writeconsoleln("InitBoard TTGO 1 ... ");
       initBoard();
       delay(1500);
     #endif  
@@ -255,7 +253,8 @@ void CRadio::setup() {
 
     #elif  defined(TTGO1)
     writeconsole("TTGO1 ... "); writeconsoleln(LORACHIP);
-    _radioState =  plora->begin(getFrequency(), getBW(),  getSF(),  getCR(),  LORA_CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);
+    //_radioState =  plora->begin(getFrequency(), getBW(),  getSF(),  getCR(),  LORA_CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);
+    _radioState =  plora->begin(getFrequency(), getBW(),  getSF(),  getCR(), RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);
       
     #elif defined(ESP32_GATEWAY)
     writeconsole("GATEWAY ... "); writeconsoleln(LORACHIP);    
@@ -267,59 +266,64 @@ void CRadio::setup() {
       
     
         // set the function that will be called when packet transmission or reception is finished   
-      if(Name()=="RADIO2"){
-      #if defined(TTGO)
-        plora->setDio0Action(setFlag2);
-      #elif defined(TTGO1)
-        plora->setDio1Action(setFlag2);
-      #elif defined(ESP32_GATEWAY)
-        plora->setDio0Action(setFlag2);
-      #else
-        plora->setDio1Action(setFlag2);
-        plora->setRfSwitchPins(R2_RXEN, R2_TXEN);
-      #endif
-      }
-      else {
-      #if defined(TTGO)
-        plora->setDio0Action(setFlag);
-      #elif defined(TTGO1)
-        plora->setDio1Action(setFlag);
-      #elif defined(ESP32_GATEWAY)
-        plora->setDio0Action(setFlag);
-      #else
-        plora->setDio1Action(setFlag);
-        plora->setRfSwitchPins(R1_RXEN, R1_TXEN);
-      #endif
-      }
+      setActions();
 
-      setState("PLAY");
+      setState(_PLAY);
       writeconsole("Radio success!   success!   success!   success!   success!   success!   Time on Air:");
       #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-        writeconsole(plora->getTimeOnAir(250));
+        writeconsole((int) plora->getTimeOnAir(250));
       #endif
-      writeconsoleln("");
+
       delay(1000);
       SetRadioReceive();          
      return;
       } else {
-        writeconsole("Start radio failed, code ");        writeconsoleln(_radioState);
+        writeconsole("Start radio failed, code ");        writeconsole(_radioState);  writeconsoleln(errorDescription(_radioState));  
         delay(2000);        
       }
 
   delay(50);
   }
-  setState("ERROR");
+  setState(_ERROR);
 } 
 
+
+
+void CRadio::setActions(){
+  if(name()==_RADIO2){
+  #if defined(TTGO)
+    plora->setDio0Action(setFlag2);
+  #elif defined(TTGO1)
+    plora->setDio1Action(setFlag2);
+  #elif defined(ESP32_GATEWAY)
+    plora->setDio0Action(setFlag2);
+  #else
+    plora->setDio1Action(setFlag2);
+    plora->setRfSwitchPins(R2_RXEN, R2_TXEN);
+  #endif
+  }
+  else {
+  #if defined(TTGO)
+    plora->setDio0Action(setFlag);
+  #elif defined(TTGO1)
+    plora->setDio1Action(setFlag);
+  #elif defined(ESP32_GATEWAY)
+    plora->setDio0Action(setFlag);
+  #else
+    plora->setDio1Action(setFlag);
+    plora->setRfSwitchPins(R1_RXEN, R1_TXEN);
+  #endif
+  }
+}
 
 
 void CRadio::SendAck(CMsg &m){
   resetAck();
   
   if(m.needACK()){
-    mACK.setTO(m.getFROM());
-    mACK.setSYS(m.getSYS());
-    mACK.setCID(m.getCID());
+    mACK.set(_TO,m.get(_FROM));
+    mACK.set(_SYS,m.get(_SYS));
+    mACK.set(_MCID,m.get(_MCID));
     mACK.confirmACK();
     
     }
@@ -327,8 +331,10 @@ void CRadio::SendAck(CMsg &m){
 
 
 void CRadio::TransmitPacket(CMsg &m){   
-  if(m.vectorLen()) {
-      TransmitPacket(m.vectorData(),m.vectorLen());      
+  //if(m.vectorLen()) {       TransmitPacket(m.vectorData(),m.vectorLen());        }
+  m.writetoconsole();
+  if (0){
+
   }
   else  {
     CMsg tm=m;    
@@ -336,7 +342,7 @@ void CRadio::TransmitPacket(CMsg &m){
     if(m.needACK()){
       _waitForACK=true;
       _delayTransmit=RADIOWAITFORACK;
-      //writeconsoleln("----------------------------------------------- need ACK ---------------------------------------------------- ");
+      //writeconsoleln("need ACK");
       
     }
     else
@@ -347,40 +353,55 @@ void CRadio::TransmitPacket(CMsg &m){
 
 
 void CRadio::TransmitPacket(std::string str, bool bAck){ 
-  TransmitPacket((const unsigned char *)str.c_str(),str.length(), bAck);
+  writeconsole("ToTransmit: ");writeconsole(str);writeconsoleln((long) str.length());
+  TransmitPacket((unsigned char *)str.c_str(),str.length(), bAck);
 
 }
 
-void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
-  unsigned char buffer[300];
+//void CRadio::TransmitPacket(const unsigned char *buf, int len, bool bAck){
+  void CRadio::TransmitPacket( unsigned char *buf, int len, bool bAck){
+ //unsigned char buffer[300];
 
   if(len>255) {
     writeconsole("ERROR ERROR Sending   Packet too big! :");    writeconsoleln(len);     
     len=254;
   }
 
-  memcpy(buffer,buf,254);
+  //memcpy(buffer,buf,len);    //Put back  removed for testing
     
   // set mode to transmission
   //~enableTX();//setRfMode(true);
   
   *_penableInterrupt=false;
   
-  setMode("TX");
+  _m.set(_MODE,_MODETX);
   _waitForACK=bAck;
-  writeconsole(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  Starting Transmission  :"); writeconsoleln(Name());
-  _radioState = plora->startTransmit(buffer,len);  //Asynch  Comes right back and sends on its own
+  writeconsole("Starting Transmission  :"); writeconsoleln(name());
+  //_radioState = plora->startTransmit(buffer,len);  //Asynch  Comes right back and sends on its own
+  _radioState = plora->startTransmit(buf,len);  //Asynch  Comes right back and sends on its own
+
+   
   if (_radioState!=RADIOLIB_ERR_NONE){
-    writeconsoleln("ERROR in Transmission");
-    incErrorCount();  //Reset
-    return;
+
+    writeconsoleln("ERROR in Transmission  Trying again");
+
+    _radioState = plora->startTransmit(buf,len);  //Asynch  Comes right back and sends on its own
+    if (_radioState!=RADIOLIB_ERR_NONE){
+
+      writeconsoleln("ERROR in Transmission  Second time  IncErrorCOunt");
+      incErrorCount();  //Reset
+    }
+
   }
   
   *_penableInterrupt=true;
+
   
   _completedTransmit=getTime()+RADIOWAITFORCOMPLETE;   //Put a time that it should have finished by
+  
   _lastPing = getTime();
   _lastTransmit= getTime();  
+  
 
 }
 
@@ -412,15 +433,19 @@ void CRadio::receivedLogic( unsigned char *buffer, int len){
   std::string filename=isBinary(buffer,  len);
   std::string tmpstr; 
 
+
+
   if(!filename.size()){
     for (int count=0;count<len;count++) tmpstr+=buffer[count];              //Convert byte buffer to string
   }
 
-  CMsg robj(tmpstr.c_str(), plora->getRSSI(), plora->getSNR());
+  CMsg robj(tmpstr.c_str());  //plora->getRSSI(), plora->getSNR()
+
+  /*
   if(filename.size()){
     writeconsoleln("ReceivedLogic   isBinary  Has Filename  Initarray");
-    robj.setParameter("FILENAME",filename);
-    robj.setParameter("WRITE","1");
+    robj.set(FILENAME,filename);
+    robj.set(WRITE,"1");
     robj.initArray(buffer+20,len);
     unsigned char *pData=robj.vectorData();
 
@@ -430,12 +455,12 @@ void CRadio::receivedLogic( unsigned char *buffer, int len){
     }
 
   }
-  //robj.setParameter("RSSI",plora->getRSSI());
-  //robj.setParameter("S/N",plora->getSNR());
-  writeconsole("Received by: ");writeconsoleln(Name());
-  robj.writetoconsole();
+  */
+  //robj.set(RSSI,plora->getRSSI());
+  //robj.set(SN,plora->getSNR());
+  //writeconsole("Received by: ");writeconsoleln(name());  robj.writetoconsole();
   
-  if(robj.getACK()=="1"){// This is an acknowledgement of a requested ACK.  No need to push to reeceived list
+  if(robj.get(_ACK)=="1"){// This is an acknowledgement of a requested ACK.  No need to push to reeceived list
     if((_nextTransmit>(getTime()+getTXDelay())) ||(_delayTransmit>(getTime()+getTXDelay()))){    //No need to wait longer as we got the ack
       _nextTransmit=getTime()+getTXDelay();
       _delayTransmit=getTXDelay();
@@ -443,12 +468,13 @@ void CRadio::receivedLogic( unsigned char *buffer, int len){
     }
   }
   else{
-    if(!filename.size())
+    if(!filename.size()){      
       addReceivedList(robj);
+    }
     else
       robj.saveFile();
     
-    if(robj.needACK()&&robj.getTO()==getIAM())  SendAck(robj);
+    if(robj.needACK()&&robj.get(_TO)==getIAM())  SendAck(robj);
   }
 }
 
@@ -477,14 +503,15 @@ void CRadio::ReceivedPacket(){
 
 void CRadio::TransmitCmd(){
          
-  if(pMsgs->TransmitList.size()){
-      CMsg tObj = pMsgs->TransmitList.front();
-      pMsgs->TransmitList.pop_front();
-      writeconsole("List Size:");      writeconsoleln((long)pMsgs->TransmitList.size());
+  if(MMM.TransmitList.size()){
+      CMsg tObj = MMM.TransmitList.front();
+      MMM.TransmitList.pop_front();
+      writeconsole("List Size:");      writeconsoleln((long)MMM.TransmitList.size());
         
       TransmitPacket(tObj);
-
-      pMsgs->TransmittedList.push_front(tObj);
+      
+      MMM.TransmittedList.push_front(tObj);
+      
     }  
   }
 
@@ -497,14 +524,14 @@ void CRadio::SetRadioReceive(){
   
 
   _radioState = plora->startReceive();
-  writeconsoleln("");
+  
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)   
-   writeconsole("Data Rate BPS: "); writeconsoleln(plora->getDataRate());
+  // writeconsole("Data Rate BPS: "); writeconsoleln(plora->getDataRate());
   #endif
   if (_radioState == RADIOLIB_ERR_NONE) {    
-    setMode("RX");
+    _m.set(_MODE,_MODERX);
   
-    writeconsoleln(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  Listening Started successfully!____________________________");
+    writeconsoleln("Listening Started successfully!");
     if(_waitForACK){
       _nextTransmit=getTime()+_delayTransmit;
     }
@@ -514,7 +541,7 @@ void CRadio::SetRadioReceive(){
   }
  
    else {
-    writeconsole(" Failed to start reception, code ");    writeconsoleln(_radioState); 
+    writeconsole("Failed to start reception, code ");    writeconsoleln(_radioState); 
     incErrorCount();  //Reset
     return;
   }
@@ -527,10 +554,10 @@ void CRadio::SetRadioReceive(){
 
 
 bool CRadio::readyToTransmit(){
-  unsigned long ct=getTime();
+  long ct=getTime();
   if (!_bTransmitter) return false;
-  if (Mode()=="TX") return false;
-  if ((pMsgs->TransmitList.size()<1) &&!isAck()) return false;
+  if (_m.get(_MODE)==_MODETX) return false;
+  if ((MMM.TransmitList.size()<1) &&!isAck()) return false;
   if(ct>_obj._lastDebug+100){
     _obj._lastDebug=ct;
     writeconsole("Ready to Transmit.  Get Time: ");writeconsole(getTime());writeconsole("     Next Time: ");writeconsole(_nextTransmit);writeconsole("     Delay Time: ");writeconsoleln(_delayTransmit);    
@@ -543,31 +570,44 @@ bool CRadio::readyToTransmit(){
   
                
   void CRadio::callCustomFunctions(CMsg &msg){   //Calls a specific function directly
-    CSystemObject::callCustomFunctions(msg);  
+    
   
-    std::string act=msg.getParameter("ACT");
-    if (act=="TRANSMITPACKET") TransmitPacket(msg);                     
-    if (act=="POWER") setPower(msg);
-    if (act=="MODEM") setModem(msg);    
+  std::string act=msg.get(_ACT);
 
-    if (act=="RESETPOWER") resetPower(msg);
+  mapcustommsg(TransmitPacket)
+  mapcustommsg(setPower)
+  mapcustommsg(setModem)
+  mapcustommsg(resetPower)
 
+  /*
+  if (act=="TRANSMITPACKET") TransmitPacket(msg);                     
+  if (act=="POWER") setPower(msg);
+  if (act=="MODEM") setModem(msg);    
+
+  if (act=="RESETPOWER") resetPower(msg);
+  */
+  CSystemObject::callCustomFunctions(msg);  
   }
 
 
 void CRadio::incBadInterrupt(){
   _badInterruptCount++;
-  if(_badInterruptCount>0){
-    writeconsoleln("Radio Interrupt did not fire.  May reset entire system");
+  if(_badInterruptCount>500){
+    writeconsoleln("Radio Interrupt did not fire.  Calling Rebooting");
+    
     delay(2000);
     reboot();
+    return;
   }
+  writeconsoleln("Radio Interrupt did not fire.  Calling setActions");
+  setActions();
+  delay(1000);
 }
 
 void CRadio::checkModeTX(){   //Puts radio back to receive Mode if stuck in Transmit Mode
-  if (Mode()=="TX"){    
+  if (_m.get(_MODE)==_MODETX){    
     if(*_pbFlag){
-      writeconsoleln("   Transmission Complete:  Flag Fired");      
+      writeconsoleln("Transmission Complete:  Flag Fired");      
       _nextTransmit=getTime()+_delayTransmit;  //Need to account for waiting for ACK in here somehow
       if(_waitForACK)
         _nextTransmit+=RADIOWAITFORACK;
@@ -587,7 +627,7 @@ void CRadio:: checkModeRX(){
   if(*_pbFlag) { // check if the previous operation finished     this is set by interrupt    
     *_penableInterrupt=false; // disable the interrupt service routine when processing the data      
     *_pbFlag=false;
-    if ((Mode()=="RX")&&getReceiver()){
+    if ((_m.get(_MODE)==_MODERX)&&getReceiver()){
       ReceivedPacket();
     }
     SetRadioReceive();
@@ -613,9 +653,11 @@ void CRadio::loopRadio(){
 }
 
 void CRadio::loop() {  
-  if (stillSleeping())
+  if (stillSleeping()){
+    writeconsole("Radio is sleeping.  Time: ");writeconsoleln(getTime());
     return;
-  //writeconsoleln(Name());
+  }
+  //writeconsoleln(name());
   loopRadio();  
 }
 
@@ -629,7 +671,7 @@ Need to check!!!!
 
 void CRadio::setPower(CMsg &m){
   writeconsoleln("Set Power");
-  int power=m.getParameter("VAL",LORA_OUTPUT_POWER);
+  int power=m.get(_VALUE,LORA_OUTPUT_POWER);
   plora->setOutputPower(power);
 }
 
@@ -638,21 +680,21 @@ void CRadio::resetPower(CMsg &m){
   }
 
 void CRadio::setModem(CMsg &m){
-  writeconsoleln("Set Modem");
-  _modem=m.getParameter("VAL","");
+  writeconsoleln("--------------------------------------Set Modem---------------------------------Speed Has Changed-");
+  _modem=m.get(_VALUE,_BLANK);
   _modemChangedOn=getTime();
-  setState("");  
+  setState(_BLANK);  
 } 
 
 
 void CRadio::chkModem(){
-  if((_modem=="NORMALBW")||(_modem=="")){
+  if((_modem==_NORMALBW)||(_modem==_BLANK)){
     return;
   }
 
   if(getTime()>_modemChangedOn+MODEMCHANGEMAXTIME){
     CMsg m;
-    m.setVALUE("");
+    m.set(_VALUE,_BLANK);
     setModem(m);
     writeconsoleln("Times up  Set Modem to Blank");  
   }
@@ -660,7 +702,7 @@ void CRadio::chkModem(){
 
 
 float CRadio::getFrequency(){
-  if(Name()=="RADIO2")
+  if(name()==_RADIO2)
     return LORA_RADIO2_FREQUENCY;   
 
   return LORA_RADIO_FREQUENCY;
@@ -668,19 +710,19 @@ float CRadio::getFrequency(){
 
 int CRadio::getBW(){
   
-  if (_modem=="MEGABW")
+  if (_modem==_MEGABW)
     return LORA_BANDWIDTHMEGA;
 
-  if (_modem=="ULTRABW")
+  if (_modem==_ULTRABW)
     return LORA_BANDWIDTHULTRA;
 
-  if (_modem=="HIGHBW")
+  if (_modem==_HIGHBW)
     return LORA_BANDWIDTHHIGH;
 
-  if (_modem=="MEDIUMBW")
+  if (_modem==_MEDIUMBW)
     return LORA_BANDWIDTHMEDIUM;
 
-  if (_modem=="LOWBW")
+  if (_modem==_LOWBW)
     return LORA_BANDWIDTHLOW;
 
   return LORA_BANDWIDTH;
@@ -689,19 +731,19 @@ int CRadio::getBW(){
 
 int CRadio::getSF(){
     
-  if (_modem=="MEGABW")
+  if (_modem==_MEGABW)
     return LORA_SPREADING_FACTORMEGA;
 
-  if (_modem=="ULTRABW")
+  if (_modem==_ULTRABW)
     return LORA_SPREADING_FACTORULTRA;
 
-  if (_modem=="HIGHBW")
+  if (_modem==_HIGHBW)
     return LORA_SPREADING_FACTORHIGH;
 
-  if (_modem=="MEDIUMBW")
+  if (_modem==_MEDIUMBW)
     return LORA_SPREADING_FACTORMEDIUM;
 
-  if (_modem=="LOWBW")
+  if (_modem==_LOWBW)
     return LORA_SPREADING_FACTORLOW;
 
   return LORA_SPREADING_FACTOR;
@@ -709,19 +751,19 @@ int CRadio::getSF(){
 
 
 int CRadio::getCR(){  
-  if (_modem=="MEGABW")
+  if (_modem==_MEGABW)
     return LORA_CODING_RATEMEGA;
 
-  if (_modem=="ULTRABW")
+  if (_modem==_ULTRABW)
     return LORA_CODING_RATEULTRA;
 
-  if (_modem=="HIGHBW")
+  if (_modem==_HIGHBW)
     return LORA_CODING_RATEHIGH;
 
-  if (_modem=="MEDIUMBW")
+  if (_modem==_MEDIUMBW)
     return LORA_CODING_RATEMEDIUM;
 
-  if (_modem=="LOWBW")
+  if (_modem==_LOWBW)
     return LORA_CODING_RATELOW;
 
   return LORA_CODING_RATE;
@@ -729,19 +771,19 @@ int CRadio::getCR(){
 
 
 int CRadio::getTXDelay(){  
-  if (_modem=="MEGABW")
+  if (_modem==_MEGABW)
     return LORA_TXDELAYMEGA;
 
-  if (_modem=="ULTRABW")
+  if (_modem==_ULTRABW)
     return LORA_TXDELAYULTRA;
 
-  if (_modem=="HIGHBW")
+  if (_modem==_HIGHBW)
     return LORA_TXDELAYHIGH;
 
-  if (_modem=="MEDIUMBW")
+  if (_modem==_MEDIUMBW)
     return LORA_TXDELAYMEDIUM;
 
-  if (_modem=="LOWBW")
+  if (_modem==_LOWBW)
     return LORA_TXDELAYLOW;
 
   return LORA_TXDELAY;

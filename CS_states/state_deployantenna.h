@@ -1,9 +1,5 @@
 #pragma once
 
-#include "state_defs.h"
-#include <powerup.h>
-
-
 #include <stateobj.h>
 
 
@@ -15,19 +11,19 @@ public:
 
 	void enter() { 
 		CStateObj::enter();
-		resetSubSystems();
+		resetStateSubSystems();
 
-		enableBurnWire();
-  		delay(10000);
-		disableBurnWire();
+		enablePin(_PINBURNWIRE);
+  		delay(1000);
+		disablePin(_PINBURNWIRE);
 		
 
-		CMsg msg=getDataMap(std::string("SAT")); 
+		CMsg msg=getDataMap(_SATINFO); 
 
-		int burns=msg.getParameter("BURNS",0);
+		int burns=msg.get(_BURNS,0);
 		burns++;
-		addDataMap(std::string("SAT"),msg); 
+		addDataMap(_SATINFO,msg); 
 	
 		}
-	void exit()  {}
+	void exit()  {CStateObj::exit();}
 };

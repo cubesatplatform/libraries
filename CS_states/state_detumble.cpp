@@ -1,40 +1,67 @@
-
-#include "state_defs.h"
+#include <actuator_defs.h>
 #include "state_detumble.h"
-#include <powerup.h>
 
 
-CDetumbleState::CDetumbleState() {
-  Name("DETUMBLE");
+CDetumbleState::CDetumbleState() {  
   setMaxTime(3*TIMEORBIT);
-
 };
 
 CDetumbleState::~CDetumbleState() {};
 
 void CDetumbleState::setup() {};
 
-void CDetumbleState::stateMsg(CMsg &msg){_statemsg=msg;};
 
 void CDetumbleState::enter() {
-  enable65V();
-  resetSubSystems();
+
+  resetStateSubSystems();
   
   CStateObj::enter();
+
+  std::string mode=_m.get(_MODE,_DETUMBLE);
   
-	CMsg msg=getDataMap(std::string("SAT")); 
+  if(mode==_DETUMBLE){
+	  CMsg msg=getDataMap(_SATINFO); 
 
-  int detumbles=msg.getParameter("DETUMBLES",0);
-  detumbles++;
-  addDataMap(std::string("SAT"),msg); 
+    int detumbles=msg.get(_DETUMBLE,0);
+    detumbles++;
+    addDataMap(_SATINFO,msg); 
 
 
-  setState("PLAY");
-  CSystemObject *pMT=getSystem("MT");
-  if (pMT!=NULL) pMT->setState("");  //Reset MT and gets it restarting detumbling
+    setState(_PLAY);
+  
+    CMsg m;
+    m.set(_SYS,_MAGX);
+    m.set(_MODE,_DETUMBLE);   //Reset MT and gets it restarting detumbling
+    addMessageList(m);
+
+    m.set(_SYS,_MAGY);
+    m.set(_MODE,_DETUMBLE);   //Reset MT and gets it restarting detumbling
+    addMessageList(m);
+     
+    m.set(_SYS,_MAGZ);
+    m.set(_MODE,_DETUMBLE);   //Reset MT and gets it restarting detumbling
+    addMessageList(m);
   }
+
+  if(mode==_MANUAL){
+    setState(_PLAY);
+  
+    CMsg m;
+    m.set(_SYS,_MAGX);
+    m.set(_MODE,_MANUAL);   //Reset MT and gets it restarting detumbling
+    addMessageList(m);
+
+    m.set(_SYS,_MAGY);
+    m.set(_MODE,_MANUAL);   //Reset MT and gets it restarting detumbling
+    addMessageList(m);
+     
+    m.set(_SYS,_MAGZ);
+    m.set(_MODE,_MANUAL);   //Reset MT and gets it restarting detumbling
+    addMessageList(m);
+  }
+}
   
 void CDetumbleState::exit() { 
-  disable65V();
+
   CStateObj::exit();
   }

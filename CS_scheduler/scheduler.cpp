@@ -1,41 +1,30 @@
-
-#include <messages.h>
 #include "scheduler.h"
+
+
+/*
+Ussage:
+SYS:SCHEDULER~ACT:ADDTASK~S_SYS:IMUI~S_ACT:SENDDATA~N:IMUI_GYRO~S_STOP:2000000
+*/
 
 
 
 CScheduler::CScheduler(){
-  Name("SCHEDULER");
   setForever();
-  setInterval(3000);
+  setInterval(300);
   }; 
          
 CScheduler::~CScheduler(){}  
   
+
    
 
 void CScheduler::setup(){  
-  setState("PLAY");
+  setState(_PLAY);
   }
 
-void CScheduler::showCommands(){
-  writeconsoleln("");
-  writeconsoleln("ShowCommands xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");  
-  
-  std::list<CMsg> ml;
-  std::string namestr;
-  for (auto it = Commands.begin(); it != Commands.end(); ++it) {    
-    namestr = it->first;
-    writeconsoleln(namestr);
-    ml=it->second;  
-    for(auto m:ml){    
-      m.writetoconsole();  
-    }
-  }
-  writeconsoleln("");
-}
 
-void CScheduler::Output(CMsg &msg){
+
+void CScheduler::output(CMsg &msg){
   std::string log, logfinal;
   for (auto m : Scheduler){
     log+=m.serialize();
@@ -49,49 +38,71 @@ void CScheduler::Output(CMsg &msg){
 
   }
   CMsg cM;
-  cM.setDATA(logfinal);  
+  cM.set(_DATA,logfinal);  
   addTransmitList(cM);  
 }
 
 void CScheduler::loop(){
-  for (auto m = Scheduler.begin(); m != Scheduler.end(); m++) {    
-    unsigned long start=0;
-    unsigned long stop=0;  //Default to 0 so means run 1 time
-    unsigned long last=0;
-    unsigned long interval=10000;
-    unsigned long currentTime=getTime();  
-    int tmpPause=m->getParameter("PAUSE",0);
+  if(Scheduler.size()<1){
+    return;
+  }
+
+  CMsg msat=getDataMap(_SATINFO);
+  std::string satstate=msat.get(_STATE);
+  
+  for (auto m = Scheduler.begin(); m != Scheduler.end(); m++) {        
+    std::string mstate=m->get(_STATE);
+    if((mstate.length()>1)&& (satstate.length()>1)){    
+      if(mstate!=satstate){   //Only send to appropriate state if defined
+        writeconsoleln("Schedule States Different   Not Sending");
+        writeconsoleln(mstate);
+        writeconsoleln(satstate);
+        continue;
+      }
+    }
+    
+    long start=0;
+    long stop=0;  //Default to 0 so means run 1 time
+    long last=0;
+    long interval=10000;
+    long currentTime=getTime();  
+    int tmpPause=m->get(_PAUSE,0);
 
     
     if(tmpPause)
       continue;
         
-    start=m->getParameter("START",start);
-    stop=m->getParameter("STOP",stop);
-    interval=m->getParameter("INTERVAL",interval);
-    last=m->getParameter("LAST",last);
+    
+    start=m->get(_START,start);
+    stop=m->get(_STOP,stop);
+    interval=m->get(_INTERVAL,interval);
+    last=m->get(_LAST,last);
 
     
     
-    if(last==0){
+    if(last==0){      
       start=start+currentTime;
+      last=start;
       if(stop<STOPTASKLIMIT)
         stop=start+stop;     
       else 
         stop=STOPTASKMAX;
-      m->setParameter("START",start);     
-      m->setParameter("STOP",stop);           
-      m->setParameter("LAST",start);     
+      m->set(_START,start);     
+      m->set(_STOP,stop);           
+      m->set(_LAST,last);                 
       }   
-     
 
+
+    
     if(currentTime>(last+interval)){      
       last=currentTime;
-      m->setParameter("LAST",last);      
-      m->writetoconsole();
-      //writeconsoleln(m->serializeout());
-      addMessageList(*m);
+      m->set(_LAST,last);      
+                
+      CMsg mm=convertTasktoMessage(*m);    
+      addMessageList(mm);      
     }
+
+    
 
     
     if((currentTime>stop)||(start==stop)) {
@@ -103,36 +114,69 @@ void CScheduler::loop(){
       m = Scheduler.erase(m);   //Check to make sure this works			 
       continue;
     }
+    
 	}
+  
+}
+
+CMsg CScheduler::convertTasktoMessage(CMsg &msg){
+  CMsg m;  
+  for(auto x:msg.Parameters){
+    std::string key=x.first;
+    if (key.length()>2){
+      if (key.substr(0,2)=="S_"){
+        m.set(key.substr(2,key.length()),x.second);
+      }
+    }
+
   }
+  return m;
+}
+
+
+CMsg CScheduler::convertMessagetoTask(CMsg &msg){
+  CMsg m;  
+  for(auto x:msg.Parameters){
+    std::string key=x.first;
+    if (key.length()>2){
+      if (key.substr(0,2)!="S_"){
+        key="S_"+key;
+        m.set(key,x.second);
+      }
+    }
+
+  }
+  return m;
+}
 
 
 void CScheduler::addTask(CMsg &msg){
-    CMsg m;
-    m=msg;
-    writeconsoleln("");
-    writeconsoleln("--------------------System Manager.  Adding to Scheduler---------------------------");
-    m.setSYS(msg.getParameter("_SYS"));
-    m.setACT(msg.getParameter("_ACT"));
-    m.setREFID();
-    Scheduler.push_back(m);
+
+    Scheduler.push_back(msg);
   };
 
   
 void CScheduler::deleteTask(CMsg &msg){
   for (auto m = Scheduler.begin(); m != Scheduler.end(); m++) {
-    if(m->getREFID()==msg.getREFID()) {   //nEED SOME OTHER QUALIFIER
+    if(m->get(_REFID)==msg.get(_REFID)) {   //nEED SOME OTHER QUALIFIER
       m = Scheduler.erase(m);   //Check to make sure this works			 
       return;
     }
   }
 };
 
+void CScheduler::deleteAll(CMsg &msg){
+  for (auto m = Scheduler.begin(); m != Scheduler.end(); m++) {    
+    m = Scheduler.erase(m);   //Check to make sure this works			     
+  }
+};
+
+
 
 void CScheduler::pauseTask(CMsg &msg){
   for (auto m = Scheduler.begin(); m != Scheduler.end(); m++) {
-    if(m->getREFID()==msg.getREFID()) {   //nEED SOME OTHER QUALIFIER
-      m->setParameter("PAUSE",1);   //Check to make sure this works			 
+    if(m->get(_REFID)==msg.get(_REFID)) {   //nEED SOME OTHER QUALIFIER
+      m->set(_PAUSE,1);   //Check to make sure this works			 
       return;
     }
   }
@@ -140,8 +184,8 @@ void CScheduler::pauseTask(CMsg &msg){
 
 void CScheduler::unpauseTask(CMsg &msg){
   for (auto m = Scheduler.begin(); m != Scheduler.end(); m++) {
-    if(m->getREFID()==msg.getREFID()) {   //nEED SOME OTHER QUALIFIER
-      m->setParameter("PAUSE",0);   //Check to make sure this works			 
+    if(m->get(_REFID)==msg.get(_REFID)) {   //nEED SOME OTHER QUALIFIER
+      m->set(_PAUSE,0);   //Check to make sure this works			 
       return;
     }
   }
@@ -150,24 +194,12 @@ void CScheduler::unpauseTask(CMsg &msg){
 
 
 
-void CScheduler::SendCmdToScheduler(CMsg &msg){
-  std::string str=msg.getParameter("CMD"); 
-  std::list<CMsg> ml=Commands[str];
-  for(auto m:ml){
-    if(m.Parameters.size()){
-      
-      writeconsoleln(m.serializeout());
-      Scheduler.push_back(m);
-    }
-  }
-}
 
 
 
 
 void CScheduler::showScheduler(CMsg &msg){
-  writeconsoleln("");
-  writeconsoleln("ShowScheduler xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");  
+  writeconsoleln("");  
   for(auto m:Scheduler){    
     m.writetoconsole();  
     addTransmitList(m);
@@ -176,34 +208,84 @@ void CScheduler::showScheduler(CMsg &msg){
 }
 
 
-void CScheduler::scheduleData(CMsg &msg){   //Schedules geting data from map
-  std::string sys=msg.getVALUE();
-  long interval=msg.getParameter("INTERVAL",5000L);
-  if (interval<1000) interval=1000;
 
-  long stop=msg.getParameter("INTERVAL",60000L);
 
-  if (sys.size()<=0)
-    return;
 
-  CMsg m;  
-  std::list<CMsg> ml;
-  m.setSYS(sys);
-//  m.setACT("ECHODATA");
-  m.setParameter("START",0L);
-  m.setParameter("STOP",stop);
-  m.setParameter("INTERVAL",interval);   
-  ml.push_back(m);
-  Commands[std::string("CMD_ECHO")+sys]=ml;
-   
+
+
+
+void CScheduler::schedule(std::string sys,std::string act, long interval, long start, long stop){
+  CMsg m;
+  m.set(_SYS,_SCHEDULER);
+  m.set(_ACT,_ADDTASK);  
+  m.set(_INTERVAL,interval);
+  m.set(_START,start);
+  m.set(_STOP,stop);
+  m.set(S_SYS,sys);
+  m.set(S_ACT,act);   
+  m.setREFID();
+  addTask(m);
+}
+
+void CScheduler::schedule(CMsg &msg, long interval, long start, long stop){
+  CMsg m=convertMessagetoTask(msg);
+  m.set(_SYS,_SCHEDULER);
+  m.set(_ACT,_ADDTASK);  
+  m.set(_INTERVAL,interval);
+  m.set(_START,start);
+  m.set(_STOP,stop); 
+  m.setREFID();
+  addTask(m);
+}
+
+
+
+
+void CScheduler::callCustomFunctions(CMsg &msg){
+  
+  std::string act=msg.get(_ACT); 
+
+  mapcustom(initSat)
+  
+  mapcustommsg(addTask)
+  mapcustommsg(deleteTask)
+  mapcustommsg(deleteAll)
+  mapcustommsg(pauseTask)
+  mapcustommsg(unpauseTask)
+  mapcustommsg(showScheduler)
+  
+  CSystemObject::callCustomFunctions(msg);
 }
 
 
 
 
 
+
+void CScheduler::initSat(){
+
+
+  
+  long interval=10000;
+
+/*
+  schedule(_MANAGER,_SENDBEACON,1*interval);
+  schedule(_MANAGER,_CHKBATTERY,5*interval);
+ 
+  schedule(_MANAGER,_CHKMAGFIELD,5*interval);
+  schedule(_MANAGER,_CHKRADIO,15*interval);
+  schedule(_MANAGER,_CHKMESSAGES,5*interval);
+  
+  
+  schedule(_MANAGER,_CHKROTATION,5*interval); 
+*/  
+  schedule(_MANAGER,_RANDOMSTATE,3*interval);
+}
+
+
 void CScheduler::controlPlan(){
-        /*CSatellite *psat= getSatellite();
+  /*      
+        CSatellite *psat= getSatellite();
       CMsg msg;
       //_currentTime=getTime();
     
@@ -226,85 +308,6 @@ void CScheduler::controlPlan(){
         msg.setSTATE("NORMAL");
         addMessageList(msg);        
       }
-         */
+*/        
 }
 
-void CScheduler::initSat(){  //SYS:MGR~ACT:COMMAND~CMD:CMD_BEACON
-  CMsg m;
-  std::list<CMsg> ml;
-  
-  ml.clear();
-
-  m.clear();  
-  m.setSYS("GPS");
-  m.setACT("START");
-  ml.push_back(m);
-
-  m.clear();  
-  m.setSYS("GPS");
-  m.setACT("OUTPUT");
-  m.setParameter("START",3000L);
-  m.setParameter("STOP",30000L);
-  m.setParameter("INTERVAL",1000000L);  
-  ml.push_back(m);
-
-  m.clear();  
-  m.setSYS("GPS");
-  m.setACT("STOP");  
-  ml.push_back(m);
-
-  Commands["CMD_GPS"]=ml;
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  ml.clear();
-
-  m.clear();  
-  m.setSYS("IRX1");
-  m.setACT("START");
-  ml.push_back(m);
-
-  m.clear();  
-  m.setSYS("IRX1");
-  m.setACT("OUTPUT");
-  m.setParameter("START",3000L);
-  m.setParameter("STOP",300000L);
-  m.setParameter("INTERVAL",10000L);   
-  ml.push_back(m);
-
-  m.clear();  
-  m.setSYS("IRX1");
-  m.setACT("STOP");
- 
-  ml.push_back(m);
-  Commands["CMD_IRX1"]=ml;
-
-  //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  ml.clear();
-
-  m.clear();  
-
-
-  m.setSYS("MGR");
-  m.setACT("ADDTASK");
-  m.setParameter("_SYS","SAT");
-  m.setParameter("_ACT","BEACON");   
-  m.setParameter("INTERVAL",60000);
-  m.setParameter("START",0);
-  m.setParameter("STOP",(long) STOPTASKMAX);
-  m.setREFID();
-  addMessageList(m);
-}
-
-void CScheduler::callCustomFunctions(CMsg &msg){
-  CSystemObject::callCustomFunctions(msg);
-  CMessages* pMSG= getMessages();
-  std::string act=msg.getACT(); 
-  if(act=="ADDTASK")  {addTask(msg); return; }
-  if(act=="DELETETASK")  {deleteTask(msg);   return; }
-  if(act=="PAUSETASK")  {pauseTask(msg);   return; }
-  if(act=="UNPAUSETASK")  {unpauseTask(msg);   return; }
-  if(act=="SCHEDULEDATA") {scheduleData(msg); return; }
-  if(act=="SHOWSCHEDULER") {showScheduler(msg); return; }
-  if(act=="SHOWCOMMANDS") {showCommands(); return; }
-
-  if(act=="COMMAND") {SendCmdToScheduler(msg);return;}    //Calls a predefined Command group    
-}

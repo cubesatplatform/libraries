@@ -5,30 +5,26 @@
 #define MOTOR_Y_FG PI_7
 #define MOTOR_Z_FG PJ_10
 
-volatile unsigned long _countx=0;
-volatile unsigned long _county=0;
-volatile unsigned long _countz=0;
+volatile long _countx=0;
+volatile long _county=0;
+volatile long _countz=0;
 
 
 
 //void PWMCounter::increment()
 void incrementx()
-{
-  //writeconsole("_x");
-    _countx++;      
-
+{ 
+  _countx++;      
 }
 
 void incrementy()
 {
- // writeconsole("_y");
-    _county++;   
+  _county++;   
 }
 
 void incrementz()
 {
-  //writeconsole("_z");
-    _countz++;   
+  _countz++;   
 }
 
 
@@ -42,15 +38,15 @@ void PWMCounter::config(PinName pin)       // create the InterruptIn on the pin 
     pinMode(_interrupt, INPUT_PULLUP);
 
     if(_interrupt==MOTOR_Z_FG){     
-      axis('Z');
+      axis(_ZAXIS);
       attachInterrupt(digitalPinToInterrupt(_interrupt), incrementz, FALLING);    
     }
     if(_interrupt==MOTOR_Y_FG){     
-      axis('Y');
+      axis(_YAXIS);
       attachInterrupt(digitalPinToInterrupt(_interrupt), incrementy, FALLING);    
     }
     if(_interrupt==MOTOR_X_FG){     
-      axis('X');
+      axis(_XAXIS);
       attachInterrupt(digitalPinToInterrupt(_interrupt), incrementx, FALLING);    
     }
     
@@ -60,55 +56,61 @@ void PWMCounter::config(PinName pin)       // create the InterruptIn on the pin 
 }
 
 
-unsigned long PWMCounter::read()   { return getCount();    }
+long PWMCounter::read()   { return getCount();    }
 
 
-unsigned long PWMCounter::getCount(){
-  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-  if(_axis=='Z' ){    
-    return _countz;
+long PWMCounter::getCount(){  
+  long val=0;
+  if(_axis==_ZAXIS ){    
+    val= _countz;
   }
-  if(_axis=='Y' ){    
-    return _county;
+  if(_axis==_YAXIS ){    
+    val= _county;    
   }
-  if(_axis=='X' ){    
-    return _countx;
+  if(_axis==_XAXIS ){    
+    val= _countx;    
   }
-#endif  
-return _countx;
 
+ 
+_lastCount=_Count;
+_lastTime=_Time;
+
+_Time=getTime();
+_Count=val;
+
+long diff=_Count-_lastCount;
+
+//writeconsole(_Count); writeconsole(" ");writeconsole(_lastCount);     writeconsole(" ");writeconsoleln(diff);     
+
+return (diff);
 }
 
 
-double PWMCounter::RPS(){
-  lastT=millis();   // may want micros
-  
-  unsigned long diffsec=(lastT-prevT);
-  if(diffsec>30){
-    unsigned long curcount=getCount();
-    unsigned long diffcount=curcount-lastCount;  //diff counts
-    /////// Update for next cycle
-    prevT=lastT;
-    lastCount=curcount;
+double PWMCounter::getRPS(){      
+  long curcount=getCount();
 
-
-    _rps=1000.0*(double)diffcount/(double)diffsec;  
-    _rps=_rps/6.0;  //Six pings a rev 
+  if(curcount>0){
+    _rps=(1000.0*curcount)/(_Time-_lastTime);    
+    _rps/=6.0;  //Six pings a rev 
+  }
+  else{
+    _rps=0;
   }
 
-  
+
   return _rps;   
 };
 
-double PWMCounter::RPM(){
-  return 60.0*RPS();   
+double PWMCounter::getRPM(){
+  return 60.0*getRPS();   
 }
 
   
 CMotorController::CMotorController():CBaseDrive(){  
+  myPID.begin(&_Input, &_Output, &_Setpoint, _Kp, _Ki, _Kd);   //Key this here  Need to make sure the PID is setup before the first loop or it crashes
   _channel=channel;
   channel++;
-  setInterval(25);
+  setInterval(50);
 };
 
 
@@ -123,14 +125,14 @@ void CMotorController::config(PinName sig, PinName fg,PinName dir){
   PIN_DIR=dir;
   PIN_FG=fg;  
  
-  #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
-    analogWriteResolution(sig, PIN_RESOLUTION);
-  #else
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
     analogWriteResolution(PIN_RESOLUTION);
+  #else
+    analogWriteResolution(PIN_SIGNAL,PIN_RESOLUTION);
   #endif
+
   pinMode(PIN_DIR, OUTPUT);
-  pwmCounter.config(PIN_FG);  
-  setState("PLAY");
+  pwmCounter.config(PIN_FG);    
 }
 
 
@@ -141,8 +143,7 @@ void CMotorController::config(CMsg &msg){
   std::string strDir=msg.getParameter("PIN_DIR");
   std::string strFG=msg.getParameter("PIN_FG");
   
-  config(Pins[strSignal],Pins[strDir],Pins[strFG]);
-  setState("PLAY");
+  config(Pins[strSignal],Pins[strDir],Pins[strFG]);  
 }
 */
 
@@ -156,92 +157,75 @@ void CMotorController::init(){
   _Setpoint_last=0.0;
   _Output_last=0.0;
 
-  setState("PLAY");
-   activateDrive((int)_Output);  
+  //setState(_PLAY);
+  //activateDrive(_Output);  
 }
   
-double CMotorController::RPM(){
-  double tmp=pwmCounter.RPM(); 
+double CMotorController::getRPM(){
+  double tmp=pwmCounter.getRPM(); 
 
   if(!getDir())
     tmp*=-1.0;
   return tmp;
 }
 
-double CMotorController::RPS(){
-  double tmp=pwmCounter.RPS();  
+double CMotorController::getRPS(){
+  double tmp=pwmCounter.getRPS();  
   if(!getDir())
     tmp*=-1.0;
   return tmp;
 }
 
-unsigned long CMotorController::getCount(){    
+long CMotorController::getCount(){    
   return pwmCounter.getCount();  
 }
 
 
 void CMotorController::off(){
-  activateDrive(0);
-  setState("DONE");
+  activateDrive(0.0);
+  setState(_DONE);
 }
 
+
+void CMotorController::setPoint(CMsg &msg){
+  _Setpoint=msg.get(_VALUE,_Setpoint);
+}
 
 
 
 void CMotorController::newGains(CMsg &msg){
-  _Kd=msg.getParameter("KD",_Kd);
-  _Ki=msg.getParameter("KI",_Ki);
-  _Kp=msg.getParameter("KP",_Kp);
+  _Kd=msg.get(_KD,_Kd);
+  _Ki=msg.get(_KI,_Ki);
+  _Kp=msg.get(_KP,_Kp);
 }
 
-void CMotorController::activateDrive(int val){
-
+void CMotorController::activateDrive(float val){  //from 0 to 100%
+//sendPWM(2000);
   if(!setMSpeed(val)) {  //Check if same speed as last time
-    writeStats();
+    
     return;
   }
-  writeStats();
-  int nVal;
+
+  sendPlotter(_mLog);
+  
   
   if((val<0)&&(getDir())){
-    setDir(0);            
+    setDir(!getDir());            
     digitalWrite(PIN_DIR,LOW);  
+    writeconsoleln("-------------------------------------DIR: LOW");
   }
 
-  if((val>=0)&&(!getDir())){  
-    setDir(1);    
+  else if((val>=0)&&(!getDir())){  
+    setDir(!getDir());    
     digitalWrite(PIN_DIR,HIGH);
+    writeconsoleln("----------------------------------------------------DIR: HIGH");
   }
-
-  nVal=abs(val); 
-
-  if(nVal<0 ) nVal=0;
-  if(nVal>PWM_MAX) nVal=PWM_MAX;
-
-  writeconsole("      nVal: ");
-  writeconsoleln(nVal);
-          
-  sendPWM(nVal);
-}
-
-void CMotorController::writeStats(){
-  if(getTime()<_lastStats+1000)
-  return;
-  _lastStats=getTime();
- 
-  CMsg m;
-
-  m.setParameter("Name",Name());
-  m.setParameter("Mode",Mode());
-  m.setParameter("Direction",getDir());
-  m.setParameter(" Setpoint",_Setpoint);
-  m.setParameter(" Setpoint Last",_Setpoint_last);
-  m.setParameter(" Duration",_Output_duration);
-  m.setParameter(" Input",_Input);
-  m.setParameter(" Output",_Output);
-  m.writetoconsole(); 
   
+  _OutputPWM= convertToPWM(val);
+  sendPWM(_OutputPWM);
 }
+
+
 
 
 
@@ -253,33 +237,34 @@ void CMotorController::loop(){
 
 void CMotorController::setup(){
 
-  writeconsole("Setup    Mode:");writeconsoleln(Mode());
-  if(Mode()=="LOCK")
+  writeconsole("------------Setup    Mode:------------");writeconsoleln(Mode());
+  if(Mode()==_LOCK)   //Stop Spinning
     setupLock();
-  else if(Mode()=="SPEED")
+  else if(Mode()==_SPEED)
     setupSpeed();
-  else if(Mode()=="SIMPLE")
+  else if((Mode()==_SIMPLE)||(Mode()==_MANUAL))
     setupSpeedSimple();
-  else if(Mode()=="ROTATION")  
-    setupRotation();  
-  else if(Mode()=="RAMP")  
-    setupRamp();  
-  else if(Mode()=="PWM")  
-    setupPWM();  
- setState("PLAY");
+  else if(Mode()==_POSITION)  
+    setupPosition();  
+   
 }
 
 
  void CMotorController::callCustomFunctions(CMsg &msg){
    writeconsoleln("CMotorController CallCustomFunctions :  ");
+  
+  std::string act=msg.get(_ACT); 
+  float val=msg.get(_VALUE,0.0); 
+
+  
+  if(act==_GETRPM)  transmitResult(act,tostring(getRPM()));
+  if(act==_GETRPS)  transmitResult(act,tostring(getRPS()));
+  if(act==_GETCOUNT)  transmitResult(act,tostring(getCount()));
+  
+  mapcustommsg(newGains)
+  mapcustommsg(setPoint)
+  //if(act=="NEWGAINS") newGains(msg); 
+  if(act=="ACTIVATEDRIVE")  activateDrive(val);
+
   CBaseDrive::callCustomFunctions(msg);
-  std::string act=msg.getACT(); 
-  int val=msg.getParameter("V",0); 
-
-  if(act=="NEWGAINS") newGains(msg); 
-  if(act=="RPM")  transmitResult(act,tostring(RPM()));
-  if(act=="RPS")  transmitResult(act,tostring(RPS()));
-  if(act=="GETCOUNT")  transmitResult(act,tostring(getCount()));
-
-  if(act=="ACTIVATEDRIVE")  activateDrive( val);
  }

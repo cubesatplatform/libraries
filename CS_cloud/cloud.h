@@ -11,13 +11,14 @@
 #include <systemobject.h>
 #include <ArduinoJson.h>
 
-#define CMD_INTERVAL 5000
-typedef StaticJsonDocument<1200> jsonDoc;
+#define CMD_INTERVAL 10000
+typedef StaticJsonDocument<1200> jsonDoc;  
 
 class CCloud:public CSystemObject {
 private:
   
-  unsigned long _lastCmd = 0;
+  long _lastCmd = 0;
+  bool _bRegistered=false;
   
   //const char* host = "9nxvzfnhrd.execute-api.us-east-1.amazonaws.com";
   std::string host = "http://192.168.86.148";
@@ -32,14 +33,18 @@ public:
 
   std::map<std::string, std::string> URLS;
   
-  CMessages *MSG;
+  //CMessages *pMessages=NULL;
   WiFiClientSecure client;
   WiFiMulti wifiMulti;
   
   //ConsoleEcho SerialB;
   
   CCloud();
-  void setup(){connectWifi();  setState("PLAY");setInterval(10);}
+  void setup(){
+    connectWifi();  
+    setState(_PLAY);
+    setInterval(100);//pMessages=getMessages();
+  }
   void loop();
 
   void connectWifi();  
@@ -49,13 +54,18 @@ public:
   unsigned char h2int(char c);
   String urldecode(String str);
   String urlencode(String str);
-  std::string convertStringToCommand(std::string str);
-  void updateAllTransmittedCommands();
-  void updateAllReceivedCommands();
+  std::string urlencode(std::string str);
+  std::string urldecode(std::string str);
+  std::string convertStringToCommand(std::string str);  
+  void registerBS();
 
   CMsg callAPI(CMsg &msg);    
+  void save(CMsg &msg);    
+  void getCommand();
+  std::string getPage(std::string url="https://example.org/");
+  std::string getPage(CMsg &msg);
+  std::string getPageMulti(CMsg &msg);
   
-  std::string getPage(std::string URL="https://example.org/");
   CMsg getJSONDoc(std::string strJSON, jsonDoc &doc);
   
   void callCustomFunctions(CMsg &msg); 

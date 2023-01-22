@@ -1,34 +1,38 @@
 #include "system_temperature.h"
 
-CTemperatureObject::CTemperatureObject(){ 
-  Name("TEMP");
+
+
+CTemperatureObject::CTemperatureObject(){   
   init();
   _pWire=&Wire;
   };
 
 void CTemperatureObject::init(){
   CSystemObject::init();
+
   _temp=0.0;
   _ltime=0;
-  setInterval(15000);
+  setInterval(40);
   setErrorThreshold(4);
 }
 
 void CTemperatureObject::setup(){
-if(_pWire==NULL) {
-  sendError();
-  return;
-}
 
 init();
 
-for(int count=0;count<5;count++){
+if (_pWire==NULL){
+  _pWire=&Wire;
+  writeconsoleln("ERROR  pWire NULL  ERROR");
+}
+
+for(int count=0;count<5;count++){  
  if (sensor.begin(_address, *_pWire)== true)
-  {  
-  setState("PLAY");
+  {      
+  setState(_PLAY);
   return;
   }
   else{   
+    writeconsoleln("Error");
     incErrorCount();               
   }
   
@@ -39,54 +43,55 @@ sendError();
 return;
 }
 
-void CTemperatureObject::loop(){  
+void CTemperatureObject::loop(){    
   CMsg m;
   runOnce(m);  
 }
 
-void CTemperatureObject::test(CMsg &msg){
-  Run(50);  
-}
 
 
-void CTemperatureObject::config(char addr, TwoWire *pWire){  
-  setInterval(60000);
+
+void CTemperatureObject::config(char addr, TwoWire *pWire){    
+  setInterval(10);
   _address=addr;
   _pWire=pWire;
 }
 
 
-void CTemperatureObject::config(CMsg &msg){
-  std::string straddress=msg.getParameter("ADDRESS");
-  std::string strwire=msg.getParameter("WIRE");
+void CTemperatureObject::config(CMsg &msg){  
+  std::string straddress=msg.get(_ADDRESS);
+  std::string strwire=msg.get(_WIRE);
 
-  TwoWire *pWire;
-
-  if(strwire=="Wire") pWire=&Wire;  
-  if(strwire=="Wire1") pWire=&Wire1;  
-  if(strwire=="Wire2") pWire=&Wire2;  
+  
 
   if(straddress.size()>0){
+    TwoWire *pWire;
+
+    if(strwire==_WIRE) pWire=&Wire;  
+    if(strwire==_WIRE1) pWire=&Wire1;  
+    if(strwire==_WIRE2) pWire=&Wire2;  
+    
     config(straddress[0],pWire);
   }
 }
 
 void CTemperatureObject::runOnce(CMsg &m){
-
  if (sensor.dataReady() == true) // Function to make sure that there is data ready to be printed, only prints temperature values when data is ready
   {
+    writeconsoleln("K");
     CMsg msg;
-    msg=getDataMap(std::string(TEMPERATUREKEY));
+    msg=getDataMap(_SATINFO);
    _temp = sensor.readTempC();
    _ltime=getTime();
     
-    msg.setParameter(Name(),_temp);
+    msg.set(name(),_temp);
+    msg.set(name()+"_T",_ltime);
+
+    msg.writetoconsole();
     
-    addDataMap(TEMPERATUREKEY,m);
+    addDataMap(_SATINFO,msg);
   }
-  else{
-    incErrorCount();
-  }
+
 return;
 }
 

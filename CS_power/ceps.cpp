@@ -27,7 +27,7 @@ void CEPS::config(char addr, TwoWire *twowire){
   _address=addr;
   _pWire=twowire;
   setForever();
-  setInterval(5);  
+  setInterval(500);  
   setModifiedTime(getTime());
   
   }
@@ -80,26 +80,37 @@ void CEPS::setup(){
 }
 
 
+void CEPS::checkPower(){
+ 
+  //Maybe No logic in here   just save data?
+  CMsg msg=getDataMap(_SATINFO); 
+  std::string satState=msg.get(_STATE,_BLANK);
+  addTransmitList(msg);
+
+  
+  if(satState!=_LOWPOWER){
+    if(readBatteryVoltage()<VOLTMIN) { goState(_LOWPOWER);return;}
+    if(readMCUTemp()>MCUTEMPMAX) {goState(_LOWPOWER);return;}
+  }
+
+  if(satState==_LOWPOWER){
+    if(readBatteryVoltage()>VOLTCHARGED) {goState(_NORMAL);return;}
+  }
+  
+  //if(getTime()>getReceivedTimestamp()+RECEIVEDMESSAGEWAITTIME){    //Switch radios  }
+  
+
+}
+
 void CEPS::loop(){
   output();
-  std::string satState=getSatState();
-  if(satState!="LOWPOWER"){
-    if(readBatteryVoltage()<VOLTMIN)  goLowPowerState();
-    if(readMCUTemp()>MCUTEMPMAX) goLowPowerState();
-  }
-
-  if(satState=="LOWPOWER"){
-    if(readBatteryVoltage()>VOLTCHARGED) goNormalState();
-  }
-  
-  if(getTime()>getReceivedTimestamp()+RECEIVEDMESSAGEWAITTIME){
-    //Switch radios
-  }
-  
+  checkPower();
   
 }
-void CEPS::output(){   //FIX THIS  JUST FOR TESTING
 
+
+void CEPS::output(){   //FIX THIS  JUST FOR TESTING
+  CMsg m;
  // writeSWSelflock(0);
   writeSHDChrg(0);
   /*
@@ -113,79 +124,79 @@ void CEPS::output(){   //FIX THIS  JUST FOR TESTING
   writeSHD3V3(1);
   delay(300);
 */
-  m.setNAME("POWERKEY");
-  m.setParameter("BatteryVolt",readBatteryVoltage());  
-  m.setParameter("BatteryCrnt",readBatteryCurrent());  
-  m.setParameter("BCRVolt",readBCRVoltage());
-  m.setParameter("BCRCrnt",readBCRCurrent());   
-  m.setParameter("3V3Crnt",read3V3Current());
-  m.setParameter("5VCrnt",read5VCurrent());
-  m.setParameter("LUP3V3",readLUP3V3());
-  m.setParameter("LUP5V",readLUP5V());
-  m.setParameter("MCUTemp",readMCUTemp());    
-  m.setParameter("InputConditions",readInputConditions());
-  m.setParameter("OutputConditions",readOutputConditions());
-  m.setParameter("OutputConditions2",readOutputConditions2());
-  m.setParameter("PowerONCycles",readPowerONCycles());
-  m.setParameter("VUnderVolt",readVUnderVoltage());
-  m.setParameter("VShortCircuit",readVShortCircuit());
-  m.setParameter("VOverTemp",readVOverTemperature());
-  m.setParameter("Ver",readSoftwareVersion());
-  m.setParameter("Defaults1",readDefaults1());
-  m.setParameter("Defaults12",readDefaults12());
-  m.setParameter("ChargeCycles",readChargeCycles());
+  m.set(_NAME,_SYSPOWER);
+  m.set(BatteryVolt,readBatteryVoltage());  
+  m.set(BatteryCrnt,readBatteryCurrent());  
+  m.set(BCRVolt,readBCRVoltage());
+  m.set(BCRCrnt,readBCRCurrent());   
+  m.set(P3V3Crnt,read3V3Current());
+  m.set(P5VCrnt,read5VCurrent());
+  m.set(LUP3V3,readLUP3V3());
+  m.set(LUP5V,readLUP5V());
+  m.set(MCUTemp,readMCUTemp());    
+  m.set(InputConditions,readInputConditions());
+  m.set(OutputConditions,readOutputConditions());
+  m.set(OutputConditions2,readOutputConditions2());
+  m.set(PowerONCycles,readPowerONCycles());
+  m.set(VUnderVolt,readVUnderVoltage());
+  m.set(VShortCircuit,readVShortCircuit());
+  m.set(VOverTemp,readVOverTemperature());
+  m.set(Ver,readSoftwareVersion());
+  m.set(Defaults1,readDefaults1());
+  m.set(Defaults12,readDefaults12());
+  m.set(ChargeCycles,readChargeCycles());
 
   TEMPERATURE_INFO  tBatt=readBatteryTemperature();
-  m.setParameter("BatTemp1",tBatt.readTemp1());
-  m.setParameter("BatTemp2",tBatt.readTemp2());
-  m.setParameter("BatTemp3",tBatt.readTemp3());
-  m.setParameter("BatTemp4",tBatt.readTemp4());  
+  m.set(BatTemp1,tBatt.readTemp1());
+  m.set(BatTemp2,tBatt.readTemp2());
+  m.set(BatTemp3,tBatt.readTemp3());
+  m.set(BatTemp4,tBatt.readTemp4());  
 
   tBatt=readMaxTemperature();
-  m.setParameter("MaxTemp1",tBatt.readTemp1());
-  m.setParameter("MaxTemp2",tBatt.readTemp2());
-  m.setParameter("MaxTemp3",tBatt.readTemp3());
-  m.setParameter("MaxTemp4",tBatt.readTemp4());
+  m.set(MaxTemp1,tBatt.readTemp1());
+  m.set(MaxTemp2,tBatt.readTemp2());
+  m.set(MaxTemp3,tBatt.readTemp3());
+  m.set(MaxTemp4,tBatt.readTemp4());
 
   tBatt= readMinTemperature();
-  m.setParameter("MinTemp1",tBatt.readTemp1());
-  m.setParameter("MinTemp2",tBatt.readTemp2());
-  m.setParameter("MinTemp3",tBatt.readTemp3());
-  m.setParameter("MinTemp4",tBatt.readTemp4());
+  m.set(MinTemp1,tBatt.readTemp1());
+  m.set(MinTemp2,tBatt.readTemp2());
+  m.set(MinTemp3,tBatt.readTemp3());
+  m.set(MinTemp4,tBatt.readTemp4());
 
   tBatt=readTemperatureSensor();
-  m.setParameter("TSTemp1",tBatt.readTemp1());
-  m.setParameter("TSTemp2",tBatt.readTemp2());
-  m.setParameter("TSTemp3",tBatt.readTemp3());
-  m.setParameter("TSTemp4",tBatt.readTemp4());
+  m.set(TSTemp1,tBatt.readTemp1());
+  m.set(TSTemp2,tBatt.readTemp2());
+  m.set(TSTemp3,tBatt.readTemp3());
+  m.set(TSTemp4,tBatt.readTemp4());
     
   AXIS_INFO axis=readXAxisInfo();
-  m.setParameter("XVolt",axis.readVoltage());
-  m.setParameter("XCrntM",axis.readCurrentM());
-  m.setParameter("XCrntP",axis.readCurrentP());
+  m.set(XVolt,axis.readVoltage());
+  m.set(XCrntM,axis.readCurrentM());
+  m.set(XCrntP,axis.readCurrentP());
 
   axis=readYAxisInfo();
-  m.setParameter("YVolt",axis.readVoltage());
-  m.setParameter("YCrntM",axis.readCurrentM());
-  m.setParameter("YCrntP",axis.readCurrentP());
+  m.set(YVolt,axis.readVoltage());
+  m.set(YCrntM,axis.readCurrentM());
+  m.set(YCrntP,axis.readCurrentP());
 
   axis=readZAxisInfo();
-  m.setParameter("ZVolt",axis.readVoltage());
-  m.setParameter("ZCrntM",axis.readCurrentM());
-  m.setParameter("ZCrntP",axis.readCurrentP());
+  m.set(ZVolt,axis.readVoltage());
+  m.set(ZCrntM,axis.readCurrentM());
+  m.set(ZCrntP,axis.readCurrentP());
 
-  addDataMap(m.getNAME(),m);
+  addDataMap(m);
 }
 
 
 void CEPS::init(){
-  Name("EPS");
+  
   CSystemObject::init();
   setForever();
   setInterval(30000);
   setErrorThreshold(150);
   
-  setState("PLAY");
+  setState(_PLAY);
 }
 
 
@@ -1096,10 +1107,10 @@ float TEMPERATURE_INFO::readTemp4(void)
     
 CMsg TEMPERATURE_INFO::read(){
   CMsg m;
-  m.setParameter("TEMP1",temp1);
-  m.setParameter("TEMP2",temp2);
-  m.setParameter("TEMP3",temp3);
-  m.setParameter("TEMP4",temp4);
+  m.set(_TEMP1,temp1);
+  m.set(_TEMP2,temp2);
+  m.set(_TEMP3,temp3);
+  m.set(_TEMP4,temp4);
 
   return m;
  }
@@ -1108,75 +1119,75 @@ CMsg TEMPERATURE_INFO::read(){
 CMsg AXIS_INFO::read(){
   CMsg m;
 
-  m.setParameter("VOLTAGE",voltage);
-  m.setParameter("CURRENTM",current_m);
-  m.setParameter("CURRENTP",current_p);
+  m.set(_VOLTAGE,voltage);
+  m.set(_CURRENTM,current_m);
+  m.set(_CURRENTP,current_p);
   return m;
  }
 
 
 void CEPS::callCustomFunctions(CMsg &msg){
-  CSystemObject::callCustomFunctions(msg);  
-  std::string act=msg.getACT();  
-  int val=msg.getParameter("V",0); 
+  
+  std::string act=msg.get(_ACT);  
+  int val=msg.get(_VALUE,0); 
   
 	//if((act=="GET")) {getData(msg);  return;}
-  if (act=="READBATTERYVOLTAGE") transmitResult(act,tostring(readBatteryVoltage()));
-  if (act=="READBATTERYCRNT") transmitResult(act,tostring(readBatteryCurrent()));
-  if (act=="READBCRVOLTAGE") transmitResult(act,tostring(readBCRVoltage()));
+  if (act=="READBATTERYVOLTAGE") {transmitResult(act,tostring(readBatteryVoltage())); return;}
+  if (act=="READBATTERYCRNT") {transmitResult(act,tostring(readBatteryCurrent()));return;}
+  if (act=="READBCRVOLTAGE") {transmitResult(act,tostring(readBCRVoltage()));return;}
 
-  if (act=="READBCRCURRENT") transmitResult(act,tostring(readBCRCurrent()));
-  if (act=="READ3V3CURRENT") transmitResult(act,tostring(read3V3Current()));
-  if (act=="READ5VCURRENT") transmitResult(act,tostring(read5VCurrent()));
+  if (act=="READBCRCURRENT") {transmitResult(act,tostring(readBCRCurrent()));return;}
+  if (act=="READ3V3CURRENT") {transmitResult(act,tostring(read3V3Current()));return;}
+  if (act=="READ5VCURRENT") {transmitResult(act,tostring(read5VCurrent()));return;}
 
-  if (act=="READLUP3V3") transmitResult(act,tostring(readLUP3V3()));
-  if (act=="READLUP5V") transmitResult(act,tostring(readLUP5V()));
+  if (act=="READLUP3V3") {transmitResult(act,tostring(readLUP3V3()));return;}
+  if (act=="READLUP5V") {transmitResult(act,tostring(readLUP5V()));return;}
 
-  if (act=="READMCUTEMP") transmitResult(act,tostring(readMCUTemp()));
-  if (act=="READINPUTCONDITIONS") transmitResult(act,tostring(readInputConditions()));
-  if (act=="READOUTPUTCONDITIONS") transmitResult(act,tostring(readOutputConditions()));
-  if (act=="READOUTPUTCONDITIONS2") transmitResult(act,tostring(readOutputConditions2()));
+  if (act=="READMCUTEMP") {transmitResult(act,tostring(readMCUTemp()));return;}
+  if (act=="READINPUTCONDITIONS") {transmitResult(act,tostring(readInputConditions()));return;}
+  if (act=="READOUTPUTCONDITIONS") {transmitResult(act,tostring(readOutputConditions()));return;}
+  if (act=="READOUTPUTCONDITIONS2") {transmitResult(act,tostring(readOutputConditions2()));return;}
   
-  if (act=="READPOWERONCYCLES") transmitResult(act,tostring(readPowerONCycles()));
-  if (act=="READVUNDERVOLT") transmitResult(act,tostring(readVUnderVoltage()));
-  if (act=="READVSHORTCIRCUIT") transmitResult(act,tostring(readVShortCircuit()));
-  if (act=="READVOVERTEMP") transmitResult(act,tostring(readVOverTemperature()));
-  if (act=="READSOFTWAREVERSION") transmitResult(act,tostring(readSoftwareVersion()));
+  if (act=="READPOWERONCYCLES") {transmitResult(act,tostring(readPowerONCycles()));return;}
+  if (act=="READVUNDERVOLT") {transmitResult(act,tostring(readVUnderVoltage()));return;}
+  if (act=="READVSHORTCIRCUIT") {transmitResult(act,tostring(readVShortCircuit()));return;}
+  if (act=="READVOVERTEMP") {transmitResult(act,tostring(readVOverTemperature()));return;}
+  if (act=="READSOFTWAREVERSION") {transmitResult(act,tostring(readSoftwareVersion()));return;}
   
-  if (act=="READDEAFAULTS1") transmitResult(act,tostring(readDefaults1()));
-  if (act=="READDEAFAULTS12") transmitResult(act,tostring(readDefaults12()));
-  if (act=="READCHARGECYCLES") transmitResult(act,tostring(readChargeCycles()));
+  if (act=="READDEAFAULTS1") {transmitResult(act,tostring(readDefaults1()));return;}
+  if (act=="READDEAFAULTS12") {transmitResult(act,tostring(readDefaults12()));return;}
+  if (act=="READCHARGECYCLES") {transmitResult(act,tostring(readChargeCycles()));return;}
 
 
-  if (act=="WRITESWSELFLOCK") {writeSWSelflock(val);}
+  if (act=="WRITESWSELFLOCK") {writeSWSelflock(val);return;}
 
-  if (act=="WRITEVBATEN") {writeVBATEN(val);}
-  if (act=="WRITEBCROUTEN") {writeBCROutEN(val);}
-  if (act=="WRITESHD3V3") {writeSHD3V3(val);}
-  if (act=="WRITE5V") {write5V(val);}
-  if (act=="WRITELUP3V3") {writeLUP3V3(val);}
-  if (act=="WRITELUP5V") {writeLUP5V(val);}
-  if (act=="WRITESHDCHRG") {writeSHDChrg(val);}
-  if (act=="WRITECHRGI1") {writeChrgI1(val);}
-  if (act=="WRITECHRGI2") {writeChrgI2(val);}
-  if (act=="WRITEOUT1") {writeOut1(val);}
-  if (act=="WRITEOUT2") {writeOut2(val);}
-  if (act=="WRITEOUT3") {writeOut3(val);}
-  if (act=="WRITEOUT4") {writeOut4(val);}
-  if (act=="WRITEOUT5") {writeOut5(val);}
-  if (act=="WRITEOUT6") {writeOut6(val);}
-  if (act=="WRITEHEATER1") {writeHeater1(val);}
-  if (act=="WRITEHEATER2") {writeHeater2(val);}
-  if (act=="WRITEHEATER3") {writeHeater3(val);}
+  if (act=="WRITEVBATEN") {writeVBATEN(val);return;}
+  if (act=="WRITEBCROUTEN") {writeBCROutEN(val);return;}
+  if (act=="WRITESHD3V3") {writeSHD3V3(val);return;}
+  if (act=="WRITE5V") {write5V(val);return;}
+  if (act=="WRITELUP3V3") {writeLUP3V3(val);return;}
+  if (act=="WRITELUP5V") {writeLUP5V(val);return;}
+  if (act=="WRITESHDCHRG") {writeSHDChrg(val);return;}
+  if (act=="WRITECHRGI1") {writeChrgI1(val);return;}
+  if (act=="WRITECHRGI2") {writeChrgI2(val);return;}
+  if (act=="WRITEOUT1") {writeOut1(val);return;}
+  if (act=="WRITEOUT2") {writeOut2(val);return;}
+  if (act=="WRITEOUT3") {writeOut3(val);return;}
+  if (act=="WRITEOUT4") {writeOut4(val);return;}
+  if (act=="WRITEOUT5") {writeOut5(val);return;}
+  if (act=="WRITEOUT6") {writeOut6(val);return;}
+  if (act=="WRITEHEATER1") {writeHeater1(val);return;}
+  if (act=="WRITEHEATER2") {writeHeater2(val);return;}
+  if (act=="WRITEHEATER3") {writeHeater3(val);return;}
 
-  if (act=="READXAXISINFO") transmitResult(act,readXAxisInfo().read());
-  if (act=="READYAXISINFO") transmitResult(act,readYAxisInfo().read());
-  if (act=="READZAXISINFO") transmitResult(act,readZAxisInfo().read());
+  if (act=="READXAXISINFO") {transmitResult(act,readXAxisInfo().read());return;}
+  if (act=="READYAXISINFO") {transmitResult(act,readYAxisInfo().read());return;}
+  if (act=="READZAXISINFO") {transmitResult(act,readZAxisInfo().read());return;}
 
-  if (act=="READBATTERYTEMPERATURE") transmitResult(act,readBatteryTemperature().read());
-  if (act=="READMAXTEMPERATURE") transmitResult(act,readMaxTemperature().read());
-  if (act=="READMINTEMPERATURE") transmitResult(act,readMinTemperature().read());
-  if (act=="READTEMPERATURESENSOR") transmitResult(act,readTemperatureSensor().read());
+  if (act=="READBATTERYTEMPERATURE") {transmitResult(act,readBatteryTemperature().read());return;}
+  if (act=="READMAXTEMPERATURE") {transmitResult(act,readMaxTemperature().read());return;}
+  if (act=="READMINTEMPERATURE") {transmitResult(act,readMinTemperature().read());return;}
+  if (act=="READTEMPERATURESENSOR") {transmitResult(act,readTemperatureSensor().read());return;}
 
-
+  CSystemObject::callCustomFunctions(msg);  
 }

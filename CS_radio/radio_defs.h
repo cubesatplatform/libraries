@@ -1,20 +1,105 @@
 #pragma once
 
-#define RADIOTXDELAY 1000
+
+
+
+#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+    #define PORTENTA_E22_400M30S
+    //#define PORTENTA_E22_900M30S
+
+    #define R1_TXEN PG_3
+    #define R1_RXEN PG_10
+    #define R1_NSS PC_13
+    #define R1_DIO1 PE_3
+    #define R1_NRST PC_15
+    #define R1_BUSY PD_4
+
+    #define R2_TXEN PA_6
+    #define R2_RXEN PA_4
+    #define R2_NSS PI_4
+    #define R2_DIO1 PI_5
+    #define R2_NRST PH_14
+    #define R2_BUSY PH_10
+
+#else
+    #define TTGO1  //TTGO1
+    //#define MYESP32
+    //#define ESP32_GATEWAY
+
+    #define TTGO_SCK        5
+    #define TTGO_MISO       19
+    #define TTGO_MOSI       27
+    #define TTGO_SS         18
+    #define TTGO_DIO0       26
+    #define TTGO_DIO1       33
+    #define TTGO_DIO2       32
+    #define TTGO_RST        23
+
+
+    //Radio1MHz
+    #define R1_NSS 25
+    #define R1_DIO1 26
+    #define R1_NRST 27
+    #define R1_BUSY 28
+
+    //Radio2MHz
+    #define R2_NSS 29
+    #define R2_DIO1 30
+    #define R2_NRST 31
+    #define R2_BUSY 32
+
+    //RadioGHz
+    #define R3_NSS 33
+    #define R3_DIO1 34
+    #define R3_NRST 35
+    #define R3_BUSY 36
+
+
+#endif
+
+
+
+
+
+#define RADIOTXDELAY  20 // 1000
 #define RADIOWAITFORACK 7000
 #define RADIOWAITFORCOMPLETE 7000
 #define SLEEPTIME 15*1000    //1 Orbit  90*60*1000 Min
-#define MODEMCHANGEMAXTIME 100*1000
+#define MODEMCHANGEMAXTIME 2*24*60*60*1000
+
+#define R_STATE "R_STATE"
+#define R2_STATE "R2_STATE"
+
+#define R_INSTATE "R_INSTATE"
+#define R_LASTTX "R_LASTTX"
+#define R_LASTRX "R_LASTRX"
+#define R_TM "R_TM"
+
+
+#define R2_INSTATE "R2_INSTATE"
+#define R2_LASTTX "R2_LASTTX"
+#define R2_LASTRX "R2_LASTRX"
+#define R2_TM "R2_TM"
+
+
+
 
 
 #define PING_INTERVAL             2       // seconds, how much time to wait between PINGs sent from this node
 
-
-#define LORA_FREQUENCY             443.0   //FREQUENCY_900M30S
-#define LORA_RADIO_FREQUENCY        443.0   //FREQUENCY_900M30S
-#define LORA_RADIO2_FREQUENCY       443.0   //FREQUENCY_900M30S
-#define LORA_FREQUENCY_400M30S         443.0   // MHz carrier, for E22-400M30S
-#define LORA_FREQUENCY_GATEWAY         443.0   // MHz carrier, for ESP32 single-channel gateway
+#if defined(TTGO1)
+    #define LORA_FREQUENCY             900.0   //FREQUENCY_900M30S
+    #define LORA_RADIO_FREQUENCY        900.0   //FREQUENCY_900M30S
+    #define LORA_RADIO2_FREQUENCY       900.0   //FREQUENCY_900M30S
+    #define LORA_FREQUENCY_400M30S         900.0   // MHz carrier, for E22-400M30S
+    #define LORA_FREQUENCY_GATEWAY         900.0   // MHz carrier, for ESP32 single-channel gateway    
+#else    
+    #define LORA_FREQUENCY             443.0   //FREQUENCY_900M30S
+    #define LORA_RADIO_FREQUENCY        443.0   //FREQUENCY_900M30S
+    #define LORA_RADIO2_FREQUENCY       443.0   //FREQUENCY_900M30S
+    #define LORA_FREQUENCY_400M30S         443.0   // MHz carrier, for E22-400M30S
+    #define LORA_FREQUENCY_GATEWAY         443.0   // MHz carrier, for ESP32 single-channel gateway
+#endif
 
 
 // Keep TIME OF FLIGHT below 1.5-2 Seconds!!!!
@@ -23,19 +108,19 @@
 #define LORA_BANDWIDTH                 250  //125.0   // kHz dual-sideband  //Large packets would casue errors!!@#!@#! at 125
 #define LORA_SPREADING_FACTOR          11       // 2^9 chirps  10
 #define LORA_CODING_RATE               8       // 4/7 coding
-#define LORA_TXDELAY                   1000
+#define LORA_TXDELAY                   20  //1000
 
 //5600
 #define LORA_BANDWIDTHMEGA                 500  //125.0   // kHz dual-sideband
 #define LORA_SPREADING_FACTORMEGA          8       // 2^9 chirps
 #define LORA_CODING_RATEMEGA               7       // 4/7 coding
-#define LORA_TXDELAYMEGA                   500
+#define LORA_TXDELAYMEGA                  20  //  500
 
 //3200
 #define LORA_BANDWIDTHULTRA                 500  //125.0   // kHz dual-sideband
 #define LORA_SPREADING_FACTORULTRA          9       // 2^9 chirps
 #define LORA_CODING_RATEULTRA               7       // 4/7 coding
-#define LORA_TXDELAYULTRA                   400
+#define LORA_TXDELAYULTRA                 20  //   400
 
 //1600
 #define LORA_BANDWIDTHHIGH                 250  //125.0   // kHz dual-sideband
@@ -47,13 +132,13 @@
 #define LORA_BANDWIDTHMEDIUM                 250  //125.0   // kHz dual-sideband
 #define LORA_SPREADING_FACTORMEDIUM          10       // 2^9 chirps
 #define LORA_CODING_RATEMEDIUM               7       // 4/7 coding
-#define LORA_TXDELAYMEDIUM                   800
+#define LORA_TXDELAYMEDIUM                 20  //   800
 
 //223 bps
 #define LORA_BANDWIDTHLOW                 125  //125.0   // kHz dual-sideband
 #define LORA_SPREADING_FACTORLOW          11       // 2^9 chirps
 #define LORA_CODING_RATELOW               8       // 4/7 coding
-#define LORA_TXDELAYLOW                   1500
+#define LORA_TXDELAYLOW                 20  //   1500
 
 #define LORA_SYNC_WORD                 0x12    // private network
 #define LORA_OUTPUT_POWER              12      // +14 dBm
@@ -124,60 +209,6 @@ int16_t 	setCodingRate (uint8_t cr)
 
 
 
-#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-    #define PORTENTA_E22_400M30S
-    //#define PORTENTA_E22_900M30S
-
-    #define R1_TXEN PG_3
-    #define R1_RXEN PG_10
-    #define R1_NSS PC_13
-    #define R1_DIO1 PE_3
-    #define R1_NRST PC_15
-    #define R1_BUSY PD_4
-
-    #define R2_TXEN PA_6
-    #define R2_RXEN PA_4
-    #define R2_NSS PI_4
-    #define R2_DIO1 PI_5
-    #define R2_NRST PH_14
-    #define R2_BUSY PH_10
-
-#else
-    #define TTGO  //TTGO1
-    //#define MYESP32
-    //#define ESP32_GATEWAY
-
-    #define TTGO_SCK        5
-    #define TTGO_MISO       19
-    #define TTGO_MOSI       27
-    #define TTGO_SS         18
-    #define TTGO_DIO0       26
-    #define TTGO_DIO1       33
-    #define TTGO_DIO2       32
-    #define TTGO_RST        23
-
-
-    //Radio1MHz
-    #define R1_NSS 25
-    #define R1_DIO1 26
-    #define R1_NRST 27
-    #define R1_BUSY 28
-
-    //Radio2MHz
-    #define R2_NSS 29
-    #define R2_DIO1 30
-    #define R2_NRST 31
-    #define R2_BUSY 32
-
-    //RadioGHz
-    #define R3_NSS 33
-    #define R3_DIO1 34
-    #define R3_NRST 35
-    #define R3_BUSY 36
-
-
-#endif
-
 
 
 
@@ -189,4 +220,13 @@ int16_t 	setCodingRate (uint8_t cr)
 #define ESP32_GATEWAY_DIO1_BUILTIN              33
 
 
- 
+
+
+#define _MEGABW "MEGABW"
+#define _ULTRABW "ULTRABW"
+#define _HIGHBW "HIGHBW"
+#define _MEDIUMBW "MEDIUMBW"
+#define _LOWBW "LOWBW"
+#define _NORMALBW "NORMALBW"
+    
+

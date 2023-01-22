@@ -1,21 +1,11 @@
 #include "system_imu.h"
-#include <powerup.h>
+
 
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-#include "pinDefinitions.h"
-
-//#define IMU_OBC_NSS PinNameToIndex(PB_4)
-//#define IMU_OBC_RST PinNameToIndex(PI_14)
-//#define IMU_OBC_INT PinNameToIndex(PI_15)
-//#define IMU_OBC_WAKE PinNameToIndex(PB_3)
-
-#define IMU_OBC_NSS PinNameToIndex(PJ_8)
-#define IMU_OBC_WAKE PinNameToIndex(PJ_9)
-#define IMU_OBC_INT PinNameToIndex(PI_15)
-#define IMU_OBC_RST PinNameToIndex(PI_14)
+  #include "pinDefinitions.h"
 #endif
 
-#define IMU_WAIT_TIME 100000
+#define IMU_WAIT_TIME 10000
 
 
 void CIData::init(){  
@@ -50,88 +40,121 @@ void CIMU::loop(){
 
 
 void CIMU::test(CMsg &msg){ 
-  std::string mode=msg.getParameter("MODE","ROT");  
-  int period=msg.getParameter("PERIOD",3000);
-  setMode(mode);    
-  Run(period);  
-  
-  disableMBLogic();
+
+  myIMU.enableRotationVector(50); //Send data update every 50ms
+
+  Serial.println(F("Rotation vector enabled"));
+  Serial.println(F("Output in form i, j, k, real, accuracy"));
+
+  //Look for reports from the IMU
+  long t=getTime();
+
+  while(getTime()<t+1500){
+    if (myIMU.dataAvailable() == true)
+    {    
+      float roll = (myIMU.getRoll()) * 180.0 / PI; // Convert roll to degrees
+      float pitch = (myIMU.getPitch()) * 180.0 / PI; // Convert pitch to degrees
+      float yaw = (myIMU.getYaw()) * 180.0 / PI; // Convert yaw / heading to degrees
+
+      Serial.print(roll, 1);
+      Serial.print(F(","));
+      Serial.print(pitch, 1);
+      Serial.print(F(","));
+      Serial.print(yaw, 1);
+
+      Serial.println();
+    }    
+  }
 }
+  
+
 
 
 void CIMU::runOnce(CMsg &m){
-  if (myIMU.dataAvailable() == true) {
-    GetData();      
-    writeconsoleln("New IMU Data");
+  if (myIMU.dataAvailable() == true) {    
+    GetData();          
     }
   else {
-    if(getTime()>(_dataUpdatedOn+IMU_WAIT_TIME)){  //Check if nothing for 100s
-        incErrorCount();  //Reset IMU        
+    if(getTime()>(_dataUpdatedOn+IMU_WAIT_TIME)){  //Check if nothing for 100s        
+        writeconsole("Wait Time  NO Data  Resetting State");
+        _dataUpdatedOn=getTime();
+        setState(_BLANK);
     }
   }
 }
 
+
 void CIMU::GetData(){
+  
   _dataUpdatedOn=getTime();
+  bool newData=false;
 
   float quatRadianAccuracy;  
  
-  CMsg mGyro,mLin,mMag,mPRY, mQuat,mAccel;
+  CMsg m;
 
-  if(Mode()=="GYRO"){
-    Gyro.archiveData();
-    myIMU.getGyro(Gyro._fX , Gyro._fY, Gyro._fZ, Gyro.Acc);
-    Gyro._changedOn=getTime();
-    mGyro=Gyro.makeMessage("GYRO");
-    addDataMap(std::string("GYRO"),mGyro);
+  _Data.archiveData();
+  _Data._changedOn=getTime();
+  newData=true;
+
+  std::string key=name();
+  key+=Mode();
+
+  
+
+  if((Mode()==_GYRO)||(Mode()==_BLANK)){    
+    myIMU.getGyro(_Data._fX , _Data._fY, _Data._fZ, _Data.Acc);    
+    m=_Data.makeMessage(key);
+    
+    
   }
 
-  if(Mode()=="LIN"){
-    Lin.archiveData();
-    myIMU.getLinAccel(Lin._fX , Lin._fY, Lin._fZ, Lin.Acc);
-    Lin._changedOn=getTime();
-    mLin=Lin.makeMessage("LIN");
-    addDataMap(std::string("LIN"),mLin);
+  if(Mode()==_LIN){
+    myIMU.getLinAccel(_Data._fX , _Data._fY, _Data._fZ, _Data.Acc);    
+    m=_Data.makeMessage(key);
+    
   }
 
-  if(Mode()=="ACCEL"){
-    myIMU.getAccel(Lin._fX , Lin._fY, Lin._fZ, Lin.Acc);
-    Accel._changedOn=getTime();
-    mAccel=Accel.makeMessage("ACCEL");
-    addDataMap(std::string("ACCEL"),mAccel);
+  if(Mode()==_ACCEL){    
+    myIMU.getAccel(_Data._fX , _Data._fY, _Data._fZ, _Data.Acc);
+    m=_Data.makeMessage(key);
+    
   }
 
-  if(Mode()=="MAG"){
-    Mag.archiveData();
-    myIMU.getMag(Mag._fX , Mag._fY, Mag._fZ, Mag.Acc);
-    Mag._changedOn=getTime();
-    mMag=Mag.makeMessage("MAG");
-    addDataMap(std::string("MAG"),mMag);
+  if(Mode()==_MAG){
+    myIMU.getMag(_Data._fX , _Data._fY, _Data._fZ, _Data.Acc);  
+    m=_Data.makeMessage(key);
+    
   }
 
 
-  if(Mode()=="ROT"){
-    PRY.archiveData();
-    Quat.archiveData();
-    PRY._changedOn=getTime();  //Pitch, Roll Yaw
-    Quat._changedOn=getTime();
-    myIMU.getQuat(Quat._fX, Quat._fY, Quat._fZ, Quat._fR, quatRadianAccuracy, Quat.Acc);
-    mQuat=Quat.makeMessage("QUAT");
-    addDataMap(std::string("QUAT"),mQuat);
+  if(Mode()==_QUAT){    
+    myIMU.getQuat(_Data._fX, _Data._fY, _Data._fZ, _Data._fR, quatRadianAccuracy, _Data.Acc);
+    m=_Data.makeMessage(key);
+
+  }
+
+  if(Mode()==_PRY){
+    *_Data.pPitch=(myIMU.getPitch()) * 180.0 / PI; // Convert pitch to degrees
+    *_Data.pRoll=(myIMU.getRoll()) * 180.0 / PI; // Convert roll to degrees
+    *_Data.pYaw=(myIMU.getYaw()) * 180.0 / PI; // Convert yaw / heading to degrees
+    m=_Data.makeMessage(key);
+  }
+
+  m.writetoconsole();
+  addDataMap(m);
 
 
-    *PRY.pPitch=(myIMU.getPitch()) * 180.0 / PI; // Convert pitch to degrees
-    *PRY.pRoll=(myIMU.getRoll()) * 180.0 / PI; // Convert roll to degrees
-    *PRY.pYaw=(myIMU.getYaw()) * 180.0 / PI; // Convert yaw / heading to degrees
-    mPRY=PRY.makeMessage("PRY");
-    addDataMap(std::string("PRY"),mPRY);      
+  if(newData){
+    _newDataCounter++;
+    if(_newDataCounter%150==0)  {  writeconsoleln("New IMU Data");  _newDataCounter=0;}
+   
   }
 }    
 
   
 void CIMU::init(){    
-  setErrorThreshold(4);
-  setInterval(5);
+
   setForever();
 }
 
@@ -139,11 +162,10 @@ void CIMU::init(){
 void CIMU::setup(){
   _dataUpdatedOn=getTime();
   
-  if(Name()=="IMUSPI") setupSPI();
+  if(name()==_IMUS) setupSPI();  
+  else setupI2C();
   
-  if(Name()=="IMUI2C") setupI2C();
-  
-  if(State()=="PLAY"){  
+  if(state()==_PLAY){  
     setPeriod();
   
   }
@@ -154,70 +176,124 @@ void CIMU::config(char addr, TwoWire *twowire){
   _address=addr;
   _pWire=twowire;  
   setForever();
-  setInterval(5);  
+  setInterval(10);  
+  setErrorThreshold(100);
   setModifiedTime(getTime());
   }
 
 
 void CIMU::config(CMsg &msg){
-  std::string straddress=msg.getParameter("ADDRESS");
-  std::string strwire=msg.getParameter("WIRE");
+  std::string straddress=msg.get(_ADDRESS);
+  std::string strwire=msg.get(_WIRE);
 
   TwoWire *pWire;
 
-  if(strwire=="Wire") pWire=&Wire;  
-  if(strwire=="Wire1") pWire=&Wire1;  
-  if(strwire=="Wire2") pWire=&Wire2;  
+  if(strwire==_WIRE) pWire=&Wire;  
+  if(strwire==_WIRE1) pWire=&Wire1;  
+  if(strwire==_WIRE2) pWire=&Wire2;  
 
   if(straddress.size()>0){
     config(straddress[0],pWire);
   }
 }
 
+
+void CIMU::goMag(){
+  _m.set(_MODE,_MAG);
+  setPeriod(50);
+  run();
+}
+
+
+
+void CIMU::goGyro(){
+  _m.set(_MODE,_GYRO);
+  setPeriod(30);
+  run();
+}
+
+
+void CIMU::goPRY(){
+  _m.set(_MODE,_PRY);
+  setPeriod(30);
+  run();
+}
+
+
+void CIMU::goQuat(){
+_m.set(_MODE,_QUAT);
+  setPeriod(30);
+  run();
+}
+
+void CIMU::goAccel(){
+  _m.set(_MODE,_ACCEL);
+  setPeriod(30);
+  run();
+}
+
+
+void CIMU::newMode(CMsg &msg){
+  msg.writetoconsole();
+  std::string mode=msg.get(_VALUE);
+  _m.set(_MODE,mode);  
+  setPeriod(50);
+}
+
 void CIMU::setPeriod(int period){              //IMPORTANT
   /*
-  myIMU.enableLinearAccelerometer(50);  // m/s^2 no gravity
-  myIMU.enableRotationVector(50);  // quat
-  myIMU.enableGyro(50);  // rad/s  
+  myIMU.enableLinearAccelerometer(30);  // m/s^2 no gravity
+  myIMU.enableRotationVector(30);  // quat
+  myIMU.enableGyro(30);  // rad/s  
   */  
+
+  if (state()!=_PLAY){
+    run(200);
+    if (state()!=_PLAY) return;
+  }
   
-  if(Mode()==std::string("ROT")) myIMU.enableRotationVector(period); //Euler & Quaternion Send data update every 50ms
-  if(Mode()==std::string("GYRO"))  myIMU.enableGyro(period); // rad/s  
-  if(Mode()==std::string("GYROROT")) myIMU.enableGyroIntegratedRotationVector(period); //Quaternion Send data update every 50ms
-  if(Mode()==std::string("MAG")) myIMU.enableMagnetometer(period);   // cannot be enabled at the same time as RotationVector (will not produce data)
-  if(Mode()==std::string("ACCEL")) myIMU.enableAccelerometer(period);
-  if(Mode()==std::string("LIN")) myIMU.enableLinearAccelerometer(period);
+  if(Mode()==_PRY) {
+    myIMU.enableRotationVector(period); //Euler & Quaternion Send data update every 50ms
+    writeconsoleln("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww          Set Period  "+Mode());
+  }
+  if(Mode()==_QUAT) myIMU.enableRotationVector(period); //Euler & Quaternion Send data update every X ms
+  if(Mode()==_GYRO)  myIMU.enableGyro(period); // rad/s  
+  if(Mode()==_GYROROT) myIMU.enableGyroIntegratedRotationVector(period); //Quaternion Send data update every X ms
+  if(Mode()==_MAG) myIMU.enableMagnetometer(period);   // cannot be enabled at the same time as RotationVector (will not produce data)
+  if(Mode()==_ACCEL) myIMU.enableAccelerometer(period);
+  if(Mode()==_LIN) myIMU.enableLinearAccelerometer(period);
 }
 
 void CIMU::setupSPI(){
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
    delay(100);
    writeconsoleln("BNO080 SPI Setup");
- 
-for(int retries=0;retries<5;retries++){
-    if(myIMU.beginSPI(IMU_OBC_NSS, IMU_OBC_WAKE, IMU_OBC_INT, IMU_OBC_RST) == false)
-    {
-      incErrorCount();             
+  setState(_ERROR);
+  for(int retries=0;retries<5;retries++){
+      if (myIMU.beginSPI(PinNameToIndex(PJ_8), PinNameToIndex(PJ_9), PinNameToIndex(PI_15), PinNameToIndex(PI_14))  == false)  //This worked in demo program
+      {
+        incErrorCount();             
+      }
+      else{       
+        setState(_PLAY);
+        writeconsole("IMU Ready");
+        return;
+      }
     }
-    else{       
-      setState("PLAY");
-      writeconsole("IMU Ready");
-      return;
-    }
-  }
 #endif 
 sendError(); 
 }
 
 
 void CIMU::setupI2C(){
-  enableMBLogic();
+  //enableMBLogic();
   delay(100);
   if(_pWire==NULL)
     config(_address);
   _pWire->flush();
 
   writeconsoleln("BNO080 I2C Setup");
+  setState(_ERROR);
   for(int retries=0;retries<5;retries++){
     
     if (myIMU.begin(_address) == false) {   
@@ -226,8 +302,8 @@ void CIMU::setupI2C(){
       incErrorCount();    
     }  
     else{             
-      setState("PLAY");
-      writeconsole("IMU Ready");
+      setState(_PLAY);
+      writeconsoleln("IMU Ready   !!!");
       return;
       }
     }
@@ -237,7 +313,21 @@ void CIMU::setupI2C(){
 
 
 
-
 void CIMU::callCustomFunctions(CMsg &msg){
+  std::string act=msg.get(_ACT);
+  int val=msg.get(_VALUE,30);
+  writeconsole("CIMU::callCustomFunctions newMsg receieved by ");writeconsole(name()); writeconsole("  ");writeconsoleln(act);
+  if(act==_SETPERIOD) {setPeriod(val);writeconsoleln("Period Set");return;}
+
+
+  mapcustom(goMag)
+  mapcustom(goGyro)
+  mapcustom(goPRY)
+  mapcustom(goAccel)
+  mapcustom(goQuat)
+
+  mapcustom(setupI2C)
+  mapcustom(setupSPI)
+
   CSystemObject::callCustomFunctions(msg);
 }

@@ -1,51 +1,38 @@
- #include "state_payload.h"
- #include <powerup.h>
+#include "state_payload.h"
 
 
-void CPayloadState::start(){
-  if(State()=="POWERUPDELAY"){
-    if(getTime()>(startTime()+ANDROID_POWERUP_DELAY)){
-      setState("PLAY");	      
-    }  
-  }	
-	else if(getTime()>startTime()){
-		setState("POWERUPDELAY");	
-    disablePhone();    
-	}  
-}
+void CPayloadState::enter() {    //Need to charge Phone for 10 minutes before we can use it.  Then turn off power to phone to anable Serial1 to work
 
-
-
-void CPayloadState::enter() { 
-  
   CStateObj::enter();
-  enablePhone();
+  enablePin(_PINPHONEPOWER);
   writeconsoleln("Enter Payload  Need to charge Phone"); 
   
-  _obj._startTime = getTime();
-	setState("PAUSE");
+  _obj._startTime = getTime()+ANDROID_POWERUP_DELAY;
+	setState(_PAUSE);
 
-  CSystemObject * psys=getSystem("PHONE");
- 
-  startTime(getTime()+10000);
   
-  if (psys!=NULL){
-   
-    psys->startTime(startTime()+10000);
-    CMsg msg;
-    std::string str="CPHOTO(F,90%,100,100,AUTO)";
-    
-    msg.setSYS("PHONE");
-    msg.setACT(str);
-    psys->addMessageList(msg);
-    }        
- 
- 
 }
 
 
 void CPayloadState::exit() { 
-  disablePhone();
+  
   CStateObj::exit();
+  disablePin(_PINPHONEPOWER);
     
+}
+
+
+
+void CPayloadState::start(){      //Then turn off power to phone to anable Serial1 to work
+  if(getTime()>(startTime()+ANDROID_POWERUP_DELAY)){
+    disablePin(_PINPHONEPOWER);
+    setState(_PLAY);	      
+
+
+    CMsg m;
+    m.set(_SYS,_PHONE );
+    m.set(_ACT,_SENDSERIAL);
+    m.set(_VALUE,"CINIT");
+    addMessageList(m);
+  }  
 }

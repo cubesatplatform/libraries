@@ -2,19 +2,22 @@
 #include <vector>
 #include "system_irarray.h"
 #include <cmath>
+#include <string>
+
+
+#define MAXSTREAMSIZE 200
 
 const std::vector<char> pixel={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 const std::string greyRamp = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+=<>i!lI;,""^`\'. ";
 
-CIRArray::CIRArray(){  
-  Name("IRARRAY");  
+CIRArray::CIRArray(){    
 }
 
 
 void CIRArray::init(){
   CSystemObject::init();
-  setInterval(60000);
-  setErrorThreshold(3); 
+  setInterval(40);
+  setErrorThreshold(10); 
 }
 
  void CIRArray::config( char addr, TwoWire *pWire) {
@@ -25,14 +28,14 @@ void CIRArray::init(){
 
 
 void CIRArray::config(CMsg &msg){
-  std::string straddress=msg.getParameter("ADDRESS");
-  std::string strwire=msg.getParameter("WIRE");
+  std::string straddress=msg.get(_ADDRESS);
+  std::string strwire=msg.get(_WIRE);
 
   TwoWire *pWire;
 
-  if(strwire=="Wire") pWire=&Wire;  
-  if(strwire=="Wire1") pWire=&Wire1;  
-  if(strwire=="Wire2") pWire=&Wire2;  
+  if(strwire==_WIRE) pWire=&Wire;  
+  if(strwire==_WIRE1) pWire=&Wire1;  
+  if(strwire==_WIRE2) pWire=&Wire2;  
 
   if(straddress.size()>0){
     config(straddress[0],pWire);
@@ -44,70 +47,71 @@ void CIRArray::setup()
   CMsg m;
   init();          
 
-  for(int retries=0;retries<5;retries++){
+  for(int retries=0;retries<10;retries++){
   if (! mlx.begin(_address, _pWire)) {
      incErrorCount();      
-     delay(30);
+     
+     writeconsole("NOT Found MLX90640: ");writeconsoleln(_address);
+     delay(500);
     }
   else{
     writeconsoleln("Found MLX90640");
+    delay(500);
   
     
-    mlx.setMode(MLX90640_INTERLEAVED);
-    //mlx.setMode(MLX90640_CHESS);
-    //writeconsole("Current mode: ");
-    if (mlx.getMode() == MLX90640_CHESS) {
-      //writeconsoleln("Chess");
-    } else {
-      //writeconsoleln("Interleave");    
+    mlx.setMode(MLX90640_INTERLEAVED);    
+    
+    if (mlx.getMode() == MLX90640_CHESS) {    
+    } else {    
     }
   
     mlx.setResolution(MLX90640_ADC_18BIT);
-    //writeconsole("Current resolution: ");
+    
     mlx90640_resolution_t res = mlx.getResolution();
     switch (res) {
-      case MLX90640_ADC_16BIT: m.setINFO("16 bit"); break;
-      case MLX90640_ADC_17BIT: m.setINFO("17 bit"); break;
-      case MLX90640_ADC_18BIT: m.setINFO("18 bit"); break;
-      case MLX90640_ADC_19BIT: m.setINFO("19 bit"); break;
+      case MLX90640_ADC_16BIT: m.set(_INFO,"16 bit"); break;
+      case MLX90640_ADC_17BIT: m.set(_INFO,"17 bit"); break;
+      case MLX90640_ADC_18BIT: m.set(_INFO,"18 bit"); break;
+      case MLX90640_ADC_19BIT: m.set(_INFO,"19 bit"); break;
       }
   
-    mlx.setRefreshRate(MLX90640_2_HZ);
-    //writeconsole("Current frame rate: ");
+    mlx.setRefreshRate(MLX90640_4_HZ);   //2
+    
     mlx90640_refreshrate_t rate = mlx.getRefreshRate();
     switch (rate) {
-      case MLX90640_0_5_HZ: m.setCOMMENT("0.5 Hz"); break;
-      case MLX90640_1_HZ: m.setCOMMENT("1 Hz"); break; 
-      case MLX90640_2_HZ: m.setCOMMENT("2 Hz"); break;
-      case MLX90640_4_HZ: m.setCOMMENT("4 Hz"); break;
-      case MLX90640_8_HZ: m.setCOMMENT("8 Hz"); break;
-      case MLX90640_16_HZ: m.setCOMMENT("16 Hz"); break;
-      case MLX90640_32_HZ: m.setCOMMENT("32 Hz"); break;
-      case MLX90640_64_HZ: m.setCOMMENT("64 Hz"); break;
+      case MLX90640_0_5_HZ: m.set(_COMMENT,"0.5 Hz"); break;
+      case MLX90640_1_HZ: m.set(_COMMENT,"1 Hz"); break; 
+      case MLX90640_2_HZ: m.set(_COMMENT,"2 Hz"); break;
+      case MLX90640_4_HZ: m.set(_COMMENT,"4 Hz"); break;
+      case MLX90640_8_HZ: m.set(_COMMENT,"8 Hz"); break;
+      case MLX90640_16_HZ: m.set(_COMMENT,"16 Hz"); break;
+      case MLX90640_32_HZ: m.set(_COMMENT,"32 Hz"); break;
+      case MLX90640_64_HZ: m.set(_COMMENT,"64 Hz"); break;
       }
-    writeconsoleln(m.serializeout());
-    setState("PLAY");
+    
+    setState(_PLAY);
     return;
     }
   }
   sendError();
 }
 
-void CIRArray::test(CMsg &msg){    
-  Run(250);  
-}
+
 
 
 void CIRArray::loop(){  
     CMsg m;
-    runOnce(m);    
-    Output(m);
+    m.set(_CONSOLE,"1");
+    runOnce(m);       //PUT BACK  TESTING ONLY
+    
+    output(m);
+   // setState("COMPLETE");
 }
 
 
 
 float CIRArray::getTemp(int x, int y, int incx, int incy){
-  int offset=0;
+  unsigned int offset=0;
   float t = NAN;
   
   int posX=x+incx;
@@ -125,8 +129,32 @@ float CIRArray::getTemp(int x, int y, int incx, int incy){
 }
 
 
+CMsg CIRArray::variance(float a[], int n) 
+{   
+    CMsg m;
+    // Compute mean (average of elements) 
+    float sum = 0; 
+    
+    for (int i = 0; i < n; i++) sum += a[i];    
+    float mean = (float)sum / (float)n; 
+    // Compute sum squared differences with mean. 
+    float sqDiff = 0; 
+    for (int i = 0; i < n; i++) 
+        sqDiff += (a[i] - mean) * (a[i] - mean); 
+   // return (float)sqDiff / n; 
+
+    m.set("MEAN",mean);
+    m.set("VARIANCE",(float)sqDiff / n);
+    m.set("STDDEV",sqrt((float)sqDiff / n));
+    m.set("COUNT", n);
+
+    return m;
+} 
+
+
 
 std::tuple<int, int> CIRArray::getHotSpot(){
+  float avgframe[IR_X*IR_Y];
   int maxX=-1,maxY=-1;
   float favg=NAN;
   for (int y=0; y<IR_Y; y++) {
@@ -222,13 +250,13 @@ std::tuple<int, int> CIRArray::getHotSpot(){
 
 
 
-void CIRArray::consoleOutTemp(){
-writeconsoleln("   ");
+void CIRArray::consoleOut(char *imageTable){
+
 for (uint8_t h=0; h<IR_Y; h++) {
   for (uint8_t w=0; w<IR_X; w++) {
-    float t = frame[h*IR_X + w];
+    char c = imageTable[h*IR_X + w];
 
-    writeconsole(t);
+    writeconsole(c);
     writeconsole(", ");
   }
   writeconsoleln("  ");
@@ -237,75 +265,52 @@ writeconsoleln("   ");
 }
 
 
-void CIRArray::consoleOut(){
-writeconsoleln("   ");
-char c;
-for (uint8_t h=0; h<IR_Y; h++) {
-  for (uint8_t w=0; w<IR_X; w++) {
-     c= imageTable[h*IR_X + w];
-    writeconsole(c);    
-  }
-  writeconsoleln("  ");
-}
-writeconsoleln("   ");
-}
 
 
-void CIRArray::fillPixel(){
+
+void CIRArray::fillPixel(char *imageTable){
+
   float y;
-  int offset;
-  imageTable[768]=0;
-  imageTable[769]=0;
+  unsigned int offset;
+  
    
-  for (int x = 0 ; x < 768 ; x++){  
+  for (int x = 0 ; x < IRARRAYSIZE ; x++){  
     imageTable[x]=' ';
     y=frame[x];
     if (y!=0){
       offset= (int) map(y*10, imin, imax, 0, pixel.size()-1);
-      if ((offset<0)||(offset>=pixel.size())){
-         imageTable[x]='A';       
-      }
-       else imageTable[x]=pixel[offset];
+      imageTable[x]=pixel[offset];
     }  
   }
 }
 
-void CIRArray::fillGrey(){
+void CIRArray::fillGrey(char *imageTable){
+
   float y;
-  int offset;
-  imageTable[768]=0;
-  imageTable[769]=0;
+  unsigned int offset;
+ 
 
 
   std::string greyRamp1=greyRamp;
-/*
-  std::string greyRamp1;
-  for(auto c:greyRamp){
-    greyRamp1=c+greyRamp1;
-  }
- */ 
+ 
 
-  for (int x = 0 ; x < 768 ; x++){  
+  for (int x = 0 ; x < IRARRAYSIZE ; x++){  
     imageTable[x]=' ';
     y=frame[x];
     if (y!=0){
       offset= (int) map(y*10, imin, imax, 0, greyRamp1.size()-1);
-      if ((offset<0)||(offset>=greyRamp1.size())){
-         imageTable[x]=' ';       
-      }
-       else imageTable[x]=greyRamp1[offset];
+      imageTable[x]=greyRamp1[offset];
     }
     
   }
 }
 
-void CIRArray::fillAscii(){
+void CIRArray::fillAscii(char *imageTable){
+  
   float t;
   char c;
-  imageTable[768]=0;
-  imageTable[769]=0;
    
-  for (int x = 0 ; x < 768 ; x++){  
+  for (int x = 0 ; x < IRARRAYSIZE ; x++){  
     t=frame[x];
     c  = '&';
     if (t!=0){
@@ -326,17 +331,59 @@ void CIRArray::fillAscii(){
 }
 
 
+void CIRArray::fillTemp(char *imageTable){
+  
+  float t;
+  unsigned char c;
+
+  float fmean=0.0;
+  float fstddev=0.0;
+
+  
+  CMsg m= variance(frame, IRARRAYSIZE);
+  m.writetoconsole();
+
+
+  fmean=m.get("MEAN",0.0);   
+  
+  fstddev=m.get("STDDEV",0.0);  //Everything is within 4 standard deviations of the mean  (basically everything)
+
+
+   
+  for (int x = 0 ; x < IRARRAYSIZE ; x++){  
+    t=frame[x];
+    /*
+    writeconsole(t);writeconsole(" ");
+    t+=offset;
+    if (t<0.0)  t=0.0;
+    if (t>254.0) t=254.0;   
+    c=char(round(t));
+    */
+
+   //int <newvalue> = map(<value>, <original_min>, <original_max>, <new_min>, <new_max>);
+    c=map(t, fmean-5.0*fstddev, fmean+5.0*fstddev, 0, 255);
+    writeconsole(c);writeconsole(" ");
+    imageTable[x]=c;
+  }
+}
+
+
+
 void CIRArray::runOnce(CMsg &msg)
 {    
   CMsg m;
+  
   if (mlx.getFrame(frame) != 0) {
     incErrorCount();    
+    return;
   }
-
+  
+  
   float y,lasty;
 
-  int offset=rand()%700 +5;   //random between 7 and 705
+  unsigned int offset=rand()%700 +5;   //random between 7 and 705
 
+  
   y=frame[offset];
 
   if(y<-100.0) y=0.0;
@@ -346,8 +393,10 @@ void CIRArray::runOnce(CMsg &msg)
   fmax=y;
   lasty=y;
    
-  for (int x = 0 ; x < 768 ; x++)    //Find min max
+  for (int x = 0 ; x < IRARRAYSIZE ; x++)    //Find min max
   {
+    y=frame[x];
+    frame[x]=y*9.0/5.0+32.0;  //convert to fahrenheit
     y=frame[x];
     if (isnan(y)){
       y=lasty;
@@ -372,57 +421,111 @@ void CIRArray::runOnce(CMsg &msg)
 }
 
 
-void CIRArray::Output(CMsg &msg){  //Easier to send as long   convert to decimal when receiv
-  std::string sType=msg.getParameter("TYPE","A");
-  std::string sDisplay=msg.getParameter("CONSOLE","1");
+void CIRArray::output(CMsg &msg){  //Easier to send as long   convert to decimal when receivE
 
+  writeconsoleln("IRArray output............................");
+  char imageTable[IRARRAYSIZE];  //need it null terminated  
+
+  memset(imageTable, 7, IRARRAYSIZE);
   
-  if(sType=="P") fillPixel();
-  if(sType=="G") fillGrey();
-  if(sType=="A") fillAscii();
+  std::string sType=msg.get(_VALUE,"A");
+  std::string sDisplay=msg.get(_CONSOLE,"0");
+
+/*
+  if(sType==_FILLPIXEL) fillPixel(imageTable);
+  if(sType==_FILLGREY) fillGrey(imageTable);
+  if(sType==_FILLASCII) fillAscii(imageTable);
   
+  */
+  
+  fillTemp(imageTable);
   if(sDisplay=="1"){
-    consoleOutTemp();
-    consoleOut();
+    consoleOut(imageTable);    
   }
   
-  CMsg m;
-
   
-  m.setTIME(getTime());
+
+  CMsg m= variance(frame, IRARRAYSIZE);
+
+  m.set(_NAME,name());
+  m.set(_TIME,getTime());
   
   std::tuple<int, int> XY=getHotSpot();
-  
-  m.setParameter("X",std::get<0>(XY));
-  m.setParameter("Y",std::get<1>(XY));
-  m.setParameter("MAX",fmax);
-  m.setParameter("MIN",fmin);
+  int x=std::get<0>(XY);
+  int y=std::get<1>(XY);
+  m.set(_PIXELX,x);
+  m.set(_PIXELY,y);
+  m.set(_IR_MAX,fmax);
+  m.set(_IR_MIN,fmin);
+  m.writetoconsole();
+  addTransmitList(m);
+  addDataMap(m);
 
-  std::string s;
-  int y=0;
-  for (int count=0; count<4; count++){
-    for(int x=0; x<200; x++){
-      y=count*256+x;
-      if(y>755) break;
-      s+=imageTable[y];
-    }
-    m.setDATA(s);   ///  CHECK!!#!@#!@#
-    s="";      
-    std::string str=tostring(count);
-    m.setNAME(Name()+str);                     //Splits it in 3
-    addDataMap(m.getNAME(),m); 
+  std::string datastr;
+
+  for(int i=0;i<IRARRAYSIZE;i++){
+    datastr+=imageTable[i];
   }
+
   
+  char c='a';
+
+
+  CMsg mm;
+  mm.set(_TIME,getTime()/1000);
+
+  std::string s=mm.get(_TIME);
+
+
+  std::string strfn="irr";  
+  strfn+=name();
+  strfn+='-';
+  strfn+=s;               //Makes the name unique
+  strfn+='_';
+  std::string strfilename=strfn;
+  
+  strfilename+="_.jpg";
+  m.set(_MSGTYPE,_STREAM);
+  m.set(_API,_INSERTMULTI);
+  m.set(strfilename,datastr);
+
+  addTransmitList(m);
+
+  for(int count=0;count<IRARRAYSIZE;count+=MAXSTREAMSIZE){
+    std::string str;
+    m.clear();
+    str=datastr.substr(count,MAXSTREAMSIZE);
+      
+    strfilename=strfn;  
+    strfilename+=c;
+    strfilename+=".jpg";
+    m.set(_MSGTYPE,_STREAM);
+    m.set(_API,_INSERTMULTI);
+    m.set(strfilename,str);
+    
+    c++;
+    
+    addTransmitList(m);
+  }
 }
 
 
 
 void CIRArray::callCustomFunctions(CMsg &msg){   //Calls a specific function directly
-  CSystemObject::callCustomFunctions(msg);
-  std::string act=msg.getParameter("ACT");  
+ 
+  std::string act=msg.get(_ACT);  
+
+ 
   
-  if (act=="FILLPIXEL") fillPixel();
-  if (act=="FILLGREY") fillGrey();
-  if (act=="FILLASCII")  fillAscii();
+  /*
+  mapcustom(fillPixel)
+  mapcustom(fillGrey)
+  mapcustom(fillAscii)
+
+  if (act==FILLPIXEL) fillPixel();
+  if (act==FILLGREY) fillGrey();
+  if (act==FILLASCII)  fillAscii();
+  */
+   CSystemObject::callCustomFunctions(msg);
 
 }
