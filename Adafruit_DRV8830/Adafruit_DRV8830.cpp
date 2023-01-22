@@ -58,8 +58,6 @@ bool Adafruit_DRV8830::begin(uint8_t addr, TwoWire *theWire) {
   return true;
 }
 
-
-
 /**************************************************************************/
 /*!
     @brief Set the PWM output
@@ -70,9 +68,10 @@ bool Adafruit_DRV8830::begin(uint8_t addr, TwoWire *theWire) {
 /**************************************************************************/
 bool Adafruit_DRV8830::setSpeed(uint8_t throttle) {
   throttle = map(throttle, 0, 255, 0x0, 0x3F);
-  if (throttle < 6) throttle = 6;
+  if (throttle < 6)
+    throttle = 6;
 
-  //Serial.println(throttle, HEX);
+  // Serial.println(throttle, HEX);
   Adafruit_I2CRegisterBits dac =
       Adafruit_I2CRegisterBits(ctrl_reg, 6, 2); // # bits, bit_shift
   return dac.write(throttle);
@@ -89,13 +88,13 @@ bool Adafruit_DRV8830::setSpeed(uint8_t throttle) {
 bool Adafruit_DRV8830::run(DRV8830_Direction direction) {
   Adafruit_I2CRegisterBits dirbits =
       Adafruit_I2CRegisterBits(ctrl_reg, 2, 0); // # bits, bit_shift
-  return dirbits.write((uint8_t) direction);
+  return dirbits.write((uint8_t)direction);
 }
-
 
 /**************************************************************************/
 /*!
-
+    @brief Get fault code
+    @return Fault register
 */
 /**************************************************************************/
 uint8_t Adafruit_DRV8830::getFaults(void) {
@@ -104,9 +103,15 @@ uint8_t Adafruit_DRV8830::getFaults(void) {
   return fault;
 }
 
+/**************************************************************************/
+/*!
+    @brief Clear fault code
+    @return true on success
+*/
+/**************************************************************************/
+
 bool Adafruit_DRV8830::clearFaults(void) {
   Adafruit_I2CRegisterBits clear =
       Adafruit_I2CRegisterBits(fault_reg, 1, 7); // # bits, bit_shift
   return clear.write(1);
 }
-
