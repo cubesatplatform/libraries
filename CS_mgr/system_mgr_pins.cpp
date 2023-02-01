@@ -175,7 +175,7 @@ void CSystemMgr::tBeam(CMsg &msg){
 	
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   #else
-  #define AXP192_SLAVE_ADDRESS 0x34
+  //#define AXP192_SLAVE_ADDRESS 0x34
   Wire.begin(I2C_SDA, I2C_SCL);
   writeconsole(" T Beam ");
   

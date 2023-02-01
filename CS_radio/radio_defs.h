@@ -22,9 +22,8 @@
     #define R2_BUSY PH_10
 
 #else
-    #define TTGO1  //TTGO1
-    //#define MYESP32
-    //#define ESP32_GATEWAY
+    #define TTGO1278
+
 
     #define TTGO_SCK        5
     #define TTGO_MISO       19
@@ -87,13 +86,14 @@
 
 #define PING_INTERVAL             2       // seconds, how much time to wait between PINGs sent from this node
 
-#if defined(TTGO1)
+#if defined(TTGO1262)
     #define LORA_FREQUENCY             900.0   //FREQUENCY_900M30S
     #define LORA_RADIO_FREQUENCY        900.0   //FREQUENCY_900M30S
     #define LORA_RADIO2_FREQUENCY       900.0   //FREQUENCY_900M30S
     #define LORA_FREQUENCY_400M30S         900.0   // MHz carrier, for E22-400M30S
     #define LORA_FREQUENCY_GATEWAY         900.0   // MHz carrier, for ESP32 single-channel gateway    
-#else    
+#endif
+#if defined(TTGO1268)  || defined(TTGO1278) ||defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
     #define LORA_FREQUENCY             443.0   //FREQUENCY_900M30S
     #define LORA_RADIO_FREQUENCY        443.0   //FREQUENCY_900M30S
     #define LORA_RADIO2_FREQUENCY       443.0   //FREQUENCY_900M30S

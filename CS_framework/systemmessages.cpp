@@ -71,6 +71,13 @@ void CMessagesObj::stats(CMsg &msg){
   addTransmitList(m);
 }
 
+void CMessagesObj::saveToCloud(CMsg &msg){
+  int val=msg.get(_VALUE,1);
+
+  if (val) MMM.saveToCloud(true);
+  else MMM.saveToCloud(false);
+}
+
 
 void CMessagesObj::callCustomFunctions(CMsg &msg){
   
@@ -122,6 +129,7 @@ void CMessagesObj::callCustomFunctions(CMsg &msg){
   //mapcustom(MMM.clearDataMap);
   //mapcustommsg(MMM.sendDataMap)
   //mapcustom(MMM.displayFreeHeap)
+  mapcustommsg(saveToCloud)
 
   CSystemObject::callCustomFunctions(msg);
 }

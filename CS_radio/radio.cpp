@@ -229,8 +229,8 @@ void CRadio::setup() {
   #else    
     writeconsoleln("Initializing Radio on new TTGO ... ");
     
-    #ifdef TTGO1
-      writeconsoleln(_BLANK);      writeconsoleln("InitBoard TTGO 1 ... ");
+    #if defined(TTGO1262) || defined(TTGO1268)
+      writeconsoleln(_BLANK);      writeconsoleln("InitBoard TTGO  ... ");
       initBoard();
       delay(1500);
     #endif  
@@ -244,21 +244,14 @@ void CRadio::setup() {
     //state =  plora->begin(float freq = 434.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX126X_SYNC_WORD_PRIVATE, int8_t power = 10, uint16_t preambleLength = 8, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);   
     _radioState =  plora->begin(getFrequency(), getBW(),  getSF(),  getCR(),  RADIOLIB_SX127X_SYNC_WORD  , LORA_OUTPUT_POWER,  LORA_PREAMBLE_LENGTH,  2.4,  false);   //RADIOLIB_SX126X_SYNC_WORD_PRIVATE
     if (plora->setTCXO(2.4) == RADIOLIB_ERR_INVALID_TCXO_VOLTAGE)    {      writeconsoleln(F("Selected TCXO voltage is invalid for this module!"));    }
-    
-    #elif defined(TTGO)  
-    
-    writeconsole("TTGO ... "); writeconsoleln(LORACHIP);
 
-    _radioState =  plora->begin(getFrequency(), getBW(),  getSF(),  getCR(), RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);
-
-    #elif  defined(TTGO1)
-    writeconsole("TTGO1 ... "); writeconsoleln(LORACHIP);
-    //_radioState =  plora->begin(getFrequency(), getBW(),  getSF(),  getCR(),  LORA_CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);
-    _radioState =  plora->begin(getFrequency(), getBW(),  getSF(),  getCR(), RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);
-      
     #elif defined(ESP32_GATEWAY)
     writeconsole("GATEWAY ... "); writeconsoleln(LORACHIP);    
     _radioState =  plora->begin(getFrequency(), getBW(),  getSF(),  getCR(),  LORA_CODING_RATE, RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);
+    
+    #else    
+    writeconsole("TTGO ... "); writeconsoleln(LORACHIP);
+    _radioState =  plora->begin(getFrequency(), getBW(),  getSF(),  getCR(), RADIOLIB_SX127X_SYNC_WORD, LORA_OUTPUT_POWER_TTGO,  LORA_PREAMBLE_LENGTH);    
     #endif
 
     _modemChangedOn=getTime();
@@ -291,27 +284,27 @@ void CRadio::setup() {
 
 void CRadio::setActions(){
   if(name()==_RADIO2){
-  #if defined(TTGO)
+  #if defined(TTGO1278)
     plora->setDio0Action(setFlag2);
-  #elif defined(TTGO1)
+  #elif defined(TTGO1262) || defined(TTGO1268)
     plora->setDio1Action(setFlag2);
   #elif defined(ESP32_GATEWAY)
     plora->setDio0Action(setFlag2);
   #else
     plora->setDio1Action(setFlag2);
-    plora->setRfSwitchPins(R2_RXEN, R2_TXEN);
+   // plora->setRfSwitchPins(R2_RXEN, R2_TXEN);
   #endif
   }
   else {
-  #if defined(TTGO)
+  #if defined(TTGO1278)
     plora->setDio0Action(setFlag);
-  #elif defined(TTGO1)
+  #elif defined(TTGO1262) || defined(TTGO1268)
     plora->setDio1Action(setFlag);
   #elif defined(ESP32_GATEWAY)
     plora->setDio0Action(setFlag);
   #else
     plora->setDio1Action(setFlag);
-    plora->setRfSwitchPins(R1_RXEN, R1_TXEN);
+   // plora->setRfSwitchPins(R1_RXEN, R1_TXEN);
   #endif
   }
 }

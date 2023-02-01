@@ -1,6 +1,7 @@
 #include <systemobject.h>
 
 #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
+#define NC 100
 void CSystemObject::initPins() {
   Pins["LED"] = LED_BUILTIN;
   Pins["36"] = 36;
@@ -48,7 +49,7 @@ void CSystemObject::initPins() {
   Pins[_PINBURNWIRE]=PINBURNWIRE;
   Pins[_PINADCSI2C]=PINADCSI2C;
 	Pins[_PINOBCI2C]=PINOBCI2C;
-	Pins[_PINPHONEPOWER]=PINPHONEPOWER;
+	Pins[_PINPHONE]=PINPHONE;
 
  
   //Pins["LED"] =   PIN_LED;

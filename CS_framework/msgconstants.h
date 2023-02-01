@@ -1,14 +1,14 @@
 #pragma once
 
 #define PINBURNWIRE PI_10
-#define PINPHONEPOWER PA_11
+#define PINPHONE PA_11
 #define PINOBCI2C  PA_12
 #define PINADCSI2C  PI_0            //For I2C on ADCS board or Motors you need  this
 #define PIN65V PH_15   
 
 
 #define _PINBURNWIRE "PINBURNWIRE"
-#define _PINPHONEPOWER "PINPHONEPOWER"
+#define _PINPHONE "PINPHONE"
 #define _PINOBCI2C "PINOBCI2C"
 #define _PINADCSI2C "PINADCSI2C"
 #define _PIN65V "PIN65V"

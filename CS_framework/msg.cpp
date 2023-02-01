@@ -9,12 +9,22 @@ void CMsg::setTIMESTAMP(){
 }
 
 void CMsg::writetoconsole(){
-  writeconsoleln(serializeout());
+  std::string str=serializeout();
+  if(str.size()>255) {
+    str=str.substr(0,255);
+    str+="...";
+  }
+  writeconsoleln(str);
   }
 
 
 void CMsg::writetoconsoleln(){
-  writeconsoleln(serializeout('\t'));  
+  std::string str=serializeout('\t');
+  if(str.size()>255) {
+    str=str.substr(0,255);
+    str+="...";
+  }
+  writeconsoleln(str);
   }
 
 std::string CMsg::get(std::string str,const char * val){

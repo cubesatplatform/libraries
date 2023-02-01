@@ -323,7 +323,7 @@ void CSystemMgr::chargePhone(){
 
   enablePin(_PIN65V);  
   enablePin(_PINADCSI2C);
-  enablePin(_PINPHONEPOWER);
+  enablePin(_PINPHONE);
 }
 
 
@@ -355,7 +355,7 @@ void CSystemMgr::sendSerial(const char* cmd) {    //Send to Phone
 void CSystemMgr::enableI2C(){  
   enablePin(_PIN65V);  
   enablePin(_PINOBCI2C);  
-  enablePin(_PINADCSI2C);
+ // enablePin(_PINADCSI2C);
   
 
   CMsg m;
@@ -439,8 +439,9 @@ void CSystemMgr::motor(CMsg &msg){
     writeconsoleln("Testing Motor");    
     pSys->test(msg);
   }
-  else 
+  else {
     writeconsole("System not found: "); writeconsoleln(s);
+  }
   //disablePin(_PIN65V);
   //disablePin(_PINADCSI2C);
   
@@ -458,8 +459,9 @@ void CSystemMgr::mag(CMsg &msg){
     writeconsoleln(pSys->name());
     pSys->test(msg);
   }
-  else 
+  else {
     writeconsole("System not found: "); writeconsoleln(s);
+  }
 }
 
 
@@ -492,9 +494,9 @@ void CSystemMgr::ir(CMsg &msg){
     pSys->setState(_BLANK);
     pSys->run(250);
   }
-  else 
+  else {
     writeconsole("System not found: "); writeconsoleln(s);
-    
+  }  
 }
 
 void CSystemMgr::temp(CMsg &msg){
@@ -508,8 +510,8 @@ void CSystemMgr::temp(CMsg &msg){
   if(pSys!=NULL) {    
     pSys->run(150);
   }
-  else 
-    writeconsole("System not found: "); writeconsoleln(s);
+  else  { writeconsole("System not found: "); writeconsoleln(s);
+  }
     
 }
 
@@ -532,8 +534,9 @@ void CSystemMgr::chkTemperature(CMsg &msg){
 			writeconsole("Loop "); writeconsole(name());  writeconsole("     ");writeconsoleln((long) n);
       pSys->run(250L);                 
     }    
-    else 
+    else {
       writeconsole("System not found: "); writeconsoleln(s);
+    }
   }
   
   
@@ -550,8 +553,9 @@ void CSystemMgr::runSystem(CMsg &msg){
     writeconsoleln("runSystem");    
     pSys->run(msg);
   }
-  else 
+  else {
     writeconsole("System not found: "); writeconsoleln(s);
+  }
 }
 
 void CSystemMgr::chkIRArrays(CMsg &msg){
@@ -569,8 +573,9 @@ void CSystemMgr::chkIRArrays(CMsg &msg){
         
         pSys->run(300);        
       }
-      else 
+      else {
         writeconsole("System not found: "); writeconsoleln(s);
+      }
     }
   }
 }
@@ -578,12 +583,10 @@ void CSystemMgr::chkIRArrays(CMsg &msg){
 void CSystemMgr::chkMags(CMsg &msg){
   writeconsoleln("void chkMags"); 
    
+  enablePin(_PIN65V);     //Need these   Do in this order
+  delay(100);
   enablePin(_PINOBCI2C);  
-  //enablePin(_PIN65V);
 
-  disablePin(_PINADCSI2C);
- // enablePin(_PINADCSI2C);  //This seems to cause issues with the Mag I2C   Dont turn it on
-  
   delay(100);
 
   const char * temps [] =  {_MAGX,_MAGY,_MAGZ};

@@ -479,7 +479,7 @@ void CCloud::save(CMsg &msg)  {
 }
 
 void CCloud::loop(){
-  if(millis() - _lastCmd >= 2*CMD_INTERVAL )  {
+  if(millis() - _lastCmd >= 6*CMD_INTERVAL )  {
     _lastCmd=millis();
 
     if(!_bRegistered){

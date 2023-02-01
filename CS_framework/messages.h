@@ -49,7 +49,8 @@ private:
   long _lastMessage=0;
   long _lastData=0;
   long _lastTransmit=0;
-
+  bool _saveToCloud=false;
+  
 
 public:  
   CMessageList ReceivedList;     //Received via Radio.  Put inbound received msgs here  ---Need to add acks for these as well
@@ -66,9 +67,8 @@ public:
 
   CMessages(){};
   ~CMessages(){};
-
+  void saveToCloud(bool tmp=true){_saveToCloud=tmp;}
   void moveReceived();                        //Need to make a subsystem that moved data to transmitlist data based on requests
-  
   
   void sendData(CMsg &msg);            //Similar to movetoTransmitList
 

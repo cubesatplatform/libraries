@@ -301,17 +301,19 @@ void CSystemObject::update(CMsg &msg){
 }
 
 void CSystemObject::setState(std::string str) { 
+  if (!((str==_BLANK)||(str==_START)||(str==_STOP)||(str==_PLAY)||(str==_ERROR)||(str==_PAUSE)||(str==_DONE))){
+    for (int count=0;count<10;count++){
+      writeconsole("BAD STATE ");      writeconsoleln(str);
+      }
+    return;
+  }
   _m.set(_STATELAST,_m.get(_STATE));
   _m.set(_STATE,str);
   
   _lastStateTime=getTime(); 
   if(str==_ERROR) _retryCount++;  
   if(str==_PLAY) _retryCount=0;
-  if (!((str==_BLANK)||(str==_START)||(str==_STOP)||(str==_PLAY)||(str==_ERROR)||(str==_PAUSE)||(str==_DONE))){
-    for (int count=0;count<20;count++){
-      writeconsole("BAD STATE ");      writeconsoleln(str);
-      }
-  }
+  
 };      
 
 

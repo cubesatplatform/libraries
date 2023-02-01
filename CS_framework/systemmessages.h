@@ -9,9 +9,13 @@
 
 
 class CMessagesObj:public CSystemObject {
+  
 public:
 
   CMessagesObj(){MMM.TransmittedList.maxSize(15);setInterval(10);}
+
+  void saveToCloud(bool tmp=true){MMM.saveToCloud(tmp);}  
+  void saveToCloud(CMsg &msg);
   void MsgPump();
   void loop();
   void stats(CMsg &msg);

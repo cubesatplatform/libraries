@@ -10,7 +10,7 @@
 
 #define LATLON "LATLON"
 
-
+////////// WARNING  WARNING WARNING     -------- NEED POWER AND GROUND TO CHIP TO WORK                 /////////////////
 
 
 /*
@@ -59,9 +59,18 @@ BATTERY
 DELETE  //Delete all files
 
 
-TO:BS~SYS:PHONE~ACT:CBATTERY
+TO:BS~SYS:PHONE~ACT:SENDSERIAL~V:BATTERY
+TO:BS~SYS:PHONE~ACT:SENDSERIAL~V:CSTREAM(11_330.jpg,0)
+TO:BS314~SYS:PHONE~ACT:SENDSERIAL~V:PHOTO(B,10%,100,250,CLOUDY)
 
-//CRASH  CSTREAM(11_330.jpg,0)
+
+
+// DOn't send stuff directly to SendSerial.  Add it to queue instead
+TO:BS314~SYS:PHONE~ACT:CTIME
+TO:BS314~SYS:PHONE~ACT:CPHOTO(B,70%,100,250,CLOUDY)
+TO:BS~SYS:PHONE~ACT:GETBLOCKS~N:11~START:5~STOP:16
+
+
 
 */
 
@@ -121,6 +130,8 @@ void loop()
 #define PHONE_DELAY 100000
 #define ANDROID_POWERUP_DELAY 1000
 
+////////// WARNING  WARNING WARNING     -------- NEED POWER AND GROUND TO CHIP TO WORK                 /////////////////
+
 
 //TO:BS~SYS:PHONE~ACT:GETBLOCKS~N:11~START:5~STOP:16
 void CPhone::getBlocks(CMsg &msg) {  //Send message to phone to get stuff 
@@ -130,7 +141,9 @@ void CPhone::getBlocks(CMsg &msg) {  //Send message to phone to get stuff
   int stop=msg.get(_STOP,start+50);
 
   for(int count=start;count<stop;count++) {
-    std::string str="CSTREAM("+key+"_"+std::to_string(count)+".jpg,0)";
+    std::string str="CSTREAM("+key+"_";
+    str+=tostring(count);
+    str+=".jpg,0)";
     CMsg m;
     m.set(_ACT,str);
     m.writetoconsoleln();
@@ -152,7 +165,7 @@ void  CPhone::callCustomFunctions(CMsg &msg){
     
 	
   if((act==_SENDSERIAL)) {std::string str=msg.get(_VALUE); sendSerial(str.c_str());  return;}
-  
+                    
   if(act.size()>1) { commandQueue.push(msg); return;}
   CSystemObject::callCustomFunctions(msg);  
 }
@@ -261,6 +274,8 @@ bool CPhone::readUntil(char terminator, unsigned char* buffer) {    //Read from 
 //TO:ADR1~SYS:PHONE~ACT:SENDSERIAL~V:TIME
 
 void CPhone::sendSerial(CMsg &msg){  
+  
+  writeconsoleln("send serial --> ");
   std::string s=msg.get(_VALUE);
   sendSerial(s.c_str());
 }
@@ -270,6 +285,7 @@ void CPhone::sendSerial(const char* cmd) {    //Send to Phone
     run(50);
     return;
   }
+  writeconsoleln("void CPhone::sendSerial(const char* cmd)  ");
   _m.set(_MODE,_MODERX);
   _lastTransmit=getTime();
   _nextTransmit=_lastTransmit + 2000;
@@ -721,7 +737,7 @@ void CPhone::ReceivedPacket() {  //Any Comments to Serial Port go right back to 
       case 'B':      
         onBatteryAvailable(msgId);
         break;
-      case 'D':      
+      case 'F':      
         onDirectoryAvailable(msgId);
         break;
       case 'I':        

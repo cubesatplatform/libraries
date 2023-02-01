@@ -417,6 +417,13 @@ void CMessages::addTransmitList(CMsg &m ){
   
   addTList(m);
 
+  if(_saveToCloud){
+    m.set(_SYS,_CLOUD);
+    m.set(_ACT,_SAVE);
+    addMList(m);
+  }
+
+
   return;
 
 }

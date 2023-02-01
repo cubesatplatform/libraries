@@ -4,7 +4,7 @@
 void CPayloadState::enter() {    //Need to charge Phone for 10 minutes before we can use it.  Then turn off power to phone to anable Serial1 to work
 
   CStateObj::enter();
-  enablePin(_PINPHONEPOWER);
+  enablePin(_PINPHONE);
   writeconsoleln("Enter Payload  Need to charge Phone"); 
   
   _obj._startTime = getTime()+ANDROID_POWERUP_DELAY;
@@ -17,7 +17,7 @@ void CPayloadState::enter() {    //Need to charge Phone for 10 minutes before we
 void CPayloadState::exit() { 
   
   CStateObj::exit();
-  disablePin(_PINPHONEPOWER);
+  disablePin(_PINPHONE);
     
 }
 
@@ -25,7 +25,7 @@ void CPayloadState::exit() {
 
 void CPayloadState::start(){      //Then turn off power to phone to anable Serial1 to work
   if(getTime()>(startTime()+ANDROID_POWERUP_DELAY)){
-    disablePin(_PINPHONEPOWER);
+    disablePin(_PINPHONE);
     setState(_PLAY);	      
 
 

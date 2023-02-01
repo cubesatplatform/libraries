@@ -33,14 +33,14 @@ void CStateObj::enter(){
 	if(onEnter[_PIN65V]){  disablePin(_PIN65V); }
 	if(onEnter[_PINBURNWIRE]){  disablePin(_PINBURNWIRE); }
 	if(onEnter[_PINOBCI2C]) {  disablePin(_PINOBCI2C); }
-	if(onEnter[_PINPHONEPOWER]) {  disablePin(_PINPHONEPOWER); }
+	if(onEnter[_PINPHONE]) {  disablePin(_PINPHONE); }
 
 	
 	if(onEnter[_PINADCSI2C]) { enablePin(_PINADCSI2C); }
 	if(onEnter[_PIN65V]) { enablePin(_PIN65V); }
 	if(onEnter[_PINBURNWIRE]) {enablePin(_PINBURNWIRE); }
 	if(onEnter[_PINOBCI2C]) {enablePin(_PINOBCI2C); }
-	if(onEnter[_PINPHONEPOWER]) {enablePin(_PINPHONEPOWER); }
+	if(onEnter[_PINPHONE]) {enablePin(_PINPHONE); }
 
 	
 	CMsg m;    
@@ -71,14 +71,14 @@ void CStateObj::exit(){
 	if(onExit[_PIN65V]){  disablePin(_PIN65V); }
 	if(onExit[_PINBURNWIRE]){  disablePin(_PINBURNWIRE); }
 	if(onExit[_PINOBCI2C]) {  disablePin(_PINOBCI2C); }
-	if(onExit[_PINPHONEPOWER]) {  disablePin(_PINPHONEPOWER); }
+	if(onExit[_PINPHONE]) {  disablePin(_PINPHONE); }
 
 	
 	if(onExit[_PINADCSI2C]) { enablePin(_PINADCSI2C); }
 	if(onExit[_PIN65V]) { enablePin(_PIN65V); }
 	if(onExit[_PINBURNWIRE]) {enablePin(_PINBURNWIRE); }
 	if(onExit[_PINOBCI2C]) {enablePin(_PINOBCI2C); }
-	if(onExit[_PINPHONEPOWER]) {enablePin(_PINPHONEPOWER); }
+	if(onExit[_PINPHONE]) {enablePin(_PINPHONE); }
 
 	
 
