@@ -184,8 +184,8 @@ bool CMsg::checkPWD(){
   //if(vectorLen())     return true;
   std::string key;
 
-  key=get(_SYS);  
-  key+=get(_ACT);
+  key=get(_SYS,"NONE");  
+  key+=get(_ACT,"NONE");
 
   if(key.size()==0)
     return false;
@@ -202,9 +202,8 @@ bool CMsg::checkPWD(){
 
 bool CMsg::setPWD(){
   std::string key;
-  key=get(_SYS);
-  
-  key+=get(_ACT);
+  key=get(_SYS,"NONE");  
+  key+=get(_ACT,"NONE");
   if(key.size()==0)
     return false;
 

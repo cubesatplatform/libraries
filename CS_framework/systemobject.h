@@ -63,8 +63,7 @@ class CSystemObject {
   static int sid;
   static std::string _IAM;
   static std::string _defaultTO;
-  static long _lastLowPowerMsg;
-  static bool _mirrorCloud;
+  static long _lastLowPowerMsg;  
   int _sid;
   
 
@@ -155,8 +154,6 @@ public:
   int getStep(){ return _step;}
   int incStep(){ _step++;return _step;}
 
-  bool mirrorCloud(){return _mirrorCloud;}
-  void setMirrorCloud(bool tmp=true){_mirrorCloud=tmp;}
   void setMaxTime(long tmp){_obj._maxTime=tmp;}
   long getMaxTime(){return(_obj._maxTime);}
 

@@ -86,19 +86,14 @@
 
 #define PING_INTERVAL             2       // seconds, how much time to wait between PINGs sent from this node
 
-#if defined(TTGO1262)
-    #define LORA_FREQUENCY             900.0   //FREQUENCY_900M30S
-    #define LORA_RADIO_FREQUENCY        900.0   //FREQUENCY_900M30S
-    #define LORA_RADIO2_FREQUENCY       900.0   //FREQUENCY_900M30S
-    #define LORA_FREQUENCY_400M30S         900.0   // MHz carrier, for E22-400M30S
-    #define LORA_FREQUENCY_GATEWAY         900.0   // MHz carrier, for ESP32 single-channel gateway    
+#if defined(TTGO1262)    
+    #define LORA_RADIO_FREQUENCY        900.0   
+    #define LORA_RADIO2_FREQUENCY       900.0   
+    
 #endif
-#if defined(TTGO1268)  || defined(TTGO1278) ||defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-    #define LORA_FREQUENCY             443.0   //FREQUENCY_900M30S
+#if defined(TTGO1268)  || defined(TTGO1278) ||defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
     #define LORA_RADIO_FREQUENCY        443.0   //FREQUENCY_900M30S
-    #define LORA_RADIO2_FREQUENCY       443.0   //FREQUENCY_900M30S
-    #define LORA_FREQUENCY_400M30S         443.0   // MHz carrier, for E22-400M30S
-    #define LORA_FREQUENCY_GATEWAY         443.0   // MHz carrier, for ESP32 single-channel gateway
+    #define LORA_RADIO2_FREQUENCY       443.0   //FREQUENCY_900M30S    
 #endif
 
 

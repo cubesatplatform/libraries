@@ -20,8 +20,21 @@ void CMessages::moveReceived() {
     if(m.get(_WRITE)=="1"){
       m.saveFile();
     }
-    else
+    else {
       MessageList.push_back(m);    
+      if(_saveToCloud){
+        std::string strs=m.get(_SYS);
+        if(strs.size()) m.set("_SYS",strs);
+
+        std::string stra=m.get(_ACT);
+        if(stra.size()) m.set("_ACT",stra);
+
+        m.set(_SYS,_CLOUD);
+        m.set(_ACT,_SAVE);
+        MessageList.push_back(m);    
+      }
+
+    }
   } 
   
 
@@ -411,11 +424,10 @@ void CMessages::clearDataMap(){
   
 void CMessages::addTransmitList(CMsg &m ){
   
-  
   //fillMetaMSG(&m);    
-  
-  
+    
   addTList(m);
+
 
   if(_saveToCloud){
     m.set(_SYS,_CLOUD);

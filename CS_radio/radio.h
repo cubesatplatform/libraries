@@ -178,6 +178,8 @@ public:
   void callCustomFunctions(CMsg &m)override;   
   void resetPower(CMsg &m);   
 
+  void stats(CMsg &msg);
+
   int getBW();
   int getSF();
   int getCR();

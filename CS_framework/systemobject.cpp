@@ -1,4 +1,3 @@
-
 #include "systemobject.h"
 #include "messages.h"
 
@@ -9,7 +8,7 @@
 
 int CSystemObject::sid=0;
 long CSystemObject::_lastLowPowerMsg=0;
-bool CSystemObject::_mirrorCloud=false;
+
 
 CMessages CSystemObject::MMM;
 

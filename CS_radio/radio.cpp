@@ -103,6 +103,7 @@ void CRadio::init(){
   void CRadio::clearSleep(){
     _sleepTime=0;
     SetRadioReceive();
+    writeconsoleln("   Clear Sleep");
   }
 
 
@@ -433,6 +434,8 @@ void CRadio::receivedLogic( unsigned char *buffer, int len){
   }
 
   CMsg robj(tmpstr.c_str());  //plora->getRSSI(), plora->getSNR()
+  writeconsole("Received a packet ...................   ");
+  robj.writetoconsole();
 
   /*
   if(filename.size()){
@@ -605,11 +608,13 @@ void CRadio::checkModeTX(){   //Puts radio back to receive Mode if stuck in Tran
       if(_waitForACK)
         _nextTransmit+=RADIOWAITFORACK;
       SetRadioReceive();
+      writeconsoleln("   CheckMode:  Transmission Complete:  Flag Fired");
       return;
     }
     if(getTime()>_completedTransmit){
       writeconsoleln("   CheckMode:  getTime()>completedTransmit    Transmission did not fire flag.  Finishing anyway!");
       SetRadioReceive();
+      writeconsoleln("   CheckMode: Timeout  Transmission Complete");
       incBadInterrupt();
       return;
     }
@@ -620,13 +625,18 @@ void CRadio:: checkModeRX(){
   if(*_pbFlag) { // check if the previous operation finished     this is set by interrupt    
     *_penableInterrupt=false; // disable the interrupt service routine when processing the data      
     *_pbFlag=false;
-    if ((_m.get(_MODE)==_MODERX)&&getReceiver()){
-      ReceivedPacket();
+    if (_m.get(_MODE)==_MODERX){
+      if(getReceiver())  
+        ReceivedPacket();
+      else        
+        writeconsoleln(">>>>> NOT set as Receiver ");
+      }
+      SetRadioReceive();
+      return;
     }
-    SetRadioReceive();
-    return;
-  }
+    
 }
+
 
 
 void CRadio::loopRadio(){
@@ -782,3 +792,21 @@ int CRadio::getTXDelay(){
   return LORA_TXDELAY;
 }
 
+
+void CRadio::stats(CMsg &msg){
+
+  CSystemObject::stats(msg);    
+  CMsg m;
+
+  m=_m;
+  
+  m.set(_NAME,_name);
+  m.set("FREQ",getFrequency());
+  m.set("BW",getBW());
+  m.set("CR",getCR());
+  m.set("SF",getSF());
+
+  m.writetoconsole();
+  addTransmitList(m);
+
+}
