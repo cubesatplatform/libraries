@@ -284,20 +284,22 @@ std::string CCloud::getPageMulti(CMsg &msg){
     writeconsole("Get URL >  ");
     writeconsoleln(path.c_str());
     
-   
-writeconsoleln("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Saving Multi Form vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+    msg.writetoconsole();
+
     for (auto x:msg.Parameters){
       std::string str1,str2;
       str1=x.first;
       str2=x.second;
       //writeconsole(str1);writeconsole(" = ");writeconsoleln(str2);    
-      if((str1.size()>9)&&(str2.size()>0)){
+      if((str1.size()>2)&&(str2.size()>0)){
         UDHttp udh;        
-        if(((str1[0]=='i')&&(str1[1]=='r')&&(str1[2]=='r'))||  ((str1[0]=='i')&&(str1[1]=='m')&&(str1[2]=='g'))){              
+        if(((str1[0]=='I')&&(str1[1]=='R'))||  ((str1[0]=='i')&&(str1[1]=='m')&&(str1[2]=='g'))){              
+          writeconsoleln("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Saving Multi Form vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
           fillListBuffer(str2);        
           udh.upload((char *)path.c_str(), (char *)str1.c_str(), listBuffer.size(), rdataf, progressf, responsef);
-  
-        } 
+          writeconsoleln("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ End Saving Multi Form ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+        }
+         
       }
     }
     
@@ -308,7 +310,7 @@ writeconsoleln("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Saving Multi Form vvvvvv
   }
   
   
-  //writeconsoleln("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ End Saving Multi Form ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+  
   return(payload);
 }
 

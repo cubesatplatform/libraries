@@ -7,9 +7,6 @@
 
 
 
-#define MAXLISTSIZE 50
-#define MAXDATALEN 201
-
 
 class CMessageList {
 private:

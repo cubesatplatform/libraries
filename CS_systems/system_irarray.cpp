@@ -5,7 +5,7 @@
 #include <string>
 
 
-#define MAXSTREAMSIZE 200
+
 
 const std::vector<char> pixel={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 const std::string greyRamp = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+=<>i!lI;,""^`\'. ";
@@ -458,7 +458,7 @@ void CIRArray::output(CMsg &msg){  //Easier to send as long   convert to decimal
   m.set(_IR_MAX,fmax);
   m.set(_IR_MIN,fmin);
   m.writetoconsole();
-  addTransmitList(m);
+  //addTransmitList(m);
   addDataMap(m);
 
   std::string datastr;
@@ -467,45 +467,45 @@ void CIRArray::output(CMsg &msg){  //Easier to send as long   convert to decimal
     datastr+=imageTable[i];
   }
 
+
+
   
-  char c='a';
-
-
   CMsg mm;
-  mm.set(_TIME,getTime()/1000);
+  mm.set(_TIME,getTime()%1000);
 
   std::string s=mm.get(_TIME);
 
-
-  std::string strfn="irr";  
-  strfn+=name();
+  std::string strfn=name();
   strfn+='-';
   strfn+=s;               //Makes the name unique
   strfn+='_';
-  std::string strfilename=strfn;
   
-  strfilename+="_.jpg";
-  m.set(_MSGTYPE,_STREAM);
-  m.set(_API,_INSERTMULTI);
-  m.set(strfilename,datastr);
-
-  addTransmitList(m);
-
-  for(int count=0;count<IRARRAYSIZE;count+=MAXSTREAMSIZE){
+  
+  char c='a';
+  for(int count=0;count<IRARRAYSIZE;count+=MAXPARAMSIZE){    
+    CMsg mPart;
     std::string str;
-    m.clear();
-    str=datastr.substr(count,MAXSTREAMSIZE);
-      
-    strfilename=strfn;  
+    
+  
+    str=datastr.substr(count,MAXPARAMSIZE);
+
+  writeconsoleln("DATASTRING");
+  writeconsoleln(str);
+  writeconsoleln("^^DATASTRING");
+
+
+    std::string strfilename=strfn;
     strfilename+=c;
     strfilename+=".jpg";
-    m.set(_MSGTYPE,_STREAM);
-    m.set(_API,_INSERTMULTI);
-    m.set(strfilename,str);
     
-    c++;
+    mPart.set(_API,_INSERTMULTI);
+    writeconsoleln(str);
+    //str="Hello Kitty";
+    mPart.set(strfilename,str);
+    mPart.writetoconsole();
     
-    addTransmitList(m);
+    c++;    
+    addTransmitList(mPart);
   }
 }
 

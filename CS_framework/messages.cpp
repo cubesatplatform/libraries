@@ -257,18 +257,24 @@ std::list<CMsg> CMessages::splitMsg(CMsg &m){
 
   long ltmp=getTime();
   ltmp=ltmp%1000;
-
+  std::string tmpstr;
+  tmpstr=m.serialize();
+  totsize=tmpstr.size();
+  if(totsize<255){    
+    lM.push_back(m);
+    return lM;
+  }
   
   for(auto x:m.Parameters){
     cm.set(_UID,tostring(ltmp)+std::string("_")+tostring(part));
-    std::string tmpstr;
+    
     tmpstr=cm.serialize();
     totsize=tmpstr.size();
     
     std::string str=x.first+x.second+"~:";
     int size=str.size();
 
-    if((size+totsize)<200){  //&&(x==m.Parameters.end())){
+    if((size+totsize)<=MAXPARAMSIZE){  //&&(x==m.Parameters.end())){
   
       std::string sfirst=x.first;
       std::string ssecond=x.second;
@@ -276,6 +282,8 @@ std::list<CMsg> CMessages::splitMsg(CMsg &m){
 
     }
     else{
+      writeconsoleln("ERRRRRRRRRRRRRRRROOOORRR  TOOO LONG  FIX  Messages.cpp 279");
+      cm.writetoconsoleln();
       
       cm.set(_SYS,strSYS);
       cm.set(_ACT,strACT);
@@ -318,7 +326,7 @@ std::list<CMsg> CMessages::splitMsgData(CMsg &m){
 
   if(datasize>0){
     for(int count=0;count<datasize;){
-      int len=MAXDATALEN;
+      int len=MAXPARAMSIZE;
       if(len>(datasize-count))
         len=(datasize-count);
 
@@ -327,7 +335,7 @@ std::list<CMsg> CMessages::splitMsgData(CMsg &m){
       cm.set(_OFFSET,offset);
       lM.push_back(cm);
 
-      count+=MAXDATALEN;
+      count+=MAXPARAMSIZE;
       offset++;
     }
   }
@@ -341,6 +349,13 @@ std::list<CMsg> CMessages::splitMsgData(CMsg &m){
 
 void CMessages::addTList(CMsg &m){  
 displayFreeHeap(); 
+
+writeconsoleln("vvvvvvvvvv  addTList");
+m.writetoconsole();
+std::string str=m.serialize();
+writeconsoleln((long)str.size());
+writeconsoleln("^^^^^^^^^^  End addTList");
+
 std::list<CMsg> lMD;
 
 

@@ -53,10 +53,10 @@
 #define _GETIMAGE "GETIMAGE"
 
 #define _INPUT "INPUT"
-#define _INSERT "INSERT"
+#define _INSERT "INS"
 #define _INSERTCMD "INSERTCMD"
 #define _INTERVAL "INTERVAL"
-#define _INSERTMULTI "INSERTMULTI"
+#define _INSERTMULTI "INSM"
 
 #define _KEYBOARD "KEYBOARD"
 
