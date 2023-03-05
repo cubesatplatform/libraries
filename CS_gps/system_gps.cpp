@@ -32,7 +32,7 @@ void CGPS::init()
   CSystemObject::init();
   
   setForever();
-  setInterval(60000);    
+  setInterval(10000);    
   initBoarda();  //new
       // When the power is turned on, a delay is required.
   delay(1500);
@@ -102,8 +102,8 @@ void CGPS::fillData(){  //Easier to send as long   convert to decimal when recei
   m.set(_ACT,_SAVE);    
   m.set(_TIME,getTime());
 
-  addDataMap(std::string("GPS"),m);
-  //addMessageList(m);
+  //addDataMap(std::string("GPS"),m);
+  addTransmitList(m);
  }
 
 /*
