@@ -11,7 +11,7 @@ void CSystemMgr::callCustomFunctions(CMsg &msg){
   
   mapcustommsg(chkAll) 
   mapcustommsg(chkRadio)
-  mapcustommsg(chkTemperature)
+  mapcustommsg(chkTemps)
   mapcustommsg(chkIRArrays)
   mapcustommsg(chkBattery)
   mapcustommsg(chkRotation)

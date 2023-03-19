@@ -4,6 +4,7 @@
 #include <RadioLib.h>
 #include <systemobject.h>
 #include <messages.h>
+#include <utilities.h>
 
 
 
@@ -11,8 +12,7 @@
 
 #if defined(PORTENTA_E22_900M30S) || defined(PORTENTA_E22_400M30S)
   #include <pinDefinitions.h>
-#else
-  #include <boards.h>
+  
 #endif
 
 
@@ -29,20 +29,23 @@ NSS & BUSY Necessary to initialize, other two are not
 class CRadio: public CSystemObject{
 #if defined(TTGO1278)
   #define LORACHIP "TTGO  SX1278"                                              //TBeam us TTGO
-  SX1278 radio1 = new Module(TTGO_SS, TTGO_DIO0, TTGO_RST, TTGO_DIO1);  
+  //SX1278 radio1 = new Module(TTGO_SS, TTGO_DIO0, TTGO_RST, TTGO_BUSY);      
+  SX1278 radio1 = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
   SX1278 * plora=&radio1;
 
   
 #elif defined(TTGO1262) 
   #define LORACHIP "TTGO  SX1262"
-  SX1262 radio1 =  new Module(TTGO_SS, TTGO_DIO0, TTGO_RST, TTGO_DIO1);  // new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);  
+  //SX1262 radio1 =  new Module(TTGO_SS, TTGO_DIO0, TTGO_RST, TTGO_BUSY);  // new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);  
+  SX1262 radio1 = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
   SX1262 * plora=&radio1;
 
 
 
 #elif defined(TTGO1268) 
   #define LORACHIP "TTGO  SX1268"
-  SX1268 radio1 =   new Module(TTGO_SS, TTGO_DIO0, TTGO_RST, TTGO_DIO1);    //new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);  
+  //SX1268 radio1 =   new Module(TTGO_SS, TTGO_DIO0, TTGO_RST, TTGO_BUSY);    //new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);  
+  SX1268 radio1 = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
   SX1268 * plora=&radio1;
 
 /*
@@ -124,7 +127,7 @@ SX1268 *plora=&radio1;
 
   int _badInterruptCount=0;
 
-  std::string _modem=_MEGABW;
+  std::string _modem=_NORMALBW;
   
 
 public:

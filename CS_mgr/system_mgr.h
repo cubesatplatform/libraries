@@ -75,7 +75,7 @@ public:
 
   void chkAll(CMsg &msg);
   void chkIRArrays(CMsg &msg);
-  void chkTemperature(CMsg &msg);
+  void chkTemps(CMsg &msg);
   void chkRadio(CMsg &msg);
   void chkBattery(CMsg &msg);
   void chkRotation(CMsg &msg);

@@ -44,7 +44,7 @@ void CSystemMgr::loop(){
 
 void CSystemMgr::chkAll(CMsg &msg){
   chkIRArrays(msg);
-  chkTemperature(msg);
+  chkTemps(msg);
   chkRadio(msg);
   chkBattery(msg);
   chkRotation(msg);
@@ -515,8 +515,8 @@ void CSystemMgr::temp(CMsg &msg){
     
 }
 
-//TO:ADR1~SYS:MANAGER~ACT:CHKTEMPERATURE
-void CSystemMgr::chkTemperature(CMsg &msg){
+//TO:ADR1~SYS:MANAGER~ACT:CHKTEMPS
+void CSystemMgr::chkTemps(CMsg &msg){
   CMsg m;
     
   writeconsoleln("ENTER chkTemperature");  

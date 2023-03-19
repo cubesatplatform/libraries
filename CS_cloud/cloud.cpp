@@ -74,6 +74,14 @@ CCloud::CCloud(){
   URLS[_LOG] =host + std::string("/v1/errorlog");
   
 }
+
+void CCloud::setup(){
+    connectWifi();  
+    client.setInsecure();
+    setState(_PLAY);
+    setInterval(100);//pMessages=getMessages();
+  }
+
  
 void CCloud::connectWifi() {
   
@@ -207,7 +215,7 @@ std::string CCloud::getPage(std::string url){
       writeconsoleln("WiFi Disconnected");
       setState(_BLANK);
     }
-    payload=payload.substring(1,payload.length()-2);  //Gets rid of []   This JSon doesnt like it
+    //payload=payload.substring(1,payload.length()-2);  //Gets rid of []   This JSon doesnt like it
     return(std::string(payload.c_str()));
    }
 
@@ -274,6 +282,82 @@ std::string CCloud::getPage(CMsg &msg){
 }
 
 
+CMsg CCloud::callSupabaseAPI(std::string key,std::string value, std::string name, std::string mid, std::string bsid){
+  CMsg mpayload;
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(API_URL+"/rest/v1/satdata");
+    http.addHeader("Content-Type", "application/json");
+    http.addHeader("Prefer", "return=representation");
+    http.addHeader("apikey", API_KEY);
+    http.addHeader("Authorization", "Bearer " + API_KEY);
+
+    std::string str="{";
+    str+="\"";
+    str+="Key";
+    str+="\":";
+    str+="\"";
+    str+=key;          
+    str+="\"";
+    str+=",";
+    str+="\"";
+    str+="Value";
+    str+="\":";
+    str+="\"";
+    str+=value;          
+    str+="\"";
+
+    str+=",";
+    str+="\"";
+    str+="Name";
+    str+="\":";
+    str+="\"";
+    str+=name;          
+    str+="\"";
+
+    str+=",";
+    str+="\"";
+    str+="Bsid";
+    str+="\":";
+    str+="\"";
+    str+=bsid;          
+    str+="\"";
+
+    str+="}";
+    int httpCode = http.POST(str.c_str());
+    String payload = http.getString(); 
+    writeconsole("Code: "); writeconsoleln(httpCode);   //Print HTTP return code
+    writeconsole("Payload: "); writeconsoleln(payload.c_str());    //Print request response payload
+
+    mpayload=getJSONDoc(std::string(payload.c_str()));              
+
+    mpayload.writetoconsole();
+    http.end();
+  }else{
+    writeconsoleln("Error in WiFi connection");
+  }  
+  return mpayload;
+}
+
+
+
+//https://postgrest.org/en/stable/api.html#insertions
+void CCloud::callSupabaseAPI(CMsg &msg){
+  std::string name=msg.get(_NAME);
+  std::string bsid=msg.get(_BSID);
+  std::string mid=msg.get(_MID);
+
+  for (auto x:msg.Parameters){
+    if(x.second.size()){
+      //writeconsole(x.first);writeconsole(" = ");writeconsoleln((long) x.second.size());    
+      CMsg smsg=callSupabaseAPI(x.first,x.second, name, mid, bsid);
+    }
+  }
+  
+  return;
+}
+
+
 
 std::string CCloud::getPageMulti(CMsg &msg){
   
@@ -316,18 +400,26 @@ std::string CCloud::getPageMulti(CMsg &msg){
 
 
 
-CMsg CCloud::getJSONDoc(std::string strJSON, jsonDoc &doc){
+CMsg CCloud::getJSONDoc(std::string strJSON){
   CMsg msg;
-  if (doc==NULL) return msg;
+  jsonDoc doc;
+
+  String str=strJSON.c_str();
+  str.trim();
+  if(str.length()==0) return msg;
+
+  if(str[0]=='[') str=str.substring(1,str.length()-1);  //Gets rid of [   This JSon doesnt like it
+
+  if(str[str.length()-1]==']') str=str.substring(0,str.length()-1);  //Gets rid of [   This JSon doesnt like it
+
+  strJSON=str.c_str();
 
  DeserializationError error = deserializeJson(doc, strJSON);
  
  if (error)  {
    writeconsoleln(F("deserializeJson() failed: "));   
-
   }  
-  else {  
-    
+  else {      
     JsonObject root = doc.as<JsonObject>();
     
     for (JsonPair kv : root) {         
@@ -376,29 +468,7 @@ std::string CCloud::fillurl(std::string original,CMsg &msg){
 }
 
 
-/*
-CMsg CCloud::callAPI(CMsg &msg) {
-  std::string api=msg.get(API);
-  std::string url=msg.get(URL,URLS[api]);
-  std::string newurl=fillurl(url,msg);
 
-
-  std::string line =getPage(newurl);   
-
-  if(line.length()<3) {
-    CMsg m;
-    return m;
-  }
-   
-  //writeconsoleln(line.c_str());
-
-  jsonDoc doc;
-  
-  CMsg m=getJSONDoc(line, doc);
-  
-  return m;
-  }
-*/
 
 CMsg CCloud::callAPI(CMsg &msg) {
   std::string api=msg.get(_API);
@@ -419,7 +489,7 @@ CMsg CCloud::callAPI(CMsg &msg) {
 
   jsonDoc doc;
   
-  CMsg m=getJSONDoc(line, doc);
+  CMsg m=getJSONDoc(line);
   
   return m;
   }
@@ -427,11 +497,12 @@ CMsg CCloud::callAPI(CMsg &msg) {
 
 
 void CCloud::registerBS(){
-  CMsg m;
-  m.set(_API,_REGISTER);
-  m=callAPI(m);   //Restarts when connecting to service has some problem        
-  std::string bsid="BS";
-  bsid+=m.get(_SID,getIAM());
+  
+  CMsg m=callSupabaseAPI("","", "BS_REGISTER", "", "");
+  std::string bsid=m.get("Id");
+  if(bsid.size()>3) {
+    bsid=bsid.substr(0,3);
+  }
   setIAM(bsid);
   _bRegistered=true;
 
@@ -481,14 +552,18 @@ void CCloud::save(CMsg &msg)  {
 }
 
 void CCloud::loop(){
-  if(millis() - _lastCmd >= 6*CMD_INTERVAL )  {
+  if(millis() - _lastCmd >= 2*CMD_INTERVAL )  {
     _lastCmd=millis();
 
     if(!_bRegistered){
       registerBS();
     }
     else{
-      getCommand();                    
+      //getCommand();                    
+      CMsg msg;
+      msg.set("First","MAMAMAMAlexander");
+      msg.set("Last","MAMAMARusich");
+      callSupabaseAPI(msg);
     }
   }
 }

@@ -1,6 +1,5 @@
 #include "radio.h"
 #include <funcs.h>
-#include <SPI.h>
 
 /* 
 ////DANGER  PIN 23 TTGO USED BY RADIO!!!!
@@ -24,7 +23,9 @@ volatile bool enableInterrupt = true;  // disable interrupt when it's not needed
 volatile bool bFlag2 = false;  // flag to indicate that a packet was sent or received
 volatile bool enableInterrupt2 = true;  // disable interrupt when it's not needed
 
-
+#if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
+  ICACHE_RAM_ATTR 
+#endif
 void setFlag(void) {  // this function is called when a complete packet is received or when a transmission is finished
   // check if the interrupt is enabled 
   if(!enableInterrupt) {    
@@ -36,6 +37,9 @@ void setFlag(void) {  // this function is called when a complete packet is recei
 }
 
 
+#if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
+  ICACHE_RAM_ATTR 
+#endif
 void setFlag2(void) {  // this function is called when a complete packet is received
   // check if the interrupt is enabled  
   if(!enableInterrupt2) {
@@ -217,24 +221,15 @@ void  CRadio::update(CMsg &msg){
 
 
 void CRadio::setup() {
-  SPI.begin();
-
   init();
 
   float freq= LORA_RADIO_FREQUENCY;
 
 
   #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)    
-  writeconsole(name());writeconsole("   Initializing Radio on Portenta... Freq:");writeconsoleln(freq);
-
+    writeconsole(name());writeconsole("   Initializing Radio on Portenta... Freq:");writeconsoleln(freq);
   #else    
     writeconsoleln("Initializing Radio on new TTGO ... ");
-    
-    #if defined(TTGO1262) || defined(TTGO1268)
-      writeconsoleln(_BLANK);      writeconsoleln("InitBoard TTGO  ... ");
-      initBoard();
-      delay(1500);
-    #endif  
   #endif
 
 
@@ -287,8 +282,11 @@ void CRadio::setActions(){
   if(name()==_RADIO2){
   #if defined(TTGO1278)
     plora->setDio0Action(setFlag2);
-  #elif defined(TTGO1262) || defined(TTGO1268)
+  #elif defined(TTGO1262)
     plora->setDio1Action(setFlag2);
+  #elif defined(TTGO1268)
+    plora->setDio1Action(setFlag2);
+   
   #elif defined(ESP32_GATEWAY)
     plora->setDio0Action(setFlag2);
   #else
@@ -299,8 +297,10 @@ void CRadio::setActions(){
   else {
   #if defined(TTGO1278)
     plora->setDio0Action(setFlag);
-  #elif defined(TTGO1262) || defined(TTGO1268)
-    plora->setDio1Action(setFlag);
+  #elif defined(TTGO1262) 
+    plora->setDio1Action(setFlag);    
+  #elif  defined(TTGO1268)
+    plora->setDio1Action(setFlag);    
   #elif defined(ESP32_GATEWAY)
     plora->setDio0Action(setFlag);
   #else

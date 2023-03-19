@@ -1,4 +1,5 @@
 #include "phone.h"
+#include "base64.hpp"
 
 
 #define MAXSTREAMSIZE 200  //200
@@ -499,7 +500,9 @@ void CPhone::onPhotoAvailable(int id) {    //Read from Phone  add to filename qu
 
 
 
-void CPhone::onStreamAvailable(int id) {   //Read from Phone add to streamqueue
+
+
+void CPhone::onStreamAvailable(int id) {   //Read from Phone add to streamqueue   //Data is Base64 encoded   Need to decode later when we make images
   std::string strfilename;
   unsigned char fileName[BUFFER_LENGTH];
   bool ok = readUntil(',', fileName);
@@ -522,9 +525,17 @@ void CPhone::onStreamAvailable(int id) {   //Read from Phone add to streamqueue
   
   CMsg m;
 
+
+#define arraysize 1000
+
+unsigned char normal_text[arraysize];
+unsigned char base64_text[arraysize];
+//unsigned char decoded_text[arraysize];
+
   for(int count=0;count<BUFFER_LENGTH;count++){
     if(Serial1.available()>0){
       unsigned char a=Serial1.read();    
+      normal_text[i]=a;
       i++;
       writeconsole(a);
       datastr+=a;
@@ -538,6 +549,8 @@ void CPhone::onStreamAvailable(int id) {   //Read from Phone add to streamqueue
 
   writeconsoleln(" ");  writeconsole("Bytes Read Data: ");  writeconsoleln(i);  writeconsoleln((long)datastr.size());
 
+  int base64_length = encode_base64(normal_text,12,base64_text);  //New
+
   
   strfilename=strfn;  
   strfilename+="_.jpg";
@@ -548,9 +561,17 @@ void CPhone::onStreamAvailable(int id) {   //Read from Phone add to streamqueue
   addTransmitList(m);
 
   bufferlen=i;
+
+
+  datastr="";                                                   //New
+  for(int count=0;count<base64_length;count++){                  //New
+    unsigned char a=base64_text[count];
+    datastr+=a;
+    }
   
 
-  for(int count=0;count<bufferlen;count+=MAXSTREAMSIZE){
+  bufferlen=datastr.size();
+  for(int count=0;count<bufferlen;count+=MAXSTREAMSIZE){  
     std::string str;
     m.clear();
     str=datastr.substr(count,MAXSTREAMSIZE);
@@ -566,87 +587,9 @@ void CPhone::onStreamAvailable(int id) {   //Read from Phone add to streamqueue
     addTransmitList(m);
   }
 
-  /*
-  for(int count=0;count<10;count++){
-  while(Serial1.available()>0){
-    unsigned char a=Serial1.read();    
-    i++;
-    writeconsole(a);
-    datastr+=a;
-
-    if(i>=MAXSTREAMSIZE) {
-      
-      std::string strfn((const char *)fileName);
-      strfn=strfn.substr(0,strfn.size()-4);
-      strfn="img"+strfn;
-      strfn+=c;
-      strfn+=".jpg";
-      m.set(_MSGTYPE,_STREAM);
-      m.set(_API,_INSERTMULTI);
-      m.set(strfn,datastr);
-      
-      addTransmitList(m);
-      writeconsoleln(" ");
-      writeconsole("Bytes Read Data: ");
-      writeconsoleln(i);
-      writeconsoleln((long)datastr.size());
-
-      std::string sample=m.get(strfn);
-      
-      writeconsole("Bytes Sample Read Data: ");
-      writeconsoleln(i);
-      writeconsoleln((long)sample.size());
-
-      c++;
-      datastr="";
-      i=0;
-      m.clear();
-    }
-  }
-  delay(10);
-  }
-
-  if(datastr.size()>0){    
-    std::string strfn((const char *)fileName);
-    strfn=strfn.substr(0,strfn.size()-4);
-    strfn="img"+strfn;
-    strfn+=c;
-    strfn+=".jpg";
-    m.set(_MSGTYPE,_STREAM);
-    m.set(_API,_INSERTMULTI);
-    m.set(strfn,datastr);
-    addTransmitList(m);
-    writeconsoleln(" ");
-    writeconsole("Bytes Read Data: ");
-    writeconsoleln(i);
-    writeconsoleln((long)datastr.size());
-    
-  }
-*/
 _m.set(_MODE,_BLANK);
 return; 
 
-
-//  push_stream(id, fileName, block, len, hasMore, data);         //This is the output
-
-
-
-  
-  /*
-  if (hasMore == 3) {         //This is the queue to get more data from the phone
-    char cmd[50];
-    memset(cmd, 0, sizeof(cmd));
-    sprintf(cmd, "STREAM(%s,%ld+)", fileName, block+1);  //Seems to be stream command
-
-    CMsg m(cmd);
-    streamQueue.push(m);  
-  }
-
-  if (streamQueue.size() > 0) {   //Sends next request to phone
-    sendSerial(streamQueue.front().Data().c_str());
-    streamQueue.pop();
-  }
-  */
 }
 
 
@@ -671,31 +614,7 @@ if (commandQueue.size() > 0) {
   }
   else if (bytes[0] == 'A') { //acknowledgment from receiver
     _waitingForAck = 0;
-    /*
-    char filename[16];
-    for (int i = 0; i < 16; i++) {
-      filename[i] = bytes[i+1];
-      }
-    bool sent = false;
-    for (int i = 0; i < 64; i++) {
-      for (int j = 0; j < 8; j++) {
-        if ((bytes[i+1+16] & (1 << (7-j))) == 0) {
-          char cmd[BUFFER_LENGTH];
-          memset(cmd, 0, sizeof(cmd));
-          sprintf(cmd, "STREAM(%s,%ld)", filename, i*8 + j);
-          if (!sent) {
-            sendSerial(cmd);        //Sends it to the Phone
-            sent = true;
-          }
-          else {
-            std::string s=cmd;
-            CMsg m(s);
-            streamQueue.push(m);
-          }
-        }
-      }
-    }
-    */
+
   } 
 }
 

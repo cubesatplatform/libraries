@@ -498,9 +498,10 @@ void CIRArray::output(CMsg &msg){  //Easier to send as long   convert to decimal
     strfilename+=c;
     strfilename+=".jpg";
     
-    mPart.set(_API,_INSERTMULTI);
+    //mPart.set(_API,_INSERTMULTI);
     writeconsoleln(str);
     //str="Hello Kitty";
+    mPart.set(_NAME,name());
     mPart.set(strfilename,str);
     mPart.writetoconsole();
     

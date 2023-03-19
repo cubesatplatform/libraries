@@ -22,18 +22,23 @@
     #define R2_BUSY PH_10
 
 #else
-    #define TTGO1278
-
-
+    //#define TTGO1278    //Need to pick one
+    #define TTGO1262
+    //#define TTGO1268
+    
+    /* Now using for TTGO|LILYGO the definitions in <boards.h>
     #define TTGO_SCK        5
     #define TTGO_MISO       19
     #define TTGO_MOSI       27
     #define TTGO_SS         18
     #define TTGO_DIO0       26
+    
     #define TTGO_DIO1       33
+    
     #define TTGO_DIO2       32
     #define TTGO_RST        23
-
+    #define TTGO_BUSY       23
+    */
 
     //Radio1MHz
     #define R1_NSS 25
