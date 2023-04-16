@@ -24,6 +24,7 @@
 
 #define _PIXELX "PIXELX"
 #define _PIXELY "PIXELY"
+#define _PIXELXY "PIXELXY"
 #define _FILLTEMP "FILLTEMP"
 #define _FILLPIXEL "FILLPIXEL"
 #define _FILLGREY "FILLGREY"
@@ -43,6 +44,8 @@ private:
   float frame[32*24]; // buffer for full frame of temperatures
   
   char _address; 
+  long _transmitInterval=60000;
+  long _lastTransmit=0;
   
 
 public:  
@@ -55,11 +58,12 @@ public:
   void config(CMsg &msg);
   std::tuple<int, int> getHotSpot();
   float getTemp(int x, int y, int incx, int incy);
-  void fillTemp(char *imageTable);
-  void fillPixel(char *imageTable);
-  void fillGrey(char *imageTable);
-  void fillAscii(char *imageTable);  
-  void consoleOut(char *imageTable);
+  std::pair<double, double> getHotSpotDFS();
+  void fillTemp(unsigned char *imageTable);   //These were are regular char before   Trying to do base64
+  void fillPixel(unsigned char *imageTable);
+  void fillGrey(unsigned char *imageTable);
+  void fillAscii(unsigned char *imageTable);  
+  void consoleOut(unsigned char *imageTable);
   void runOnce(CMsg &msg);
   void output(CMsg &msg);
   CMsg variance(float a[], int n);

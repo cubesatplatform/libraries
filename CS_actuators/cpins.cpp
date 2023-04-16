@@ -1,170 +1,93 @@
 #include "cpins.h"
-#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-  #include <analogWrite_portenta.h>  
-#else
-  #include <analogWrite.h>    
-#endif
- 
+
 #define _BLINK "BLINK"
 #define _MODE_PWM "MODE_PWM"
 
 //TO:BS291~SYS:PINCONTROLLER~ACT:CONFIG~V:.4~PIN:24
 #define PINCONTROLLER "PINCONTROLLER"
 
-int CPinController::channel=0;  
 
-CPinController::CPinController(){  ///Never init the static stuff here  do later  otherwise crashes
+CPins::CPins(){  ///Never init the static stuff here  do later  otherwise crashes
 
-  setInterval(10);
+  setInterval(1000);
 
   }
 
-CPinController::~CPinController(){
+CPins::~CPins(){
   for(auto it=_pins.begin();it!=_pins.end();it++){
-      it->set(_VALUE,0.0);
-      activatePin(*it);
+      it->second->pct(0.0);      
     }
 }
 
 
+CPin *CPins::find(std::string name){
+auto it = _pins.find(name);
+if (it != _pins.end()) {  // The element was found
+  return it->second;  
+} 
 
-void CPinController::config(CMsg &msg){
-  msg.writetoconsole();
-  std::string strPin=msg.get(_PIN);
+  return NULL;
+}
+
+
+
+void CPins::addpin(CMsg &msg){
   
-  int del=msg.get(_DELETE,0);
-  for(auto it=_pins.begin();it!=_pins.end();it++){
-    if(it->get(_PIN)==strPin){
-      if(del==1){
-        it->set(_VALUE,0.0);
-        activatePin(*it);
-        _pins.erase(it);
-        return;
-      }
-      it->clear();
-      (*it)=msg;
-      return;
-    }
-  }
-            
-  #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
-      analogWriteResolution(Pins[strPin],_resolution);   
-  #endif
+  std::string pin=msg.get(_PIN);
+  float val=msg.get(_VALUE,100.0);
+  CPin *ptr=find(pin);
+  if (ptr==NULL){
+    ptr=new CPin();
+    _pins[pin]=ptr;
+    ptr->config(pin);
+    ptr->pct(val);
 
-  if(del!=1)  _pins.push_back(msg);
+  }
+}
+
+
+void CPins::deletepin(CMsg &msg){
+  std::string pin=msg.get(_PIN);
+  
+  CPin *ptr=find(pin);
+  if (ptr!=NULL){    
+    ptr->pct(0.0);
+    delete ptr;
+    _pins[pin]=NULL;
+  }
+}
+
+
+void CPins::changepin(CMsg &msg){
+  std::string pin=msg.get(_PIN);
+  float val=msg.get(_VALUE,0.0);
+  
+  CPin *ptr=find(pin);
+  if (ptr!=NULL){    
+    ptr->pct(val);
+  }
 }
 
 
 
-
-void CPinController::loop(){  
-  for(auto it=_pins.begin();it!=_pins.end();it++){
-  // writeconsole("CPinController::loop");  writeconsoleln(count++);
-    it->writetoconsole();
-
-    std::string strMode=it->get(_MODE);  
-    if((strMode==_MODE_PWM)||(strMode==_BLANK)){
-      activatePin(*it);
-    }
-
-    if(strMode==_BLINK){
-      blinkPin(*it);
-    }
+void CPins::loop(){  
+  for(auto it=_pins.begin();it!=_pins.end();it++){  
+    it->second->print();
   }
+   
 }  
 
 
 
-
-
-void CPinController::activatePin(CMsg &msg){  //from 0 to 100%
- int update=msg.get(_UPDATE,1);
-
-    if (update==0){
-      return;
-    }
-    msg.set(_UPDATE,0);
-
-    std::string strMode=msg.get(_MODE);
-
-  std::string strPin=msg.get(_PIN);
+void CPins::callCustomFunctions(CMsg &msg) {
+  writeconsoleln("CPinController::callCustomFunctions :  ");
   
-  float val=msg.get(_VALUE,0.0);
-  update=msg.get(_UPDATE,1);
-
-
-/*
-  if(val<=0){    
-    digitalWrite(pin,LOW);      
-  }
-
-  if(val>=0){      
-    digitalWrite(pin,HIGH);
-  }
-  */
-          
-  sendPWM(Pins[strPin],convertToPWM(val));
-}
-
-
-void CPinController::blinkPin(CMsg &msg){  //from 0 to 100%
-  writeconsoleln("CPinController::blinkPin");
-  long interval=msg.get(_INTERVAL,5000);
-  long lastTime=msg.get(_LAST,0);
-  long now=millis();
-
-
-  if((now-lastTime)<interval){
-    return;
-  }
-
-  msg.set(_LAST,now);
+  std::string act=msg.get(_ACT); 
+  float val=msg.get(_VALUE,0.0); 
 
   
+  mapcustommsg(addpin)
+  mapcustommsg(deletepin)
+  mapcustommsg(changepin)
   
-
-  std::string strPin=msg.get(_PIN);
-  int val=msg.get(_VALUE,0);
-
-  if(val==0){
-    val=100;
-  }else{
-    val=0;
-  }
-
-  msg.set(_VALUE,val);
-
-
-
-/*
-  if(val<=0){    
-    digitalWrite(pin,LOW);      
-  }
-
-  if(val>=0){      
-    digitalWrite(pin,HIGH);
-  }
-  */
-          
-  sendPWM(Pins[strPin],convertToPWM(val));
-}
-
-
-
-void CPinController::sendPWM(PinName pin,int nVal){
-  
-  analogWrite(pin,nVal,(int)(pow(2,_resolution)-1.0));
-  
-}
-
-
-int CPinController::convertToPWM(float val){   //From 0 to 100.0   
-  val=abs(val);
-  float pwmMax=pow(2,_resolution)-2.0;
-  int nVal=(int)(val*pwmMax/100.0);
-  if(nVal<2) nVal=1;
-
-
-  writeconsole("convertToPWM ");writeconsole(val); writeconsole(" to ");writeconsoleln(nVal);
-  return nVal;
 }

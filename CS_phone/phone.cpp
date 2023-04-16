@@ -1,5 +1,5 @@
 #include "phone.h"
-#include "base64.hpp"
+
 
 
 #define MAXSTREAMSIZE 200  //200
@@ -79,8 +79,8 @@ TO:BS~SYS:PHONE~ACT:GETBLOCKS~N:11~START:5~STOP:16
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
 #else
   
-  #define PHONE_RX 13
-  #define PHONE_TX 14
+  //#define PHONE_RX 13
+  //#define PHONE_TX 14
 
   /*
 
@@ -177,11 +177,7 @@ CPhone::CPhone(){
   //Name ( _PHONE);   //Never name in constructor  Crashes!!@#!@#!@
   setForever(true);    
   setInterval(20);
-  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-  #else
-  _TX=PHONE_TX;
-  _RX=PHONE_RX;
-  #endif
+
   }
 
 
@@ -213,7 +209,7 @@ void CPhone::setup() {
 #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
   Serial1.begin(PHONE_BAUD_RATE);
 #else  
-   Serial1.begin(PHONE_BAUD_RATE,SERIAL_8N1, PHONE_RX, PHONE_TX);
+   Serial1.begin(PHONE_BAUD_RATE,SERIAL_8N1, Pins["PHONE_RX"], Pins["PHONE_TX"]);
 #endif  
   setState(_PLAY);
   sendSerial("INIT"); //to synchronise    
@@ -221,14 +217,6 @@ void CPhone::setup() {
 
 
 void CPhone::config(CMsg &msg){
-  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-  #else
-  int nTX=msg.get(_PHONETX,11);
-  int nRX=msg.get(_PHONERX,12);  
-  
-  _TX=nTX;
-  _RX=nRX;
-  #endif
   setup();
 }
 
@@ -380,6 +368,7 @@ for (count=0;count<len;count++){
 
 CMsg m(str);
 std::string strfn((const char *)fileName);
+
 m.set(_FILENAME,strfn);
 m.set(_BLOCK,tostring(block));
 m.initArray(buffer,bufcount);   ///// FIX THIS
@@ -419,6 +408,7 @@ void CPhone::onDirectoryAvailable(int id) {   //Read from Phone  add to queue
 
   std::string str1=(char *)batStr;
   CMsg m;
+  m.set(_NAME,"DIR");
   m.set(_PHONE_BATTERY,str1);   
   _m.set(_MODE,_BLANK);
    m.writetoconsole();
@@ -549,14 +539,14 @@ unsigned char base64_text[arraysize];
 
   writeconsoleln(" ");  writeconsole("Bytes Read Data: ");  writeconsoleln(i);  writeconsoleln((long)datastr.size());
 
-  int base64_length = encode_base64(normal_text,12,base64_text);  //New
+  int base64_length =  encode_base64(normal_text,i,base64_text);  //New
 
   
   strfilename=strfn;  
   strfilename+="_.jpg";
-  m.set(_MSGTYPE,_STREAM);
-  m.set(_API,_INSERTMULTI);
+
   m.set(strfilename,datastr);
+  m.set(_NAME,"PHOTO");
   
   addTransmitList(m);
 
@@ -579,8 +569,7 @@ unsigned char base64_text[arraysize];
     strfilename=strfn;  
     strfilename+=c;
     strfilename+=".jpg";
-    m.set(_MSGTYPE,_STREAM);
-    m.set(_API,_INSERTMULTI);
+
     m.set(strfilename,str);
     
     c++;

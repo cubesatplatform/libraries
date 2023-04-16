@@ -63,13 +63,17 @@ void CMsgPump::stats(CMsg &msg){
   int rSize=MMM.ReceivedList.size();    
   int mSize=MMM.MessageList.size();     
   int tSize=MMM.TransmitList.size();    
+  int cSize=MMM.CloudList.size();    
   int tdSize=MMM.TransmittedList.size(); 
 
-  m.set("RL",rSize);
-  m.set("ML",mSize);
-  m.set("TL",tSize);
-  m.set("TDL",tdSize);  
-  m.set("DM",dmSize);  
+  m.set(_NAME,"MESSAGESTATS");
+  m.set("Received",rSize);
+  m.set("Message",mSize);
+  m.set("Transmit",tSize);
+  m.set("Sent",tdSize);  
+  m.set("DataMap",dmSize);  
+  m.set("CloudList",cSize);  
+  m.set(_TIME,getTime());
 
   addTransmitList(m);
 }

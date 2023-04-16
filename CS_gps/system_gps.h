@@ -7,23 +7,20 @@
 #include <systemobject.h>
 #include <string>
 #include <TinyGPS++.h>
-#include <axp20x.h>
-#include <boards.h>
 
-#define _LAT "LAT"
-#define _LON "LON"
+
 #define _ALT "ALT"
 
 #define _SATSV "SATSV"
 #define _GPSTIME "GPSTIME"
 #define _LATLON "LATLON"
+#define _LAT "LAT"
+#define _LON "LON"
 #define _GPS "GPS"
 
 class CGPS :public CSystemObject {
  
   TinyGPSPlus gps;
-  AXP20X_Class axp;
-
 
 
   float latitude=0.0;
@@ -46,7 +43,6 @@ public:
 
   void loop();
   void init();
-  void output();
   void runOnce(CMsg &msg);  
   void fillData();
 

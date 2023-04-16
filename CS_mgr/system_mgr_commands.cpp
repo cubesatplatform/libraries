@@ -37,6 +37,7 @@ void CSystemMgr::callCustomFunctions(CMsg &msg){
   mapcustommsg(pinRead)
   mapcustommsg(pinReadState)
   mapcustommsg(resetWire)
+  mapcustommsg(toggleWire)
   mapcustommsg(sendBeacon)
 
   mapcustommsg(testDataMap)
@@ -44,7 +45,6 @@ void CSystemMgr::callCustomFunctions(CMsg &msg){
 
   mapcustommsg(runSystem)
   
-
   mapcustom(pinsOn)
   mapcustom(pinsOff)
 

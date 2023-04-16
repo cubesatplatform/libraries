@@ -33,21 +33,6 @@ void CMDrive::runOnce(CMsg &m){
 }
 
 
-void CMDrive::activate(){  
-    _active=true;
-    writeconsoleln("MDrive Activate");
-    //setState(_PLAY);  
-  }  
-
-
-void CMDrive::deactivate(){  
-    _active=false;
-    writeconsoleln("MDrive DeActivate  Set speed 0");
-    speed(0.0);
-    
-  }  
-
-
 
 
 void CMDrive::detumble(){
@@ -68,13 +53,13 @@ void CMDrive::detumble(){
   _Input=x;
 
   if (x>DEADBAND) {
-    activateDrive(100.0);
+    speed(100.0);
     _Output=1.0;
     return;
   }
 
   if (x<-DEADBAND) {
-    activateDrive(-100.0);
+    speed(-100.0);
     _Output=-1.0;
     return;
   }
@@ -162,7 +147,7 @@ void CMDrive::address(char c){_address=c;}
 
  
 
-void CMDrive::activateDrive(float val){   //0-1000
+void CMDrive::speed(float val){   //0-100
   
  
   writeconsole(name());writeconsole("  Speed:");
@@ -184,7 +169,8 @@ void CMDrive::activateDrive(float val){   //0-1000
     myMotorDriver.run(BACKWARD);
   }      
 
-  myMotorDriver.setSpeed(convertToPWM(val));  
+  myMotorDriver.setSpeed(val);  
+  cPin.pct(val);
 }
 
 
@@ -207,40 +193,40 @@ void CMDrive::test(CMsg &msg){
   myMotorDriver.run(BACKWARD);  
 
 
-  myMotorDriver.setSpeed(254.0);   //Set Speed  0-255 Max  Its their driver
+  myMotorDriver.setSpeed(100.0);   //Set Speed  0-255 Max  Its their driver
   delay(3000);
 
   writeconsoleln("FORWARD");
   myMotorDriver.run(RELEASE);
   myMotorDriver.run(FORWARD);  
-  myMotorDriver.setSpeed(254.0);   //Set Speed  0-255 Max  Its their driver
+  myMotorDriver.setSpeed(100.0);   //Set Speed  0-255 Max  Its their driver
   delay(3000);
 
    
   writeconsoleln("BACK");
   myMotorDriver.run(RELEASE);
   myMotorDriver.run(BACKWARD);  
-  myMotorDriver.setSpeed(254.0);   //Set Speed  0-255 Max  Its their driver
+  myMotorDriver.setSpeed(100.0);   //Set Speed  0-255 Max  Its their driver
   delay(3000);
 
 
   writeconsoleln("FORWARD");
   myMotorDriver.run(RELEASE);      
   myMotorDriver.run(FORWARD);  
-  myMotorDriver.setSpeed(254.0);   //Set Speed  0-255 Max  Its their driver
+  myMotorDriver.setSpeed(100.0);   //Set Speed  0-255 Max  Its their driver
   delay(3000);
 
 
 
-  activateDrive(100.0);
+  speed(100.0);
   
   delay(2000);
   
-  activateDrive(-100.0);
+  speed(-100.0);
   
   delay(2000);
   
-  activateDrive(0.0);
+  speed(0.0);
   speed(0.0);
 }
 
@@ -250,8 +236,6 @@ void CMDrive::callCustomFunctions(CMsg &msg){   //Calls a specific function dire
 
   msg.writetoconsole();
 
-  mapcustom(activate)
-  mapcustom(deactivate)
 
   CSystemObject::callCustomFunctions(msg);
 }

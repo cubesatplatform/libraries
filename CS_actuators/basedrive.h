@@ -1,18 +1,18 @@
 #pragma once
 
+#include "cpin.h"
 #include "actuator_defs.h"
 #include <systemobject.h>
-#define PIN_RESOLUTION 12
-#define PIN_FREQUENCY 10000
+
 
 
 class CBaseDrive:public CSystemObject{   //Speed PWM 0-1000
   bool bOn=false;  
   int _motor=0;
-  int _mspeed=0.0;
+  float _mspeed=0.0;
   bool _mdir=true;
   int _setSpeed=1.0;
-  int _PWMSpeed=0;
+  float _PWMSpeed=0.0;    //0.0-100.0
 
   long _driveStartTime=0;
   long _maxRunTime=10000;
@@ -20,6 +20,8 @@ class CBaseDrive:public CSystemObject{   //Speed PWM 0-1000
   long _modifiedTime=0;
   long _duration=10000;
   long _changedOn=0;
+
+  
   
 protected: 
   
@@ -34,26 +36,27 @@ protected:
   int _resetIMU=0;
   int _switchResetIMU=0;
 public:
+  CPin cPin;
+  
   CBaseDrive();
 
   void init();
 
-  void forward(int s=1000, long dur=0);
-  void backward(int s=1000, long dur=0);
+  void forward(float s=100.0);
+  void backward(float s=100.0);
   void reverse();
 
   bool isForward();
 
   void manual();
   
-  virtual void speed(int s=1000, long dur=0);
+  virtual void speed(float val);
   
-  virtual void activateDrive(float val){}
   virtual void runOnce(CMsg &m){};
   
-  void sendPWM(int nVal);
+  void sendPWM(float fVal);
 
-  int getSpeed(){return _mspeed;};
+  float getSpeed(){return _mspeed;};
   void testMotor(); 
   virtual void setup(){};
   virtual void loop();
@@ -62,11 +65,11 @@ public:
   int getSetSpeed(){return _setSpeed;}
   void setSetSpeed(int tmp){_setSpeed=tmp; }
 
-  int getPWMSpeed(){return _PWMSpeed;};
-  void setPWMSpeed(int tmp){_PWMSpeed=tmp;};
+  float getPWMSpeed(){return _PWMSpeed;};
+  void setPWMSpeed(float tmp){_PWMSpeed=tmp;};
 
-  int getMSpeed(){return _mspeed;};
-  bool setMSpeed(int tmp){if (tmp==_mspeed) return false; _mspeed=tmp;return true;};
+
+  bool setpeed(float tmp){if (tmp==_mspeed) return false; _mspeed=tmp;return true;};
  
 
   long getDuration(){return _duration;};
@@ -95,7 +98,6 @@ public:
 
   
   void callCustomFunctions(CMsg &msg) override;  
-  int convertToPWM(float val);
 
   
   double getIMUValue(std::string sname,std::string sfield);

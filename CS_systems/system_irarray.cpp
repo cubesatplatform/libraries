@@ -1,8 +1,9 @@
-
 #include <vector>
 #include "system_irarray.h"
+#include "dfs.h"
 #include <cmath>
 #include <string>
+
 
 
 
@@ -16,7 +17,7 @@ CIRArray::CIRArray(){
 
 void CIRArray::init(){
   CSystemObject::init();
-  setInterval(40);
+  setInterval(5000);
   setErrorThreshold(10); 
 }
 
@@ -101,11 +102,9 @@ void CIRArray::setup()
 
 void CIRArray::loop(){  
     CMsg m;
-    m.set(_CONSOLE,"1");
-    runOnce(m);       //PUT BACK  TESTING ONLY
-    
-    output(m);
-   // setState("COMPLETE");
+    m.set(_CONSOLE,"0");
+    runOnce(m);       //PUT BACK  TESTING ONLY    
+    output(m);   
 }
 
 
@@ -120,7 +119,7 @@ float CIRArray::getTemp(int x, int y, int incx, int incy){
   if( (posX<0)||(posY<0))
     return t;
 
-  if( (posX>=IR_X)||(posY>IR_Y))
+  if( (posX>=IR_X)||(posY>=IR_Y))
     return t;  
   
   offset=posX+posY*IR_X;
@@ -250,7 +249,7 @@ std::tuple<int, int> CIRArray::getHotSpot(){
 
 
 
-void CIRArray::consoleOut(char *imageTable){
+void CIRArray::consoleOut(unsigned char *imageTable){
 
 for (uint8_t h=0; h<IR_Y; h++) {
   for (uint8_t w=0; w<IR_X; w++) {
@@ -268,7 +267,7 @@ writeconsoleln("   ");
 
 
 
-void CIRArray::fillPixel(char *imageTable){
+void CIRArray::fillPixel(unsigned char *imageTable){
 
   float y;
   unsigned int offset;
@@ -284,7 +283,7 @@ void CIRArray::fillPixel(char *imageTable){
   }
 }
 
-void CIRArray::fillGrey(char *imageTable){
+void CIRArray::fillGrey(unsigned char *imageTable){
 
   float y;
   unsigned int offset;
@@ -305,7 +304,7 @@ void CIRArray::fillGrey(char *imageTable){
   }
 }
 
-void CIRArray::fillAscii(char *imageTable){
+void CIRArray::fillAscii(unsigned char *imageTable){
   
   float t;
   char c;
@@ -331,7 +330,7 @@ void CIRArray::fillAscii(char *imageTable){
 }
 
 
-void CIRArray::fillTemp(char *imageTable){
+void CIRArray::fillTemp(unsigned char *imageTable){
   
   float t;
   unsigned char c;
@@ -341,8 +340,6 @@ void CIRArray::fillTemp(char *imageTable){
 
   
   CMsg m= variance(frame, IRARRAYSIZE);
-  m.writetoconsole();
-
 
   fmean=m.get("MEAN",0.0);   
   
@@ -362,7 +359,7 @@ void CIRArray::fillTemp(char *imageTable){
 
    //int <newvalue> = map(<value>, <original_min>, <original_max>, <new_min>, <new_max>);
     c=map(t, fmean-5.0*fstddev, fmean+5.0*fstddev, 0, 255);
-    writeconsole(c);writeconsole(" ");
+   // writeconsole(c);writeconsole(" ");
     imageTable[x]=c;
   }
 }
@@ -385,9 +382,10 @@ void CIRArray::runOnce(CMsg &msg)
 
   
   y=frame[offset];
+  y=y*9.0/5.0+32.0;
 
-  if(y<-100.0) y=0.0;
-  if(y>200.0) y=0.0;
+  if(y<-100.0) y=-100.0;
+  if(y>200.0) y=200.0;
 
   fmin=y;
   fmax=y;
@@ -422,9 +420,7 @@ void CIRArray::runOnce(CMsg &msg)
 
 
 void CIRArray::output(CMsg &msg){  //Easier to send as long   convert to decimal when receivE
-
-  writeconsoleln("IRArray output............................");
-  char imageTable[IRARRAYSIZE];  //need it null terminated  
+  unsigned char imageTable[IRARRAYSIZE];  //need it null terminated  
 
   memset(imageTable, 7, IRARRAYSIZE);
   
@@ -443,11 +439,19 @@ void CIRArray::output(CMsg &msg){  //Easier to send as long   convert to decimal
     consoleOut(imageTable);    
   }
   
+
+  CMsg mm;
+  mm.set(_TIME,getTime()%10000);
+  std::string s=mm.get(_TIME);
+  std::string strfn=name();
+  strfn+='-';
+  strfn+=s;               //Makes the name unique
+  strfn+='_';
   
 
   CMsg m= variance(frame, IRARRAYSIZE);
 
-  m.set(_NAME,name());
+  m.set(_NAME,strfn);
   m.set(_TIME,getTime());
   
   std::tuple<int, int> XY=getHotSpot();
@@ -455,59 +459,59 @@ void CIRArray::output(CMsg &msg){  //Easier to send as long   convert to decimal
   int y=std::get<1>(XY);
   m.set(_PIXELX,x);
   m.set(_PIXELY,y);
+  m.set(_PIXELXY,tostring(x)+std::string(",")+tostring(y));
+
+  std::pair<double, double> cXY=getHotSpotDFS();
+  m.set("CLUSTER",tostring(int(cXY.first))+std::string(",")+tostring(int(cXY.second)));
+
+
   m.set(_IR_MAX,fmax);
   m.set(_IR_MIN,fmin);
-  m.writetoconsole();
-  //addTransmitList(m);
-  addDataMap(m);
+  //m.writetoconsole();
+  addDataMap(name(),m);
+  
+
+  if(getTime()<(_lastTransmit+_transmitInterval))
+    return;
+  
+  
+  addTransmitList(m);
+  
 
   std::string datastr;
 
-  for(int i=0;i<IRARRAYSIZE;i++){
-    datastr+=imageTable[i];
+
+  unsigned char base64_text[2*IRARRAYSIZE];
+
+//  int base64_length = encode_base64(normal_text,12,base64_text);  //New
+  int base64_length = encode_base64(imageTable,IRARRAYSIZE,base64_text);  //New
+
+
+  for(int i=0;i<base64_length;i++){
+    datastr+=base64_text[i];
   }
 
 
-
-  
-  CMsg mm;
-  mm.set(_TIME,getTime()%1000);
-
-  std::string s=mm.get(_TIME);
-
-  std::string strfn=name();
-  strfn+='-';
-  strfn+=s;               //Makes the name unique
-  strfn+='_';
-  
   
   char c='a';
-  for(int count=0;count<IRARRAYSIZE;count+=MAXPARAMSIZE){    
+  for(int count=0;count<base64_length;count+=MAXPARAMSIZE){    
     CMsg mPart;
     std::string str;
-    
-  
+      
     str=datastr.substr(count,MAXPARAMSIZE);
-
-  writeconsoleln("DATASTRING");
-  writeconsoleln(str);
-  writeconsoleln("^^DATASTRING");
-
 
     std::string strfilename=strfn;
     strfilename+=c;
     strfilename+=".jpg";
-    
-    //mPart.set(_API,_INSERTMULTI);
-    writeconsoleln(str);
-    //str="Hello Kitty";
+        
     mPart.set(_NAME,name());
-    mPart.set(strfilename,str);
-    mPart.writetoconsole();
+    mPart.set(_TIME,getTime());
+    mPart.set(strfilename,str);    
     
     c++;    
     addTransmitList(mPart);
   }
+  _lastTransmit=getTime();
 }
 
 
@@ -529,4 +533,16 @@ void CIRArray::callCustomFunctions(CMsg &msg){   //Calls a specific function dir
   */
    CSystemObject::callCustomFunctions(msg);
 
+}
+
+
+std::pair<double, double> CIRArray::getHotSpotDFS(){
+  std::vector<std::vector<double>> grid = initFrame(frame);
+  double threshold = 1.0;
+  CDFS cdfs;
+  cdfs.setGrid(grid);
+  
+  std::pair<double, double> center = cdfs.findPrimaryClusterCenter();
+
+  return center;
 }

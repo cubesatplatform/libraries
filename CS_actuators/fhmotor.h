@@ -6,20 +6,9 @@
 
 #include <CSPID.h>
 
-#define PWM_MIN 100
-#define PWM_MAX 4000
 
 
 
-
-
-#if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
- #include <analogwrite_portenta.h>  
-//using namespace mbed;
-#else
-  #include <analogWrite.h>  
-  typedef int PinName; 
-#endif
 
 //CMotorController mc1(PA_8,PC_6,PC_5);
 //https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/issues/25
@@ -93,7 +82,7 @@ public:
   void off();  
 
   void config(PinName sig, PinName fg,PinName dir);
- // void config(CMsg &msg);
+
 
   void init();
   double getRPM();
@@ -119,8 +108,9 @@ public:
   
   void setPoint(double sp,long dur=10000000){_Setpoint=sp; changed();setDuration(dur);}
   void setPoint(CMsg &msg);
+  void speed(float val);
   
-  void activateDrive(float val);
+
   void sendPlotter(CMsg &msg);
 
   void callCustomFunctions(CMsg &msg) override;

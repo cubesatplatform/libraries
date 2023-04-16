@@ -113,6 +113,7 @@ public:
 
   void resetWire(char s);
   void resetWire(CMsg &msg);
+  void toggleWire(CMsg &msg);
   void enableI2C();
   void disableI2C();
   void phone();

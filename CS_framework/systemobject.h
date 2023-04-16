@@ -191,6 +191,7 @@ public:
  
   void addMessageList(CMsg &m );
   void addReceivedList(CMsg &m );
+  void addCloudList(CMsg &m );
   void addTransmitList(CMsg &m );  
   void addDataMap(std::string key, CMsg &m); 
   void addDataMap(CMsg &m); 

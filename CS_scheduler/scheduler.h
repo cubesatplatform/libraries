@@ -49,11 +49,12 @@ public:
   void showScheduler(CMsg &msg);
   CMsg convertTasktoMessage(CMsg &msg);
   CMsg convertMessagetoTask(CMsg &msg);
-      
-  
+
+  void transmitDataMap(CMsg &msg);
+  void cloudDataMap(CMsg &msg);
   
   void output(CMsg &msg);  
-  void schedule(std::string sys,std::string act, long interval=60000, long start=0, long stop=STOPTASKMAX);
+  void schedule(std::string sys,std::string act, std::string name=std::string(""),long interval=60000, long start=0, long stop=STOPTASKMAX);
   void schedule(CMsg &msg,long interval=60000, long start=0, long stop=STOPTASKMAX);
   void callCustomFunctions(CMsg &msg) override;
   void sendCmdToScheduler(CMsg &msg);

@@ -151,11 +151,13 @@ void CSystemObject::stats(CMsg &msg){
 
   m=_m;
   
-  m.set(_NAME,_name);
+  std::string n="STATS";
+  n+=name();
+  m.set(_NAME,n);
   m.set(_MCID,_cid);
   m.set(_SID,_sid);
   m.set(_LASTSTATET,_lastStateTime);  
-  m.set(_CURRENTT,_obj._currentTime);
+  m.set(_TIME,_obj._currentTime);
 
   m.set(_PREVT,_obj._prevTime);
   m.set(_MAXT, _obj._maxTime);
@@ -220,6 +222,7 @@ void CSystemObject::newMsg(CMsg &msg){
   
   if(act=="SETSTATE") {std::string val=msg.get(_VALUE);setState(val);return;}
   if(act=="DATAMAP") {msg.remap();std::string key=msg.get(_NAME); addDataMap(key,msg);return;}
+  if(act=="ADDCLOUDLIST") {msg.remap();addCloudList(msg);return;}
   if(act=="ADDTRANSMITLIST") {msg.remap();addTransmitList(msg);return;}
   if(act=="ADDMESSAGELIST") {msg.remap();addMessageList(msg);return;}  
   if(act=="ADDRECEIVEDLIST") {msg.remap();addReceivedList(msg);return;}    
@@ -237,7 +240,7 @@ void CSystemObject::sendData(CMsg &msg){
 
   std::string name=msg.get(_NAME);
   CMsg m=getDataMap(name);
-  if (msg.get(_TO)==_CLOUD) addReceivedList(msg);
+  if (msg.get(_TO)==_CLOUD) addCloudList(msg);
   else addTransmitList(m);    
 }
 
@@ -433,8 +436,12 @@ void CSystemObject::timeStamp() {
 
 void CSystemObject::sendError() { 
   CMsg m;
+  std::string n="ERROR";
+  n+=name();
+
   setState(_ERROR);
-  m.set(_ERROR,name());
+
+  m.set(_NAME,n);
   m.set(_TIME,getTime());
   m.set(_COMMENT,_ERROR);
   m.set(_STATE,state());
@@ -498,19 +505,30 @@ void CSystemObject::state(CMsg &m) {
 
   
 void CSystemObject::addTransmitList(CMsg &m ){
- m.writetoconsole();
- MMM.addTransmitList(m);
+  if(m.get(_FROM)=="")
+    m.set(_FROM,getIAM());
+    
+  //m.writetoconsole();
+  MMM.addTransmitList(m);
+}
+
+
+void CSystemObject::addCloudList(CMsg &m ){
+  if(m.get(_FROM)=="")
+    m.set(_FROM,getIAM());
+  //m.writetoconsole();
+  MMM.addCloudList(m);
 }
 
 
 
 void CSystemObject::addDataMap(std::string key,CMsg &m){
-  m.writetoconsole();
+  //m.writetoconsole();
   MMM.addDataMap(key,m);
 }
 
 void CSystemObject::addDataMap(CMsg &m){
-  m.writetoconsole();
+  //m.writetoconsole();
   std::string key=m.get(_NAME);
   MMM.addDataMap(key, m);  
 }
@@ -522,15 +540,15 @@ CMsg CSystemObject::getDataMap(std::string key){
 }
 
 void CSystemObject::addMessageList(CMsg &m ){
-  m.writetoconsole();
+  //m.writetoconsole();
   MMM.addMList(m);
   
 }
 
 void CSystemObject::addReceivedList(CMsg &m ){
-  m.writetoconsole();
+  //m.writetoconsole();
   MMM.addRList(m,getIAM());
-  
+  addCloudList(m);
 
 }
 

@@ -15,6 +15,32 @@ TO:BS8~SYS:PHONE~ACT:SENDSERIAL~V:stream(2_7.jpg,0)
 //and process response
 //and showing progress 
 
+//satadata    this is the table name that has everything   all the rest are just views of this table
+//vsatadata   this is the view of satadata that is ordered by time Ts desc
+//vgps       this is the view of satadata that is ordered by time Ts desc and has only the gps data
+
+
+//https://difpyeehbpvjttcvjudw.supabase.co/rest/v1/satdata?select=*,Key,Value,Ts&limit=5&order=Ts.asc&Key=eq.CLUSTER&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZnB5ZWVoYnB2anR0Y3ZqdWR3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY3ODQzMzY1NiwiZXhwIjoxOTk0MDA5NjU2fQ.mS7qHs79PuVDR7fqFgd3PkseiwKGuKfXNrCnNbxEL1o
+// gt.   greater than
+// lt.  less than
+// eq.  equal to
+// neq. not equal to
+// gte. greater than or equal to
+// lte. less than or equal to
+// like.  like
+// ilike.  case insensitive like
+// is.  is null
+// in.  in
+// cs.  contains
+// cd.  contains (case insensitive)
+// sl.  starts with
+// sd.  starts with (case insensitive)
+// nl.  ends with
+// nd.  ends with (case insensitive)
+// ov.  overlaps
+// ft.  full text search
+//
+
 int xx=5;
 std::list<unsigned char> listBuffer; 
 
@@ -62,23 +88,13 @@ int fillListBuffer(std::string str){
 }
 
 CCloud::CCloud(){  
-  URLS[_REGISTER] = host + std::string("/register");
-  URLS[_GETCMD] = host + std::string("/getcmd");
-  URLS[_GETIMAGE] = host + std::string("/getimage");
-  URLS[_INSERTCMD] = host + std::string("/insertcmd");
-  URLS[_UPDATEACK] = host + std::string("/updateack");
-  URLS[_INSERT] =  host + std::string("/insert");
-  URLS[_INSERTMULTI] =  host + std::string("/insertmulti");
-//  URLS[INSERTIMAGE] =  host + std::string("/insertimage");
-  URLS[_QUERY] =  host + std::string("/query");
-  URLS[_LOG] =host + std::string("/v1/errorlog");
   
 }
 
 void CCloud::setup(){
     connectWifi();  
     client.setInsecure();
-    setState(_PLAY);
+ 
     setInterval(100);//pMessages=getMessages();
   }
 
@@ -86,14 +102,24 @@ void CCloud::setup(){
 void CCloud::connectWifi() {
   
   wifiMulti.addAP("Truffle1", "Alexander1");
-//  wifiMulti.addAP("Cabana", "alexander");
+  wifiMulti.addAP("jpad_connect", "Starbucks1660");
+  wifiMulti.addAP("jpad_connect", "starbucks1660");
+  wifiMulti.addAP("Cabana", "alexander");
+  wifiMulti.addAP("Cabana", "alexander1");
   long count=0;
   while ((wifiMulti.run() != WL_CONNECTED)&&(count<10)) {
     delay(delayWaitingForWifiConnection);
     writeconsole(".");
     count++;
   }
-  writeconsoleln("");  writeconsole("WiFi connected to ");  writeconsole(WiFi.SSID());  writeconsole(" with IP ");  writeconsoleln(String(WiFi.localIP()));
+  if(wifiMulti.run() == WL_CONNECTED){
+    setState(_PLAY);
+    writeconsoleln("");  writeconsole("WiFi connected to ");  writeconsole(WiFi.SSID());  writeconsole(" with IP ");  writeconsoleln(String(WiFi.localIP()));
+    }
+  else{
+    setState(_PAUSE);
+    writeconsoleln("No WiFi connection");
+  }  
 }
   
 
@@ -227,7 +253,7 @@ std::string CCloud::getPage(CMsg &msg){
     HTTPClient http;
 
     std::string api=msg.get(_API);
-    std::string path=msg.get(_URL,URLS[api]);
+    std::string path=msg.get(_URL);
     writeconsole("Get URL >  ");
     writeconsoleln(path.c_str());
 
@@ -282,81 +308,6 @@ std::string CCloud::getPage(CMsg &msg){
 }
 
 
-CMsg CCloud::callSupabaseAPI(std::string key,std::string value, std::string name, std::string mid, std::string bsid){
-  CMsg mpayload;
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(API_URL+"/rest/v1/satdata");
-    http.addHeader("Content-Type", "application/json");
-    http.addHeader("Prefer", "return=representation");
-    http.addHeader("apikey", API_KEY);
-    http.addHeader("Authorization", "Bearer " + API_KEY);
-
-    std::string str="{";
-    str+="\"";
-    str+="Key";
-    str+="\":";
-    str+="\"";
-    str+=key;          
-    str+="\"";
-    str+=",";
-    str+="\"";
-    str+="Value";
-    str+="\":";
-    str+="\"";
-    str+=value;          
-    str+="\"";
-
-    str+=",";
-    str+="\"";
-    str+="Name";
-    str+="\":";
-    str+="\"";
-    str+=name;          
-    str+="\"";
-
-    str+=",";
-    str+="\"";
-    str+="Bsid";
-    str+="\":";
-    str+="\"";
-    str+=bsid;          
-    str+="\"";
-
-    str+="}";
-    int httpCode = http.POST(str.c_str());
-    String payload = http.getString(); 
-    writeconsole("Code: "); writeconsoleln(httpCode);   //Print HTTP return code
-    writeconsole("Payload: "); writeconsoleln(payload.c_str());    //Print request response payload
-
-    mpayload=getJSONDoc(std::string(payload.c_str()));              
-
-    mpayload.writetoconsole();
-    http.end();
-  }else{
-    writeconsoleln("Error in WiFi connection");
-  }  
-  return mpayload;
-}
-
-
-
-//https://postgrest.org/en/stable/api.html#insertions
-void CCloud::callSupabaseAPI(CMsg &msg){
-  std::string name=msg.get(_NAME);
-  std::string bsid=msg.get(_BSID);
-  std::string mid=msg.get(_MID);
-
-  for (auto x:msg.Parameters){
-    if(x.second.size()){
-      //writeconsole(x.first);writeconsole(" = ");writeconsoleln((long) x.second.size());    
-      CMsg smsg=callSupabaseAPI(x.first,x.second, name, mid, bsid);
-    }
-  }
-  
-  return;
-}
-
 
 
 std::string CCloud::getPageMulti(CMsg &msg){
@@ -364,7 +315,7 @@ std::string CCloud::getPageMulti(CMsg &msg){
   std::string payload;
   if(WiFi.status()== WL_CONNECTED){         
     std::string api=msg.get(_API);
-    std::string path=msg.get(_URL,URLS[api]);
+    std::string path=msg.get(_URL);
     writeconsole("Get URL >  ");
     writeconsoleln(path.c_str());
     
@@ -438,67 +389,25 @@ void CCloud::callCustomFunctions(CMsg &msg)  {  //Used to be NewMsg
 
   //msg.writetoconsole();
   if(act==_GETPAGE) {getPage(msg.get(_URL)); return;}
-  mapcustommsg(callAPI)
+  
   mapcustom(connectWifi)
   mapcustommsg(save)
-
   
   CSystemObject::callCustomFunctions(msg);  
 }
 
 
 
-std::string CCloud::fillurl(std::string original,CMsg &msg){
-  std::string cid=msg.get(_MCID);
-  std::string bsid=msg.get(_BSID,getIAM());
-  std::string datastr=msg.get(_DATA);
-  std::string sendon=msg.get(_SENDON);
-  std::string newurl=original;
-
-  datastr = urlencode(datastr);
-
-  newurl = strReplace(newurl,"$cid",cid);
-  newurl = strReplace(newurl,"$bsid",bsid);
-  newurl = strReplace(newurl,"$data",datastr);
-  newurl = strReplace(newurl,"$sendon",sendon);
-
-  newurl = strReplace(newurl,"$bsid",std::string("all"));
-  
-  return newurl; 
-}
-
-
-
-
-CMsg CCloud::callAPI(CMsg &msg) {
-  std::string api=msg.get(_API);
-  std::string line;
-  if(api==_INSERTMULTI){
-    writeconsoleln("Insert Multi....  getPageMulti");
-    line =getPageMulti(msg);  
-  }
-  else
-    line =getPage(msg);   
-
-  if(line.length()<3) {
-    CMsg m;
-    return m;
-  }
-   
-  //writeconsoleln(line.c_str());
-
-  jsonDoc doc;
-  
-  CMsg m=getJSONDoc(line);
-  
-  return m;
-  }
-
-
 
 void CCloud::registerBS(){
-  
-  CMsg m=callSupabaseAPI("","", "BS_REGISTER", "", "");
+  writeconsoleln("RegisterBS");
+  CMsg m;
+  m.set("Key","RegisterBS");
+  std::string data=m.payload();
+  std::string payload=supabase.INSERT("satdata",data);
+  m.clear();
+  m=getJSONDoc(payload);
+
   std::string bsid=m.get("Id");
   if(bsid.size()>3) {
     bsid=bsid.substr(0,3);
@@ -511,45 +420,64 @@ void CCloud::registerBS(){
   }
 
 void CCloud::getCommand(){
-  CMsg m;
-  m.set(_API,_GETCMD);
-  m.writetoconsole();
-  CMsg msg=callAPI(m);   //Restarts when connecting to service has some problem      
+  CMsg m,mpayload;
+  
+  std::string payload=supabase.SELECT("vnextcmd",m,m,m,1);
 
-  std::string data=msg.get(_DATA);
-  std::string to=msg.get(_TO,_ADR1);
+  mpayload=getJSONDoc(payload);              
+  mpayload.writetoconsole();
 
-  if(data.size())  {
-    String s=data.c_str();
-    s.replace(";",":");
-    s.replace("^","~");
-    std::string data2=s.c_str();
+  std::string data=mpayload.get("Value");
+
+
+  if(data.size()>5)  {
+   // String s=data.c_str();
+   // s.replace(";",":");
+   // s.replace("^","~");
+   // std::string data2=s.c_str();
     
-    CMsg mm(data2);
-    mm.set(_FROM,getIAM());
-    mm.set(_TO,to);
+    CMsg mm(data);
+    mm.set(_FROM,getIAM());    
     mm.writetoconsole();
-    addTransmitList(mm);      
+    addTransmitList(mm);  
+
+
+    CMsg mupdate;
+    mupdate.set("Id",mpayload.get("Id"));
+    mupdate.set("Key",std::string("SENT")+getIAM());
+    mupdate.set("T",getTime());
+
+
+    std::string dataupdate=mupdate.payload();
+    std::string payload=supabase.UPDATE("satdata",dataupdate);
     }
 }
 
 void CCloud::save(CMsg &msg)  {
-  
+  if(state()!=_PLAY)
+    return;
+  writeconsoleln("Save To Cloud: ");
   msg.set(_PWD,_BLANK);    //Postgres cant handle bytes in text fields  so this blanks out the pwd check
-  msg.set(_BASE,getIAM());
   msg.set(_MID,msg.getStringID());
-  //std::string data=msg.serialize();
-  //data = strReplace(data,":",";");
-  //data = strReplace(data,"~","^");
-
-  //m.set(DATA,data);
-  if (msg.get(_API).size()==0) msg.set(_API,_INSERT);
+  msg.set("Bsid",getIAM());
   
-
-  writeconsoleln("Save: ");
+    
+  std::string payload=supabase.INSERT("satdata",msg);
   
-  CMsg mm=callAPI(msg);   //Restarts when connecting to service has some problem    
 }
+
+
+
+
+void CCloud::save(){
+  if(  MMM.CloudList.MList.size()>0)  {
+    CMsg m = MMM.CloudList.MList.front();
+    MMM.CloudList.MList.pop_front();
+    save(m);
+  }
+
+}
+
 
 void CCloud::loop(){
   if(millis() - _lastCmd >= 2*CMD_INTERVAL )  {
@@ -559,12 +487,19 @@ void CCloud::loop(){
       registerBS();
     }
     else{
-      //getCommand();                    
-      CMsg msg;
-      msg.set("First","MAMAMAMAlexander");
-      msg.set("Last","MAMAMARusich");
-      callSupabaseAPI(msg);
+      getCommand();        
+
+      /*
+      CMsg m;
+      
+      m.set("TOSEND","TO:BS1~SYS:RADIO~ACT:STATS");
+      m.set(_NAME,"COMMAND");
+      saveCommand(m);            
+      */
+      
     }
   }
+  save();
+  
 }
 

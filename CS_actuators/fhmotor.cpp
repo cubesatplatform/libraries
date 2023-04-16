@@ -125,13 +125,8 @@ void CMotorController::config(PinName sig, PinName fg,PinName dir){
   PIN_DIR=dir;
   PIN_FG=fg;  
  
-  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
-    analogWriteResolution(PIN_RESOLUTION);
-  #else
-    analogWriteResolution(PIN_SIGNAL,PIN_RESOLUTION);
-  #endif
 
-  pinMode(PIN_DIR, OUTPUT);
+  cPin.config(PIN_SIGNAL);
   pwmCounter.config(PIN_FG);    
 }
 
@@ -157,8 +152,7 @@ void CMotorController::init(){
   _Setpoint_last=0.0;
   _Output_last=0.0;
 
-  //setState(_PLAY);
-  //activateDrive(_Output);  
+  //setState(_PLAY);  
 }
   
 double CMotorController::getRPM(){
@@ -182,7 +176,7 @@ long CMotorController::getCount(){
 
 
 void CMotorController::off(){
-  activateDrive(0.0);
+  speed(0.0);
   setState(_DONE);
 }
 
@@ -199,12 +193,9 @@ void CMotorController::newGains(CMsg &msg){
   _Kp=msg.get(_KP,_Kp);
 }
 
-void CMotorController::activateDrive(float val){  //from 0 to 100%
+void CMotorController::speed(float val){  //from 0 to 100%
 //sendPWM(2000);
-  if(!setMSpeed(val)) {  //Check if same speed as last time
-    
-    return;
-  }
+
 
   sendPlotter(_mLog);
   
@@ -221,8 +212,7 @@ void CMotorController::activateDrive(float val){  //from 0 to 100%
     writeconsoleln("----------------------------------------------------DIR: HIGH");
   }
   
-  _OutputPWM= convertToPWM(val);
-  sendPWM(_OutputPWM);
+  cPin.pct(val);
 }
 
 
@@ -264,7 +254,7 @@ void CMotorController::setup(){
   mapcustommsg(newGains)
   mapcustommsg(setPoint)
   //if(act=="NEWGAINS") newGains(msg); 
-  if(act=="ACTIVATEDRIVE")  activateDrive(val);
+
 
   CBaseDrive::callCustomFunctions(msg);
  }

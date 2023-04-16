@@ -59,8 +59,8 @@ PinName CSystemMgr::getPinName(std::string strpin){
 int CSystemMgr::pinDigitalReadOutput(PinName pin)
 {
   #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
-  uint8_t bit = digitalPinToBitMask(pin);
-  uint8_t port = digitalPinToPort(pin);
+  int bit = digitalPinToBitMask(pin);
+  int port = digitalPinToPort(pin);
   if (port == NOT_A_PIN) 
     return LOW;
 
@@ -80,18 +80,12 @@ void CSystemMgr::pinPWM(CMsg &msg) {
 	std::string strpin=msg.get(_PIN,_BLANK);
 	PinName n=getPinName(strpin);
 
-	int freq =msg.get(_FREQUENCY,PIN_FREQUENCY);
+	CPin pin;
+  pin.config(n);
 
-
-  #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
-   analogWriteResolution(n,PIN_RESOLUTION);   
-  #endif
-
-  for (int count=0;count<4000;count+=100){
-    analogWrite(n,count);
-    writeconsole("PWM: ");
-    writeconsole(count);
-    delay(200);
+  for (int val=0;val<=100;val++){
+    pin.pct((float)val);
+    delay(100);
   }
 
 

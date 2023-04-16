@@ -3,6 +3,7 @@
 #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
 #define NC 100
 void CSystemObject::initPins() {
+  if (Pins.size() > 1) return;
   Pins["LED"] = LED_BUILTIN;
   Pins["36"] = 36;
   Pins["39"] = 39;
@@ -36,15 +37,29 @@ void CSystemObject::initPins() {
   pwmPins["23"]=23;
   pwmPins["4"]=4;
   pwmPins["0"]=0;
-  pwmPins["22"]=22;
   pwmPins["21"]=21;
+  pwmPins["22"]=22;
+  
+  Pins["SDA0"]=21;
+  Pins["SCL0"]=22;
+
+  Pins["SDA1"]=21;
+  Pins["SCL1"]=22;
+
+  Pins["SDA2"]=21;
+  Pins["SCL2"]=22;
+
+  Pins["PHONE_RX"]= 13;
+  Pins["PHONE_TX"]= 14;
+
 }
 
 #else
 
 void CSystemObject::initPins() {
+  if (Pins.size() > 1) return;
 
-	
+
 	Pins[_PIN65V]=PIN65V;
   Pins[_PINBURNWIRE]=PINBURNWIRE;
   Pins[_PINADCSI2C]=PINADCSI2C;
@@ -56,6 +71,16 @@ void CSystemObject::initPins() {
   //Pins["LEDR"] = LEDR;
   //Pins["LEDG"] = LEDG;
   //Pins["LEDB"] = LEDB;
+
+  Pins["SDA0"]=PH_8
+  Pins["SCL0"]=PH_7
+
+  Pins["SDA1"]=PB_7
+  Pins["SCL1"]=PB_6
+
+  Pins["SDA2"]=	PH_12
+  Pins["SCL2"]=PH_11
+
   Pins["PA_0"]=PA_0;
   //Pins["PA_1"]=PA_1;
   Pins["PA_10"]=PA_10;
@@ -230,7 +255,14 @@ void CSystemObject::initPins() {
   Pins["PK_5"]=PK_5;
   Pins["PK_6"]=PK_6;
   Pins["PK_7"]=PK_7;
-  
+
+  Pins["UART0_TX"]=	PA_0;
+  Pins["UART0_RX"]=	PI_9;	
+  Pins["UART1_TX"]=	PA_9;
+  Pins["UART1_RX"]=	PA_10;	
+  Pins["UART2_TX"]=	PG_14;
+  Pins["UART2_RX"]=	PG_9;
+
   pwmPins["PH_15"]=PH_15;
   pwmPins["PK_1"]=PK_1;
   pwmPins["PJ_11"]=PJ_11;

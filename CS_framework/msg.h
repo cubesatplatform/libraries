@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "funcs.h"
+#include <mbase64.h>
 
 
 
@@ -131,6 +132,8 @@ public:
 
 
   void cleanup();
+  std::string payload();
+  std::string supabase(std::string act="eq.");
 
   CMsg operator+=(const CMsg& b) {    
       //for(auto s:b.byteVector){

@@ -18,24 +18,33 @@ void CKeyboard::sendCmd(CMsg &msg){
 }
 
 void CKeyboard::sendCmd(std::string str){  
-  std::string cmd=_simpleCMDs[str];
-  CMsg m;
-  if(cmd.size()>1)
-    m.config(cmd);
-  else
-    m.config(str);  
-
   writeconsoleln("Keyboard");
-  m.writetoconsole();
+  
+ 
+  if(MMM.saveToCloud()){    
+    writeconsoleln("MMM.saveToCloud");
+    CMsg msg;
+    msg.set("TOSEND",str);
+    msg.set(_NAME,"COMMAND");
+    
 
-  if((IAM()=="ADR1") && (m.get(_TO)==_BLANK)){
-    m.set(_TO,"ADR1");
+    addCloudList(msg);
+    return;
+    
   }
+ 
 
+  CMsg m(str);
   if((IAM()==m.get(_TO)) && (m.get(_TO)!=_BLANK)){       
+    if((IAM()=="ADR1") && (m.get(_TO)==_BLANK)){
+      m.set(_TO,"ADR1");
+    }
     addMessageList(m);   
   }
   else {    
+    if((IAM()=="ADR1") && (m.get(_TO)==_BLANK)){
+      m.set(_TO,"ADR1");
+    }
     addTransmitList(m);     
   }
 }    

@@ -10,7 +10,7 @@
 #define STOPTASKLIMIT 1234567890 
 #define STOPTASKMAX   2147483647
 #define TIMEORBIT 91*60*1000
-#define MAXPARAMSIZE 200
+#define MAXPARAMSIZE 190
 #define MAXLISTSIZE 50
 
 
@@ -57,7 +57,7 @@
 #define _FILENAME "FILENAME"
 #define _FOREVER "FOREVER"
 #define _FREEHEAP "FREEHEAP"
-#define _FROM "FR"
+#define _FROM "F"
 
 #define _GPS "GPS"
 

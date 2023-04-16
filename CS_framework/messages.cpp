@@ -22,18 +22,6 @@ void CMessages::moveReceived() {
     }
     else {
       MessageList.push_back(m);    
-      if(_saveToCloud){
-        std::string strs=m.get(_SYS);
-        if(strs.size()) m.set("_SYS",strs);
-
-        std::string stra=m.get(_ACT);
-        if(stra.size()) m.set("_ACT",stra);
-
-        m.set(_SYS,_CLOUD);
-        m.set(_ACT,_SAVE);
-        MessageList.push_back(m);    
-      }
-
     }
   } 
   
@@ -217,10 +205,8 @@ void CMessages::addRList(CMsg &s,std::string strIAM){
     s.writetoconsole();    
     return;
   }
+    
   
-  if(s.get(_TO)==_CLOUD) {s.set(_SYS,_CLOUD);s.set(_ACT,_SAVE);}
-  
-
   ReceivedList.push_back(s);
   return;
   }
@@ -439,22 +425,29 @@ void CMessages::clearDataMap(){
   
 void CMessages::addTransmitList(CMsg &m ){
   
-  //fillMetaMSG(&m);    
-    
+  //fillMetaMSG(&m);      
   addTList(m);
-
-
-  if(_saveToCloud){
-    m.set(_SYS,_CLOUD);
-    m.set(_ACT,_SAVE);
-    addMList(m);
-  }
 
 
   return;
 
 }
 
+
+
+void CMessages::addCloudList(CMsg &m ){
+  
+  //fillMetaMSG(&m);    
+    
+writeconsoleln("xxxxxxxxxxxxxxxxxx");
+m.writetoconsole();
+
+  CloudList.push_back(m);
+
+
+  return;
+
+}
 
 
 void CMessages::addDataMap(std::string key,CMsg &m){
@@ -491,8 +484,5 @@ void CMessages::addMessageList(CMsg &m ){
 }
 
 void CMessages::addReceivedList(CMsg &m ){
-  
- // addRList(m.getIAM());
-  
-
+//NOT USED
 }

@@ -116,6 +116,49 @@ std::string CMsg::serialize() {
   return str1;
 }
 
+
+std::string CMsg::payload() {
+  std::string str="{";
+  for (auto x : Parameters ){
+    if(x.second.size()){
+      str+="\"";
+      str+=x.first.c_str();
+      str+="\":";
+      str+="\"";
+      str+=x.second.c_str();          
+      str+="\"";
+      str+=",";
+    }
+  }
+
+  if(str.size()>1)
+    str=str.substr(0,str.size()-1);
+
+  str+="}";
+  return str;
+}
+
+
+
+
+std::string CMsg::supabase(std::string act) {
+  std::string str;
+  for (auto x : Parameters ){
+    if(x.second.size()){
+      
+      str+=x.first.c_str();
+      str+="=";
+      str+=act;
+    //  str+="\"";
+      str+=x.second.c_str();          
+    //  str+="\"";
+      str+="&";
+    }
+  }
+  
+  return str;
+}
+
 std::string CMsg::serializeout(char delim) {
   cleanup();
   std::string str1,str2;

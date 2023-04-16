@@ -6,19 +6,9 @@
 #include <system_gps.h>
 #include <systemobject.h>
 #include <string>
-#include "utilities.h"
+//#include <utilities.h>
 
 #include <consoleio.h>
-
-
-#define GPS_RX_PIN 34
-#define GPS_TX_PIN 12
-#define BUTTON_PIN 38
-#define BUTTON_PIN_MASK GPIO_SEL_38
-#define GPS_BAND_RATE      9600
-
-#define I2C_SDA                     21
-#define I2C_SCL                     22
 
 
 CGPS::CGPS()  {      
@@ -33,9 +23,6 @@ void CGPS::init()
   
   setForever();
   setInterval(10000);    
-  initBoarda();  //new
-      // When the power is turned on, a delay is required.
-  delay(1500);
 }
 
 void CGPS::setup()
@@ -58,7 +45,7 @@ void CGPS::runOnce(CMsg &msg)
 {
   bool flag=false;
   unsigned int counter=10000;
-  writeconsoleln("...gps...");
+
   while ((Serial1.available() > 0)&&(counter>0)) {  
       gps.encode(Serial1.read());
       flag=true;
@@ -81,29 +68,27 @@ void CGPS::runOnce(CMsg &msg)
     Sec=gps.time.second();
     //Speed=gpsl.time.kmph()
 
-    //fillData();
+    fillData();
    }
-   fillData();
+   
 }
 
 
 
 
 void CGPS::fillData(){  //Easier to send as long   convert to decimal when receive  
-  writeconsoleln("filldata gps");
+
   CMsg m;  
+  m.set(_LATLON,tostring(latitude)+std::string(",")+tostring(longitude));
   m.set(_LAT,latitude);
   m.set(_LON,longitude);
   m.set(_ALT,altitude);
   m.set(_SATSV,SIV);
   m.set(_GPSTIME,tostring(Hr)+std::string(":")+tostring(Min)+std::string(":")+tostring(Sec));
-  m.set(_NAME,_GPS);
-  m.set(_SYS,_CLOUD);  
-  m.set(_ACT,_SAVE);    
+  m.set(_NAME,_GPS);  
   m.set(_TIME,getTime());
 
-  //addDataMap(std::string("GPS"),m);
-  addTransmitList(m);
+  addDataMap(m);
  }
 
 /*

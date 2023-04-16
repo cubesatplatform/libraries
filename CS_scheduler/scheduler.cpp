@@ -10,7 +10,7 @@ SYS:SCHEDULER~ACT:ADDTASK~S_SYS:IMUI~S_ACT:SENDDATA~N:IMUI_GYRO~S_STOP:2000000
 
 CScheduler::CScheduler(){
   setForever();
-  setInterval(300);
+  setInterval(100);
   }; 
          
 CScheduler::~CScheduler(){}  
@@ -127,7 +127,13 @@ CMsg CScheduler::convertTasktoMessage(CMsg &msg){
       if (key.substr(0,2)=="S_"){
         m.set(key.substr(2,key.length()),x.second);
       }
+      else {
+        m.set(key,x.second);
+      }
     }
+    else {
+        m.set(key,x.second);
+      }
 
   }
   return m;
@@ -143,7 +149,13 @@ CMsg CScheduler::convertMessagetoTask(CMsg &msg){
         key="S_"+key;
         m.set(key,x.second);
       }
+      else {
+        m.set(key,x.second);
+      }
     }
+       else {
+        m.set(key,x.second);
+      }
 
   }
   return m;
@@ -209,15 +221,28 @@ void CScheduler::showScheduler(CMsg &msg){
 
 
 
+void CScheduler::cloudDataMap(CMsg &msg){
+  std::string name=msg.get(_NAME);
+
+  CMsg m=getDataMap(name);
+  addCloudList(m);
+}
+
+
+void CScheduler::transmitDataMap(CMsg &msg){
+  std::string name=msg.get(_NAME);
+
+  CMsg m=getDataMap(name);
+  addTransmitList(m);
+}
 
 
 
-
-
-void CScheduler::schedule(std::string sys,std::string act, long interval, long start, long stop){
+void CScheduler::schedule(std::string sys,std::string act, std::string name,long interval, long start, long stop){
   CMsg m;
   m.set(_SYS,_SCHEDULER);
   m.set(_ACT,_ADDTASK);  
+  m.set(_NAME,name);  
   m.set(_INTERVAL,interval);
   m.set(_START,start);
   m.set(_STOP,stop);
@@ -253,6 +278,8 @@ void CScheduler::callCustomFunctions(CMsg &msg){
   mapcustommsg(pauseTask)
   mapcustommsg(unpauseTask)
   mapcustommsg(showScheduler)
+  mapcustommsg(cloudDataMap)
+  mapcustommsg(transmitDataMap)
   
   CSystemObject::callCustomFunctions(msg);
 }
@@ -279,7 +306,7 @@ void CScheduler::initSat(){
   
   schedule(_MANAGER,_CHKROTATION,5*interval); 
 */  
-  schedule(_MANAGER,_RANDOMSTATE,3*interval);
+  schedule(_MANAGER,_RANDOMSTATE,std::string(""),3*interval);
 }
 
 

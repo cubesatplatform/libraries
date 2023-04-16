@@ -141,7 +141,7 @@ void CIMU::GetData(){
     m=_Data.makeMessage(key);
   }
 
-  m.writetoconsole();
+  //m.writetoconsole();
   addDataMap(m);
 
 
@@ -303,6 +303,7 @@ void CIMU::setupI2C(){
     }  
     else{             
       setState(_PLAY);
+      goGyro();
       writeconsoleln("IMU Ready   !!!");
       return;
       }

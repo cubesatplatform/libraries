@@ -54,6 +54,7 @@ public:
   CMessageList MessageList;     //Moved from Radio to here.  These are pumped out  
   CMessageList TransmitList;     //Add output to transmit here (health, beacons and non on demand stuff go here)    Radio reads from here
   CMessageList TransmittedList;    //Sent  Heep for a bit if then need a resend    Radio writes to here when transmitted
+  CMessageList CloudList;    //Add here if want to save to cloud
 
   std::map<std::string, CMsg> DataMap;     //This is where the one demand data is put to be sent per request.  Most things put data here
   
@@ -64,7 +65,8 @@ public:
 
   CMessages(){};
   ~CMessages(){};
-  void saveToCloud(bool tmp=true){_saveToCloud=tmp;}
+  void saveToCloud(bool tmp){_saveToCloud=tmp;}
+  bool saveToCloud(){return _saveToCloud;}
   void moveReceived();                        //Need to make a subsystem that moved data to transmitlist data based on requests
   
   void sendData(CMsg &msg);            //Similar to movetoTransmitList
@@ -88,6 +90,7 @@ public:
   void addMessageList(CMsg &m );
   void addReceivedList(CMsg &m );
   void addTransmitList(CMsg &m );  
+  void addCloudList(CMsg &m );  
   void addDataMap(std::string key, CMsg &m); 
   void addDataMap(CMsg &m); 
   void setDataMap(CMsg &m){addDataMap(m);}

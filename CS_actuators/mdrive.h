@@ -33,6 +33,6 @@ public:
   void test(CMsg &msg);
   void sendPlotter();  
     
-  void activateDrive(float val); 
+  void speed(float val); 
   void callCustomFunctions(CMsg &msg);
 };

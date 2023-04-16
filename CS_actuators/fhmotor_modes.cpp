@@ -85,7 +85,7 @@ void CMotorController::loopSpeed(){
                                         PRINT_D);
 
   
-  activateDrive(_Output);    
+  speed(_Output);    
 }
 
 
@@ -119,7 +119,7 @@ void CMotorController::loopLock(){
                                         PRINT_I        |
                                         PRINT_D);
 
-  activateDrive(_Output);  
+  speed(_Output);  
 
 }
 
@@ -155,7 +155,7 @@ void CMotorController::loopPosition(){
 
  // sendPlotter(m);
 
-  activateDrive(_Output);  //Stay below 50
+  speed(_Output);  //Stay below 50
   
 } 
 
@@ -181,7 +181,7 @@ void CMotorController::setupPosition(){
         
   myPID.setOutputLimits(-50.0, 50.0);
 
-  speed(0,10000);
+  speed(0.0);
   setState(_PLAY);
 
 }
@@ -198,7 +198,7 @@ void CMotorController::setupSpeed(){
   myPID.setOutputLimits(-100.0, 100.0);
 
   
-  speed(0,10000);
+  speed(0.0);
 
   setState(_PLAY);
 }

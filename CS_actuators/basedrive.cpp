@@ -14,12 +14,12 @@ int CBaseDrive::channel=0;
 
 CBaseDrive::CBaseDrive(){}
 
-void CBaseDrive::forward(int s,long dur){speed(abs(s),dur);}
-void CBaseDrive::backward(int s,long dur){speed(-1*abs(s),dur);}
-void CBaseDrive::reverse(){speed(-1*_mspeed);}
+void CBaseDrive::forward(float s){speed(abs(s));}
+void CBaseDrive::backward(float s){speed(-1*abs(s));}
+void CBaseDrive::reverse(){speed(-1.0*_mspeed);}
 bool CBaseDrive::isForward(){if(_mdir) return true; return false;}
 void CBaseDrive::stopActuator(){
-  speed(0,0); 
+  speed(0.0); 
   setState(_PAUSE);
 }
 
@@ -45,28 +45,21 @@ void CBaseDrive::init(){
   setForever();
 }
 
-void CBaseDrive::sendPWM(int nVal){
+void CBaseDrive::sendPWM(float fVal){
 
-  if (nVal==getPWMSpeed()){   //Do nothing if same speed
-    writeconsole("PWM same  DIDNT skip THOUGH ");    writeconsoleln(nVal);
+  if (fVal==getPWMSpeed()){   //Do nothing if same speed
+    writeconsole("PWM same  DIDNT skip THOUGH ");    writeconsoleln(fVal);
    // return;
   }
-  setPWMSpeed(nVal);
+  setPWMSpeed(fVal);
   
-  analogWrite(PIN_SIGNAL,nVal,(int)(pow(2,PIN_RESOLUTION)-1.0));
+  cPin.pct(fVal);
   
 }
 
-void CBaseDrive::speed(int s,long dur){
+void CBaseDrive::speed(float val){
 
-
-  if(_driveStartTime==0) _driveStartTime=getTime();
-  _changedOn=getTime();
-
-  _mspeed=s;
-  
-  activateDrive(_mspeed);   
-  _duration=dur;
+  cPin.pct(val);
   }
 
   
@@ -104,7 +97,7 @@ void CBaseDrive::loop(){
 
 
 void CBaseDrive::manual(){    
-  float speed=_m.get(_SPEED,0.0);
+  float fspeed=_m.get(_SPEED,0.0);
      
   long startTime=_m.get(_STARTTIME,0L);        
   long stopTime=_m.get(_STOPTIME,0L);        
@@ -125,7 +118,7 @@ void CBaseDrive::manual(){
     _m.set(_START,startTime);     
     _m.set(_STOP,stopTime);           
     _m.set(_LAST,lastTime);                 
-    activateDrive(speed);
+    speed(fspeed);
     return;
     }   
 
@@ -134,7 +127,7 @@ void CBaseDrive::manual(){
   if(currentTime>stopTime){      
     lastTime=currentTime;
     _m.set(_LAST,lastTime);      
-    activateDrive(0.0);              
+    speed(0.0);              
     return;      
   }
  
@@ -143,37 +136,28 @@ void CBaseDrive::manual(){
 
 
 
-int CBaseDrive::convertToPWM(float val){   //From 0 to 100.0   
-  val=abs(val);
-  float pwmMax=pow(2,PIN_RESOLUTION)-2.0;
-  int nVal=(int)(val*pwmMax/100.0);
-  if(nVal<2) nVal=1;
 
-
-  //writeconsole("convertToPWM ");writeconsole(val); writeconsole(" to ");writeconsoleln(nVal);
-  return nVal;
-}
 
 void CBaseDrive::callCustomFunctions(CMsg &msg){   //Calls a specific function directly
   
   std::string act=msg.get(_ACT);  
-  int val=msg.get(_VALUE,1000);
+  float val=msg.get(_VALUE,100.00);
   long duration=msg.get(_DURATION,0);
   
   writeconsoleln(msg.serializeout());
   //std::string callback=msg.getParameter("CALLBACK");
  // if(callback.size()) _cmsg.Parameters["CALLBACK"]=callback;
-  if (act==_GOFORWARD){forward(val,duration); return;}
-  if (act==_GOBACKWARD) {backward(val,duration); return;}
+  if (act==_GOFORWARD){forward(val); return;}
+  if (act==_GOBACKWARD) {backward(val); return;}
   if (act==_GOREVERSE) {reverse(); return;}
   if (act==_STOP) {stopActuator(); return;}
-  if (act==_SPEED) {speed(val,duration); return;}
-  if (act==_START) {forward(val,duration); return;}
+  if (act==_SPEED) {speed(val); return;}
+  if (act==_START) {forward(val); return;}
 
   if (act==_SENDPWM) {sendPWM(val); return;}
   if (act==_SETSETSPEED) {setSetSpeed(val); return;}
   if (act==_SETPWMSPEED) {setPWMSpeed(val); return;}
-  if (act==_SETMSPEED) {setMSpeed(val); return;}
+
   if (act==_SETDURATION) {setDuration(duration); return;}
   if (act==_SETMAXRUNTIME) {setMaxRunTime(duration); return;}
   if (act==_SETMODIFIEDTIME) {setModifiedTime(duration); return;}

@@ -389,7 +389,11 @@ void CSystemMgr::disableI2C(){
 
 
 void CSystemMgr::resetWire(CMsg &msg){
-  std::string s=msg.get(_VALUE,"2"); 
+  #if defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7)
+    std::string s=msg.get(_VALUE,"0"); 
+  #else
+    std::string s=msg.get(_VALUE,"2");  
+  #endif
 
   if(s.size()==0)
     return;
@@ -400,17 +404,75 @@ void CSystemMgr::resetWire(CMsg &msg){
 
 
 
+void CSystemMgr::toggleWire(CMsg &msg) {
+  std::string val=msg.get(_VALUE,""); 
+  if (val.size()==0)
+    return;
+
+  PinName pin=Pins[val];
+  //if(pin==NC)    return;
+
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, HIGH);
+  delayMicroseconds(10);
+
+  for (uint8_t i = 0; i < 10; i++) {
+    digitalWrite(pin, LOW);
+    delayMicroseconds(10);
+    digitalWrite(pin, HIGH);
+    delayMicroseconds(10);
+  }
+
+  CMsg m;
+  m.set(_NAME,"PIN TOGGLE");
+  m.set(_VALUE,val);
+  m.writetoconsole();
+}
+
+
 
 
 void CSystemMgr::resetWire(char  s) {
   TwoWire *wire=NULL;
+  PinName sda;
+  PinName scl;
 
-  if (s=='0') wire=&Wire;
-  if (s=='1') wire=&Wire1;
-  if (s=='2') wire=&Wire2;
+  if (s=='0') {
+    wire=&Wire;
+    sda=Pins["SDA"];
+    scl=Pins["SCL"];
+    }
+  if (s=='1') {
+    wire=&Wire1;
+    sda=Pins["SDA1"];
+    scl=Pins["SCL1"];
+  }
+  if (s=='2') {
+    wire=&Wire2;
+    sda=Pins["SDA2"];
+    scl=Pins["SCL2"];
+  }
 
   if(wire==NULL)
     return;
+
+
+  pinMode(sda, OUTPUT);
+  pinMode(scl, OUTPUT);
+
+  digitalWrite(sda, HIGH);
+  digitalWrite(scl, HIGH);
+
+  delayMicroseconds(10);
+
+  for (uint8_t i = 0; i < 10; i++) {
+    digitalWrite(scl, LOW);
+    delayMicroseconds(10);
+    digitalWrite(scl, HIGH);
+    delayMicroseconds(10);
+  }
+
+
 
   wire->begin();
   CMsg m;
@@ -487,7 +549,7 @@ void CSystemMgr::ir(CMsg &msg){
   std::string s=msg.get(_VALUE); 
   
   enablePin(_PINOBCI2C);  
-  Wire2.begin();
+
   
   CSystemObject *pSys=getSystem(s.c_str(),"Test IR");
   if(pSys!=NULL) {    
@@ -630,6 +692,8 @@ void CSystemMgr::loopWire(CMsg &msg){
 
 #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
 void CSystemMgr::initI2CMap(){  
+  if(I2CMap.size()>0)
+    return;
   I2CMap["20_51"]="2> IR X1 - 0x33/51";
   I2CMap["0_50"]="2> IR X2 - 0x32/50";
   I2CMap["1_51"]="2> IR Y1 - 0x33/51";
@@ -661,6 +725,8 @@ void CSystemMgr::initI2CMap(){
 #else
 
 void CSystemMgr::initI2CMap(){  
+  if(I2CMap.size()>0)
+    return; 
   I2CMap["0_51"]="2> IR X1 - 0x33/51";
   I2CMap["0_50"]="2> IR X2 - 0x32/50";
   I2CMap["1_51"]="2> IR Y1 - 0x33/51";
@@ -705,7 +771,7 @@ void CSystemMgr::loopWire(char s) {  //I2C2 Sensitive to VOltage   Needs 3.4V so
   if(I2CMap.size()==0)
     initI2CMap();
 
- 
+  writeconsole("Scanning I2C Bus"); writeconsoleln(s);
   
   byte error;
   int nDevices=0;  
@@ -714,7 +780,7 @@ void CSystemMgr::loopWire(char s) {  //I2C2 Sensitive to VOltage   Needs 3.4V so
   
   CMsg m;
   
-  wire->begin();
+
   delay(200);
   for(byte address = 1; address < 127; address++ ) {
     
@@ -722,7 +788,7 @@ void CSystemMgr::loopWire(char s) {  //I2C2 Sensitive to VOltage   Needs 3.4V so
     writeconsole(".");
     
     wire->beginTransmission(address);
-    
+    delay(20);
     error = wire->endTransmission();
     
     if (error == 0) {      
