@@ -146,7 +146,7 @@ void CSystemObject::newMode(CMsg &msg){
   _m.set(_MODE,mode);  
 }
 
-void CSystemObject::stats(CMsg &msg){    
+CMsg CSystemObject::rawStats(CMsg &msg){    
   CMsg m;
 
   m=_m;
@@ -154,8 +154,8 @@ void CSystemObject::stats(CMsg &msg){
   std::string n="STATS";
   n+=name();
   m.set(_NAME,n);
-  m.set(_MCID,_cid);
-  m.set(_SID,_sid);
+  //m.set(_MCID,_cid);
+  //m.set(_SID,_sid);
   m.set(_LASTSTATET,_lastStateTime);  
   m.set(_TIME,_obj._currentTime);
 
@@ -170,8 +170,7 @@ void CSystemObject::stats(CMsg &msg){
   m.set(_LOOPCOUNT,_loopCount);
   m.set(_PROCCOUNT,_procCount);
 
-
-  addTransmitList(m);
+  return m;  
 }
 
 void CSystemObject::mode(CMsg &msg){
@@ -461,7 +460,7 @@ bool CSystemObject::isNextCycle() {
     CMsg m;
     m.set(_SYS,name()); 
     m.set(_INFO,"Out of time.  Stopping.");
-    m.writetoconsole();
+    m.writetoconsoleln();
     setState(_STOP);
     return false;
   }
@@ -505,32 +504,57 @@ void CSystemObject::state(CMsg &m) {
 
   
 void CSystemObject::addTransmitList(CMsg &m ){
+  if (m.Parameters.size()<2){
+    m.writetoconsoleln();
+    return;
+  }
+
   if(m.get(_FROM)=="")
     m.set(_FROM,getIAM());
     
-  //m.writetoconsole();
+  
+  
   MMM.addTransmitList(m);
+  if(_m.get(_SAVETOCLOUD,0))
+    addCloudList(m);
 }
 
 
 void CSystemObject::addCloudList(CMsg &m ){
+  if (m.Parameters.size()<2){
+    m.writetoconsoleln();
+    return;
+  }
   if(m.get(_FROM)=="")
     m.set(_FROM,getIAM());
-  //m.writetoconsole();
+  
   MMM.addCloudList(m);
 }
 
 
 
 void CSystemObject::addDataMap(std::string key,CMsg &m){
-  //m.writetoconsole();
+  if (m.Parameters.size()<2){
+    m.writetoconsoleln();
+    return;
+  }
+  m.writetoconsoleln();  
   MMM.addDataMap(key,m);
+  if(_m.get(_SAVEMAPTOCLOUD,0))
+    addCloudList(m);
 }
 
 void CSystemObject::addDataMap(CMsg &m){
-  //m.writetoconsole();
+  if (m.Parameters.size()<2){
+    m.writetoconsoleln();
+    return;
+  }
   std::string key=m.get(_NAME);
+  m.writetoconsoleln();
+      
   MMM.addDataMap(key, m);  
+  if(_m.get(_SAVEMAPTOCLOUD,0))
+    addCloudList(m);
 }
 
 CMsg CSystemObject::getDataMap(std::string key){
@@ -540,13 +564,21 @@ CMsg CSystemObject::getDataMap(std::string key){
 }
 
 void CSystemObject::addMessageList(CMsg &m ){
-  //m.writetoconsole();
+  if (m.Parameters.size()<2){
+    m.writetoconsoleln();
+    return;
+  }
+  
   MMM.addMList(m);
   
 }
 
 void CSystemObject::addReceivedList(CMsg &m ){
-  //m.writetoconsole();
+  if (m.Parameters.size()<2){
+    m.writetoconsoleln();
+    return;
+  }
+  
   MMM.addRList(m,getIAM());
   addCloudList(m);
 

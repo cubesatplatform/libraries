@@ -302,7 +302,7 @@ class CEPS:public CSystemObject
     TEMPERATURE_INFO readTemperatureSensor(void);
     
 
-    void output();
+    void readEPS();
 
     void writeSWSelflock(uint8_t state);
     void writeVBATEN(uint8_t state);

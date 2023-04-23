@@ -64,7 +64,7 @@ void CMotorController::sendPlotter(CMsg &msg){
     msg.set(_TO,"PLOTTER");
     msg.set(_SYS,"PLOTTER");
    
-    addTransmitList(msg);
+    addMessageList(msg);
   }
 }
 

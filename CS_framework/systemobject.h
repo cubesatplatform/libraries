@@ -63,7 +63,7 @@ class CSystemObject {
   static int sid;
   static std::string _IAM;
   static std::string _defaultTO;
-  static long _lastLowPowerMsg;  
+  static long _lastLowPowerMsg;    
   int _sid;
   
 
@@ -91,7 +91,7 @@ protected:
   CTimeStruct _echo;  
 
   std::map<std::string, std::string> Callback;  
-  CMsg _m;
+  
 
   static CMessages MMM;
   static std::map<std::string,CSystemObject *> SysMap;
@@ -101,7 +101,8 @@ protected:
   
 
 public:
-  
+  CMsg _m;
+
   CSystemObject();
   virtual ~CSystemObject() {}
 
@@ -136,7 +137,7 @@ public:
  
   void setup(CMsg &msg) { setup(); };
   void loop(CMsg &msg)  {loop();};
-  
+
   void tic(){_obj._lastUse=getTime();if(_m.get(_STATE)==_PAUSE)setState(_PLAY);}
   long lastUsed(){return _obj._lastUse;}
 
@@ -177,11 +178,12 @@ public:
   void stopTime(long tmp){_obj._stopTime=tmp;};
   long modifiedTime(){return _obj._modifiedTime;};
   
-  virtual void callCustomFunctions(CMsg &msg){writeconsoleln("                 XXXXXX   Unknown Message  CallCustom                           XXXXX"); msg.writetoconsole();};   //Override to calls any system specific function directly
+  virtual void callCustomFunctions(CMsg &msg){writeconsole("XXXXXX      Unknown Message  CallCustom  -  Might be a received message that is allso being copied to Cloud      XXXXXXXX> "); writeconsoleln(name());msg.writetoconsole();};   //Override to calls any system specific function directly
   
   void timeStamp();
  
-  virtual void stats(CMsg &ms);
+  virtual CMsg rawStats(CMsg &ms);
+  void stats(CMsg &ms){CMsg m; m=rawStats(m); addTransmitList(m);};
   void run(long runtime);                    
   void run();          
   virtual void run(CMsg &m){long runtime=m.get(_RUNTIME,100); run(runtime);}                                                                               //Next state calls State Transition Functions

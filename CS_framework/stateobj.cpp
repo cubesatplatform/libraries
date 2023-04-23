@@ -45,8 +45,6 @@ void CStateObj::enter(){
 	
 	CMsg m;    
     m.set(_ENTERSTATE,name());	
-    //addTransmitList(m);
-
 
 	for(auto x:subsystems){
 		x->enter();
@@ -85,7 +83,6 @@ void CStateObj::exit(){
 	setState(_PAUSE);
 	CMsg m;    
 	m.set(_EXITSTATE,name());    
-   // addTransmitList(m);
 
 	writeconsole("End         CStateObj::exit...");  writeconsoleln(name());
 }
@@ -166,8 +163,7 @@ void CStateObj::loop() {
 			m.set(_STATE,psys->state());
 			m.set(_COMMENT,"REMOVIING : "); 
 			
-			psys->setState(_BLANK); //Reset state for next time			
-			addTransmitList(m);
+			psys->setState(_BLANK); //Reset state for next time						
 			return;
 		}
 		*/

@@ -79,6 +79,19 @@ std::string CSupabase::INSERT(std::string tableName,CMsg msg){
         std::string data = m.payload();
         INSERT(tableName,data);
     }
+
+    CMsg m;
+    m.set("Mid",Mid);
+    m.set("Bsid",Bsid);
+    m.set("Name",Name);
+    m.set("T",T);
+    m.set("From",F);
+    m.set("Key", std::string("RAW_")+F+std::string("_")+Name);
+    m.set("Value" ,msg.serialize());
+    std::string data = m.payload();
+    INSERT(tableName,data);
+
+
     str="";
     return str;
 }

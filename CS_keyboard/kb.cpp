@@ -20,19 +20,7 @@ void CKeyboard::sendCmd(CMsg &msg){
 void CKeyboard::sendCmd(std::string str){  
   writeconsoleln("Keyboard");
   
- 
-  if(MMM.saveToCloud()){    
-    writeconsoleln("MMM.saveToCloud");
-    CMsg msg;
-    msg.set("TOSEND",str);
-    msg.set(_NAME,"COMMAND");
-    
 
-    addCloudList(msg);
-    return;
-    
-  }
- 
 
   CMsg m(str);
   if((IAM()==m.get(_TO)) && (m.get(_TO)!=_BLANK)){       

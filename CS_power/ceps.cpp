@@ -85,7 +85,6 @@ void CEPS::checkPower(){
   //Maybe No logic in here   just save data?
   CMsg msg=getDataMap(_SATINFO); 
   std::string satState=msg.get(_STATE,_BLANK);
-  addTransmitList(msg);
 
   
   if(satState!=_LOWPOWER){
@@ -103,13 +102,13 @@ void CEPS::checkPower(){
 }
 
 void CEPS::loop(){
-  output();
+  readEPS();
   checkPower();
   
 }
 
 
-void CEPS::output(){   //FIX THIS  JUST FOR TESTING
+void CEPS::readEPS(){   //FIX THIS  JUST FOR TESTING
   CMsg m;
  // writeSWSelflock(0);
   writeSHDChrg(0);

@@ -224,17 +224,11 @@ void CScheduler::showScheduler(CMsg &msg){
 void CScheduler::cloudDataMap(CMsg &msg){
   std::string name=msg.get(_NAME);
 
-  CMsg m=getDataMap(name);
+  CMsg m=getDataMap(name);  
   addCloudList(m);
 }
 
 
-void CScheduler::transmitDataMap(CMsg &msg){
-  std::string name=msg.get(_NAME);
-
-  CMsg m=getDataMap(name);
-  addTransmitList(m);
-}
 
 
 
@@ -278,8 +272,7 @@ void CScheduler::callCustomFunctions(CMsg &msg){
   mapcustommsg(pauseTask)
   mapcustommsg(unpauseTask)
   mapcustommsg(showScheduler)
-  mapcustommsg(cloudDataMap)
-  mapcustommsg(transmitDataMap)
+  mapcustommsg(cloudDataMap)  
   
   CSystemObject::callCustomFunctions(msg);
 }

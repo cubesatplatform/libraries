@@ -263,6 +263,6 @@ void CMDrive::sendPlotter(){
     msg.set("OUTPUT",_Output);
     msg.set(_SETPOINT,_Setpoint);
         
-    addTransmitList(msg);    
+    addMessageList(msg);    
   }
 }

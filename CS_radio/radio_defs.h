@@ -22,8 +22,8 @@
     #define R2_BUSY PH_10
 
 #else
-    //#define TTGO1278    //Need to pick one
-    #define TTGO1262
+    #define TTGO1278    //Need to pick one
+   //#define TTGO1262
     //#define TTGO1268
     
     /* Now using for TTGO|LILYGO the definitions in <boards.h>
@@ -225,8 +225,11 @@ int16_t 	setCodingRate (uint8_t cr)
 #define _MEGABW "MEGABW"
 #define _ULTRABW "ULTRABW"
 #define _HIGHBW "HIGHBW"
-#define _MEDIUMBW "MEDIUMBW"
+#define _MEDIUMBW "MEDBW"
 #define _LOWBW "LOWBW"
-#define _NORMALBW "NORMALBW"
+#define _NORMALBW "NRMLBW"
+
+#define _RSSI "RSSI"
+#define _SNR "SNR"
     
 

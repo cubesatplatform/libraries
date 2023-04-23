@@ -46,7 +46,7 @@ private:
   long _lastMessage=0;
   long _lastData=0;
   long _lastTransmit=0;
-  bool _saveToCloud=false;
+  
   
 
 public:  
@@ -65,8 +65,7 @@ public:
 
   CMessages(){};
   ~CMessages(){};
-  void saveToCloud(bool tmp){_saveToCloud=tmp;}
-  bool saveToCloud(){return _saveToCloud;}
+  
   void moveReceived();                        //Need to make a subsystem that moved data to transmitlist data based on requests
   
   void sendData(CMsg &msg);            //Similar to movetoTransmitList
@@ -104,7 +103,7 @@ public:
   void prune();
   void displayList(int option);  
   
-  void stats(CMsg &msg);
+  CMsg rawStats(CMsg &msg);
   void clearDataMap();
   
 };

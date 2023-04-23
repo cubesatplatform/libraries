@@ -26,8 +26,6 @@ while(count<size){
   msg = MMM.MessageList.MList.front();
   MMM.MessageList.MList.pop_front();
 
-  writeconsoleln("------------------>Msg Pump");
-  msg.writetoconsole();
   
 
 	if (msg.isReadyToProcess()){		
@@ -56,7 +54,7 @@ while(count<size){
 
 
 
-void CMsgPump::stats(CMsg &msg){    
+CMsg CMsgPump::rawStats(CMsg &msg){    
   
   CMsg m;
   int dmSize=MMM.DataMap.size();    
@@ -75,14 +73,7 @@ void CMsgPump::stats(CMsg &msg){
   m.set("CloudList",cSize);  
   m.set(_TIME,getTime());
 
-  addTransmitList(m);
-}
-
-void CMsgPump::saveToCloud(CMsg &msg){
-  int val=msg.get(_VALUE,1);
-
-  if (val) MMM.saveToCloud(true);
-  else MMM.saveToCloud(false);
+  return m;
 }
 
 
@@ -136,7 +127,7 @@ void CMsgPump::callCustomFunctions(CMsg &msg){
   //mapcustom(MMM.clearDataMap);
   //mapcustommsg(MMM.sendDataMap)
   //mapcustom(MMM.displayFreeHeap)
-  mapcustommsg(saveToCloud)
+
 
   CSystemObject::callCustomFunctions(msg);
 }

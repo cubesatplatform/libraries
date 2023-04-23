@@ -183,8 +183,7 @@ void CMessageList::clear(){
 
 //////////////////////////////////////////////////////////////////////////////////
 void CMessages::addMList(CMsg &m){
-  writeconsoleln("addMessageList");
-  m.writetoconsole();   
+  writeconsoleln("addMessageList");  
   #if !(defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7_M7))
   displayFreeHeap();
   #endif
@@ -268,8 +267,9 @@ std::list<CMsg> CMessages::splitMsg(CMsg &m){
 
     }
     else{
-      writeconsoleln("ERRRRRRRRRRRRRRRROOOORRR  TOOO LONG  FIX  Messages.cpp 279");
-      cm.writetoconsoleln();
+      writeconsole("ERRRRRRRRRRRRRRRROOOORRR  TOOO LONG  FIX  Messages.cpp Line 270> ");
+      writeconsoleln(str);
+      cm.writetoconsole();
       
       cm.set(_SYS,strSYS);
       cm.set(_ACT,strACT);
@@ -336,11 +336,8 @@ std::list<CMsg> CMessages::splitMsgData(CMsg &m){
 void CMessages::addTList(CMsg &m){  
 displayFreeHeap(); 
 
-writeconsoleln("vvvvvvvvvv  addTList");
-m.writetoconsole();
+
 std::string str=m.serialize();
-writeconsoleln((long)str.size());
-writeconsoleln("^^^^^^^^^^  End addTList");
 
 std::list<CMsg> lMD;
 
@@ -376,8 +373,7 @@ void CMessages::addDMap(CMsg &m) {
 void  CMessages::sendDataMap(CMsg &msg){   
     for (auto x:DataMap){
        CMsg m=DataMap[x.first];
-       writeconsoleln(x.first);
-       m.writetoconsole();
+  
        addTransmitList(m);
    
   }
@@ -428,7 +424,6 @@ void CMessages::addTransmitList(CMsg &m ){
   //fillMetaMSG(&m);      
   addTList(m);
 
-
   return;
 
 }
@@ -439,12 +434,7 @@ void CMessages::addCloudList(CMsg &m ){
   
   //fillMetaMSG(&m);    
     
-writeconsoleln("xxxxxxxxxxxxxxxxxx");
-m.writetoconsole();
-
   CloudList.push_back(m);
-
-
   return;
 
 }

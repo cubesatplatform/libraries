@@ -102,9 +102,9 @@ std::string CMsg::TransmitData() {
   }
 
 std::string CMsg::serialize() {
-  //writeconsoleln("x");
+
   cleanup();
-  //writeconsoleln("y");
+
   std::string str1;
  
     for (auto it : Parameters  ){

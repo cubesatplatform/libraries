@@ -49,8 +49,7 @@ public:
   void showScheduler(CMsg &msg);
   CMsg convertTasktoMessage(CMsg &msg);
   CMsg convertMessagetoTask(CMsg &msg);
-
-  void transmitDataMap(CMsg &msg);
+  
   void cloudDataMap(CMsg &msg);
   
   void output(CMsg &msg);  

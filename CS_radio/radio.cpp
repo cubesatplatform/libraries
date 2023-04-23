@@ -326,7 +326,7 @@ void CRadio::SendAck(CMsg &m){
 
 void CRadio::TransmitPacket(CMsg &m){   
   //if(m.vectorLen()) {       TransmitPacket(m.vectorData(),m.vectorLen());        }
-  m.writetoconsole();
+  m.writetoconsoleln();
   if (0){
 
   }
@@ -434,27 +434,11 @@ void CRadio::receivedLogic( unsigned char *buffer, int len){
   }
 
   CMsg robj(tmpstr.c_str());  //plora->getRSSI(), plora->getSNR()
+  robj.set(_RSSI,_m.get(_RSSI,0.0));
+  robj.set(_SNR,_m.get(_SNR,0.0));
   writeconsole("Received a packet ...................   ");
-  robj.writetoconsole();
+  robj.writetoconsoleln();
 
-  /*
-  if(filename.size()){
-    writeconsoleln("ReceivedLogic   isBinary  Has Filename  Initarray");
-    robj.set(FILENAME,filename);
-    robj.set(WRITE,"1");
-    robj.initArray(buffer+20,len);
-    unsigned char *pData=robj.vectorData();
-
-    for(int count=0;count<len;count++){
-      unsigned char c=pData[count];
-      writeconsole(c);
-    }
-
-  }
-  */
-  //robj.set(RSSI,plora->getRSSI());
-  //robj.set(SN,plora->getSNR());
-  //writeconsole("Received by: ");writeconsoleln(name());  robj.writetoconsole();
   
   if(robj.get(_ACK)=="1"){// This is an acknowledgement of a requested ACK.  No need to push to reeceived list
     if((_nextTransmit>(getTime()+getTXDelay())) ||(_delayTransmit>(getTime()+getTXDelay()))){    //No need to wait longer as we got the ack
@@ -480,7 +464,16 @@ void CRadio::ReceivedPacket(){
 
   int len=plora->getPacketLength();
   _radioState = plora->readData(buffer,len);
+  
   if(_radioState == RADIOLIB_ERR_NONE) {    
+    
+    float r=plora->getRSSI();
+    float s=plora->getSNR();
+    writeconsoleln("RSSI/SNR>");
+    writeconsoleln(r);
+    writeconsoleln(s);
+    _m.set(_RSSI,r);
+    _m.set(_SNR, s);
     receivedLogic(buffer,len);    
   } else if (_radioState == RADIOLIB_ERR_CRC_MISMATCH) {        
     writeconsoleln("CRC error!"); 
@@ -793,20 +786,30 @@ int CRadio::getTXDelay(){
 }
 
 
-void CRadio::stats(CMsg &msg){
+CMsg CRadio::rawStats(CMsg &msg){
 
-  CSystemObject::stats(msg);    
   CMsg m;
+  //m=CSystemObject::rawStats(m);      Makes the message too big
 
-  m=_m;
+
+  std::string n="STATS";
+  n+=name();
+  m.set(_NAME,n);
   
-  m.set(_NAME,_name);
+  m.set("LSTPING",_lastPing);// timestamp of the last PING packet  
+  m.set("NXTX",_nextTransmit);
+  
+  m.set("LSTTX",_lastTransmit);
+  m.set("LSTRX",_lastReceive);
+  m.set("MODEM",_NORMALBW);
+  
   m.set("FREQ",getFrequency());
   m.set("BW",getBW());
   m.set("CR",getCR());
   m.set("SF",getSF());
 
-  m.writetoconsole();
-  addTransmitList(m);
-
+  m.set(_RSSI,_m.get(_RSSI,0.0));
+  m.set(_SNR,_m.get(_SNR,0.0));
+  
+  return m;
 }

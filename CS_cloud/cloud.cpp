@@ -480,23 +480,14 @@ void CCloud::save(){
 
 
 void CCloud::loop(){
-  if(millis() - _lastCmd >= 2*CMD_INTERVAL )  {
+  if(millis() - _lastCmd >= CMD_INTERVAL )  {
     _lastCmd=millis();
 
     if(!_bRegistered){
       registerBS();
     }
     else{
-      getCommand();        
-
-      /*
-      CMsg m;
-      
-      m.set("TOSEND","TO:BS1~SYS:RADIO~ACT:STATS");
-      m.set(_NAME,"COMMAND");
-      saveCommand(m);            
-      */
-      
+      getCommand();              
     }
   }
   save();
